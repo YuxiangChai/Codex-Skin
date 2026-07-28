@@ -27,6 +27,11 @@ Updated: 2026-07-28 (Asia/Shanghai)
   `YuxiangChai/Codex-Skin` repository. The first empty-repository push used the
   documented `[skip ci]` commit marker so the upstream release guard would not
   fail on a missing predecessor; normal CI resumes on subsequent pushes.
+- [verified] Personal-repository CI run `30349647148` passed at
+  `e267561`. Because the new repository had no existing `v1.5.6` release, its
+  copied upstream Release workflow also published `v1.5.6` at that exact commit
+  with a DMG, Windows installer, and `SHA256SUMS.txt`; no duplicate or unrelated
+  commit was released.
 
 ## v1.5.1 Version Release (2026-07-25 08:28 HKT)
 
