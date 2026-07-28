@@ -24,7 +24,9 @@ Updated: 2026-07-28 (Asia/Shanghai)
   `~/Downloads/CodexSkin-PERSONAL-v1.5.6.dmg`.
 - [verified] Focused fail/pass coverage, Bash syntax, `git diff --check`, and
   the full macOS suite pass, including Swift build and 10 XCTest cases. Signed
-  runtime integrations and Doctor remain explicit environment skips.
+  runtime integrations and Doctor remain explicit environment skips. Personal
+  repository CI run `30356819698` also passed at fix commit `a950e85`; the
+  Release guard completed without rebuilding or replacing `v1.5.6`.
 - [pending] The user must quit Codex and replace the old Applications copy with
   the verified personal DMG; re-check the installed/App CSS hash and visible
   home/task result after restart.
