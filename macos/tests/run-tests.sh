@@ -169,6 +169,7 @@ fi
 # still parses but ships as silently dead styling; v1.3.1 lost the full-window
 # home and every task-route ambient background that way (#221).
 "$NODE" "$ROOT/tests/runtime-css-nested-has.test.mjs"
+"$NODE" "$ROOT/tests/release-download-links.test.mjs"
 
 "$NODE" "$ROOT/scripts/injector.mjs" --check-payload >/dev/null
 "$NODE" "$ROOT/tests/image-metadata.test.mjs"

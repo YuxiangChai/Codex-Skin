@@ -2,6 +2,33 @@
 
 Updated: 2026-07-28 (Asia/Shanghai)
 
+## Personal Release Download Link Fix (2026-07-28)
+
+- [complete] The installed App and managed engine were both confirmed to
+  contain the upstream CSS hash `0cc4d642...`, while the custom source and the
+  actual `YuxiangChai/Codex-Skin` Release asset contain the personal policy and
+  generated CSS hash `92a1022f...`.
+- [root cause] The copied Release workflow hard-codes
+  `Fei-Away/Codex-Dream-Skin` in its generated download links. The user clicked
+  that release-note link and received the upstream DMG even though the personal
+  repository's attached asset was correct.
+- [complete] Added a regression that first failed on the upstream hard-coded
+  URL, then changed generated download links to use `${GITHUB_REPOSITORY}`.
+- [complete] Patched the existing personal `v1.5.6` Release notes through the
+  GitHub API; all three binary/checksum links now point to
+  `YuxiangChai/Codex-Skin`, with no upstream download link remaining.
+- [verified] Downloaded the personal DMG through its direct asset URL, matched
+  SHA-256 `f3cff722...` against `SHA256SUMS.txt`, mounted it read-only, and
+  confirmed the bundled CSS contains the personal policy and hash
+  `92a1022f...`. A clearly named verified copy is available locally as
+  `~/Downloads/CodexSkin-PERSONAL-v1.5.6.dmg`.
+- [verified] Focused fail/pass coverage, Bash syntax, `git diff --check`, and
+  the full macOS suite pass, including Swift build and 10 XCTest cases. Signed
+  runtime integrations and Doctor remain explicit environment skips.
+- [pending] The user must quit Codex and replace the old Applications copy with
+  the verified personal DMG; re-check the installed/App CSS hash and visible
+  home/task result after restart.
+
 ## Personal Custom Engine (2026-07-28)
 
 - [complete] Branch `codex/custom-engine` was created from the clean
