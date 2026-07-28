@@ -22,8 +22,11 @@ Updated: 2026-07-28 (Asia/Shanghai)
   PowerShell tests remain for CI or a Windows host.
 - [complete] Added `CUSTOM_ENGINE.md` with the upstream merge and personal push
   workflow.
-- [pending] Commit the verified custom branch and publish it as `main` in the
-  independent `personal` repository (`YuxiangChai/Codex-Skin`).
+- [complete] Committed the verified custom engine as `e4e5735` and published
+  local `codex/custom-engine` as `personal/main` in the independent
+  `YuxiangChai/Codex-Skin` repository. The first empty-repository push used the
+  documented `[skip ci]` commit marker so the upstream release guard would not
+  fail on a missing predecessor; normal CI resumes on subsequent pushes.
 
 ## v1.5.1 Version Release (2026-07-25 08:28 HKT)
 
