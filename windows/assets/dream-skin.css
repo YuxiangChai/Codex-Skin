@@ -1176,6 +1176,20 @@ html[data-dream-skin="active"] button[class~="bg-token-foreground"] {
 html[data-dream-skin="active"] article,
 html[data-dream-skin="active"] [data-message-author-role] { border-radius: 16px; }
 
+/* Personal custom engine policy. */
+html[data-dream-skin="active"]
+  main.main-surface:not(:has([role="main"])) > header.app-header-tint::before,
+html[data-dream-skin="active"]
+  main.main-surface:not(:has([role="main"])) > header.app-header-tint::after,
+html[data-dream-skin="active"]
+  main.main-surface:has([role="main"])::after {
+  content: none !important;
+}
+
+html[data-dream-skin="active"] [role="main"]:has([data-testid="home-icon"]) .group\/home-suggestions {
+  display: none !important;
+}
+
 @media (max-width: 1120px) {
   html[data-dream-skin="active"]
     main.main-surface:has([role="main"])::after { content: none; }

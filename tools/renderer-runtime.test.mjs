@@ -261,6 +261,21 @@ export async function runRendererRuntimeTest(assetRoot) {
   assert.match(css, /content:\s*var\(--dream-skin-name[\s\S]{0,180}var\(--dream-skin-brand-subtitle/);
   assert.match(css, /content:\s*var\(--dream-skin-status/);
   assert.match(css, /content:\s*var\(--dream-skin-quote/);
+  const customPolicyMarker = "/* Personal custom engine policy. */";
+  const customPolicyOffset = css.indexOf(customPolicyMarker);
+  assert.notEqual(customPolicyOffset, -1,
+    "The personal engine policy must remain explicit and easy to rebase.");
+  const customPolicy = css.slice(customPolicyOffset);
+  assert.match(
+    customPolicy,
+    /header\.app-header-tint::before,[\s\S]{0,420}header\.app-header-tint::after,[\s\S]{0,420}main\.main-surface:has\(\[role="main"\]\)::after\s*\{\s*content:\s*none\s*!important;\s*\}/,
+    "Personal builds must suppress the task brand, status, and home quote pseudo-content.",
+  );
+  assert.match(
+    customPolicy,
+    /\[role="main"\]:has\(\[data-testid="home-icon"\]\)\s+\.group\\\/home-suggestions\s*\{\s*display:\s*none\s*!important;\s*\}/,
+    "Personal builds must hide the four native home recommendation cards.",
+  );
   assert.match(css, /--ds-task-full-veil/);
   assert.match(css, /data-dream-task-mode="full"/);
   assert.match(css, /background-image:\s*var\(--ds-task-full-veil\),\s*var\(--dream-skin-art\)/);
