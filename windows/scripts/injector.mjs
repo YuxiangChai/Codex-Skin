@@ -1145,7 +1145,7 @@ export async function verifySession(
         visible: Boolean(node.isConnected !== false && cssVisible && intersectsViewport),
       };
     };
-    const home = document.querySelector(${selectorLiteral("home-route")});
+    const home = document.querySelector(${selectorLiteral("home-route-css")});
     const settingsAnchor = document.querySelector(${selectorLiteral("appearance-radio")}) ||
       document.querySelector(${stableTestidLiteral("theme-preview")});
     const suggestions = home?.querySelector(${selectorLiteral("home-suggestions")}) ?? null;

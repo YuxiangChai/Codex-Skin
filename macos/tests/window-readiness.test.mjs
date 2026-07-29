@@ -56,6 +56,20 @@ const baseRenderer = {
 assert.equal(readyNativeWindow.status, "ready");
 assert.equal(assessRendererVerification(baseRenderer, readyNativeWindow, exactPayload).pass, true);
 
+const modernHomeRenderer = {
+  ...baseRenderer,
+  scope: { level: "L1", baseState: "home" },
+  homeRoute: true,
+  homePresent: true,
+  hero: { visible: true, width: 640, height: 360 },
+  visibleCardCount: 0,
+};
+assert.equal(
+  assessRendererVerification(modernHomeRenderer, readyNativeWindow, exactPayload).pass,
+  true,
+  "A verified 26.721+ home route must not require the retired home-icon or visible recommendation cards.",
+);
+
 const windowCalls = [];
 assert.equal((await inspectNativeWindow({
   target: { id: "target-main" },

@@ -1082,11 +1082,8 @@ async function verifySession(session, expectedThemeId = null, expectedRevision =
         visible: r.width > 0 && r.height > 0 && style.display !== 'none' && style.visibility !== 'hidden',
       };
     };
-    const homeIndicator = document.querySelector(${selectorLiteral("home-icon")});
-    const homeSignal = homeIndicator ?? document.querySelector(${selectorLiteral("game-source")}) ??
-      document.querySelector(${selectorLiteral("home-suggestions")});
-    const homeRoute = homeSignal?.closest('[role="main"]') ?? null;
-    const home = document.querySelector(${selectorLiteral("home-route")});
+    const home = document.querySelector(${selectorLiteral("home-route-css")});
+    const homeRoute = home;
     const suggestions = home?.querySelector(${selectorLiteral("home-suggestions")}) ?? null;
     const cardButtons = suggestions ? [...suggestions.querySelectorAll('button')] : [];
     const cardBoxes = cardButtons.map(box);

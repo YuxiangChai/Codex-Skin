@@ -27,7 +27,12 @@ function classList(initial) {
   };
 }
 
-function makeFixture({ nativeAppearance = "dark", settings = false, adopted = true } = {}) {
+function makeFixture({
+  nativeAppearance = "dark",
+  settings = false,
+  adopted = true,
+  modernHome = false,
+} = {}) {
   const attrs = new Map();
   const rootStyle = styleDeclaration();
   const rootClasses = classList([nativeAppearance === "dark" ? "electron-dark" : "electron-light"]);
@@ -82,6 +87,7 @@ function makeFixture({ nativeAppearance = "dark", settings = false, adopted = tr
     partFixtures.home = makeDomNode("home", partFixtures.main);
     partFixtures.homeHero = makeDomNode("home-hero", partFixtures.home);
     partFixtures.homeIcon = makeDomNode("home-icon", partFixtures.homeHero);
+    partFixtures.gameSource = makeDomNode("game-source", partFixtures.homeHero);
     partFixtures.projectList = makeDomNode("project-list", partFixtures.home);
     partFixtures.thread = makeDomNode("thread", partFixtures.main);
     partFixtures.message = makeDomNode("message", partFixtures.thread);
@@ -90,9 +96,12 @@ function makeFixture({ nativeAppearance = "dark", settings = false, adopted = tr
     register("aside.app-shell-left-panel", partFixtures.sidebar);
     register("main.main-surface", partFixtures.main);
     register("header.app-header-tint", partFixtures.header);
-    register('[data-testid="home-icon"]', partFixtures.homeIcon);
-    register('[role="main"]:has([data-testid="home-icon"])', partFixtures.home);
+    if (!modernHome) {
+      register('[data-testid="home-icon"]', partFixtures.homeIcon);
+      register('[role="main"]:has([data-testid="home-icon"])', partFixtures.home);
+    }
     register('[role="main"]', partFixtures.home);
+    register('[data-feature="game-source"]', partFixtures.gameSource);
     register(".group\\/project-selector", partFixtures.projectList);
     register(".thread-scroll-container", partFixtures.thread);
     register('[data-message-author-role]', partFixtures.message);
@@ -194,7 +203,8 @@ function makeFixture({ nativeAppearance = "dark", settings = false, adopted = tr
   };
   return {
     addDynamicMessage, attrs, context, document, domNodes, flushTimers, intervals, listeners,
-    nodes, observers, partFixtures, payloadFor, revoked, root, rootClasses, rootStyle, timers, window,
+    nodes, observers, partFixtures, payloadFor, revoked, root, rootClasses, rootStyle,
+    selectorNodes, timers, window,
   };
 }
 
@@ -273,8 +283,18 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     customPolicy,
-    /\[role="main"\]:has\(\[data-testid="home-icon"\]\)\s+\.group\\\/home-suggestions\s*\{\s*display:\s*none\s*!important;\s*\}/,
+    /\[role="main"\]\s+\.group\\\/home-suggestions\s*\{\s*display:\s*none\s*!important;\s*\}/,
     "Personal builds must hide the four native home recommendation cards.",
+  );
+  assert.match(
+    customPolicy,
+    /\[role="main"\]\s*>\s*div:first-child\s*>\s*div:has\(\.composer-surface-chrome\)\s*\{[\s\S]{0,220}justify-content:\s*flex-end\s*!important;/,
+    "Personal builds must bottom-align the native home composer row.",
+  );
+  assert.match(
+    customPolicy,
+    /\[role="main"\]\s+\[data-feature="game-source"\]::before\s*\{[\s\S]{0,220}content:\s*"Jarvis at your service"\s*!important;/,
+    "Personal builds must replace the native home heading without restoring engine brand text.",
   );
   assert.match(css, /--ds-task-full-veil/);
   assert.match(css, /data-dream-task-mode="full"/);
@@ -341,6 +361,26 @@ export async function runRendererRuntimeTest(assetRoot) {
     assert.equal(home.partFixtures[fixtureKey].getAttribute("data-ds-part"), part,
       `${part} must be exposed through the public Safe CSS bridge`);
   }
+
+  const modernHome = makeFixture({ nativeAppearance: "dark", modernHome: true });
+  vm.runInNewContext(modernHome.payloadFor(), modernHome.context);
+  const modernState = modernHome.window.__CODEX_DREAM_SKIN_STATE__;
+  assert.equal(modernState.scope.baseState, "home",
+    "Codex 26.721+ must detect the home route without the retired home-icon.");
+  assert.equal(modernState.scope.level, "L1");
+  assert.equal(modernHome.partFixtures.home.getAttribute("data-ds-part"), "home");
+  assert.equal(modernHome.partFixtures.homeHero.getAttribute("data-ds-part"), "home-hero");
+
+  const routeTransition = makeFixture({ nativeAppearance: "dark", modernHome: true });
+  routeTransition.selectorNodes.delete('[role="main"]');
+  vm.runInNewContext(routeTransition.payloadFor(), routeTransition.context);
+  assert.equal(routeTransition.window.__CODEX_DREAM_SKIN_STATE__.scope.baseState, "thread");
+  routeTransition.selectorNodes.set('[role="main"]', [routeTransition.partFixtures.home]);
+  const transitionObserver = routeTransition.observers.find((observer) => observer.options?.childList);
+  transitionObserver.callback([{ type: "childList" }]);
+  routeTransition.flushTimers(80);
+  assert.equal(routeTransition.window.__CODEX_DREAM_SKIN_STATE__.scope.baseState, "home",
+    "SPA DOM replacement must refresh route scope even when the app:// URL does not navigate.");
   const dynamicMessage = home.addDynamicMessage();
   partObserver.callback([{ type: "childList" }]);
   home.flushTimers(80);
@@ -419,15 +459,17 @@ export async function runRendererRuntimeTest(assetRoot) {
       `${variable} must support official hex forms and clamp RGB channels`);
   }
 
+  const routePassesBeforeAttribute = state.metrics.routePasses;
   rootObserver.callback([]);
   home.flushTimers(64);
-  assert.equal(state.metrics.routePasses, 1, "Attribute safety pass must not be a route pass");
+  assert.equal(state.metrics.routePasses, routePassesBeforeAttribute,
+    "Attribute safety pass must not be a route pass");
   const navigationHandler = home.listeners.get("navigation:navigate");
   assert.equal(typeof navigationHandler, "function");
   navigationHandler();
   home.flushTimers(180);
   assert.equal(state.metrics.navigationEvents, 1);
-  assert.equal(state.metrics.routePasses, 2);
+  assert.equal(state.metrics.routePasses, routePassesBeforeAttribute + 1);
 
   const settings = makeFixture({ nativeAppearance: "light", settings: true });
   vm.runInNewContext(settings.payloadFor(), settings.context);

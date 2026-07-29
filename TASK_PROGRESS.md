@@ -347,3 +347,18 @@ Updated: 2026-07-28 (Asia/Shanghai)
   approved `applyCompatible: true` package. Existing approved legacy
   production packages are intentionally preview/download-only.
 - Real Windows PowerShell 5.1 and Setup.exe protocol install require Windows CI/host verification.
+
+## 2026-07-29 — Codex 26.721.41059 apply verification and native home layout
+
+- Goal: stop the false “Injection verification failed” alert and keep the personal home policy (no brand text / no recommendation cards) while restoring the native bottom composer placement.
+- Branch: `codex/custom-engine` tracking `personal/main`.
+- Confirmed root cause: the active v1.5.6 payload, theme id, revision, adopted stylesheet, shell, sidebar, composer, viewport and native window all verify. The final check fails only because the selector contract still defines `home-route` as `[role="main"]:has([data-testid="home-icon"])`; Codex 26.721.41059 removed the old `home-icon` while retaining the home-only `[role="main"]` root.
+- Current work:
+  - [x] Collected live verifier output and relevant launcher/injector logs.
+  - [x] Added selector/verifier regression coverage for the new home root.
+  - [x] Added personal CSS regression coverage for the native bottom composer placement and the requested `Jarvis at your service` heading.
+  - [x] Implemented shared runtime changes and synced macOS/Windows assets.
+  - [x] Focused macOS/Windows Node tests, selector doctor, sync check, Swift tests and full macOS regression passed. The first full run hit a transient signed-runtime fixture exit; an immediate traced full rerun passed that fixture and the entire suite.
+  - [x] Applied the source payload to the live renderer and captured a visual smoke screenshot: home scope is L1, verification passes, recommendation cards are hidden, composer is at y=787 in a 949px viewport, and the utility bar ends at y=925.
+- Live-test note: the current renderer has the fixed source payload temporarily hot-loaded. Persistence across a ChatGPT restart still requires installing this branch's engine while ChatGPT is closed, or packaging this branch in a new app build.
+- Safety: no official app bundle, `app.asar`, signature, ACL, user data, or `~/.codex/logs_2.sqlite` is modified.

@@ -588,14 +588,15 @@
     addPart(desired, "sidebar", selectorNodes("left-panel"));
     addPart(desired, "main", selectorNodes("shell-main"));
     addPart(desired, "header", selectorNodes("header-tint"));
-    addPart(desired, "home", selectorNodes("home-route"));
+    addPart(desired, "home", selectorNodes("home-route-css"));
     addPart(desired, "project-list", selectorNodes("project-selector"));
     addPart(desired, "thread", selectorNodes("thread-surface"));
     addPart(desired, "message", selectorNodes("message"));
     addPart(desired, "composer", selectorNodes("composer-chrome"));
     addPart(desired, "composer-toolbar", selectorNodes("composer-toolbar"));
     addPart(desired, "dialog", selectorNodes("overlay-dialog"));
-    const homeHero = selectorNodes("home-icon")[0]?.parentElement;
+    const homeHero = selectorNodes("home-icon")[0]?.parentElement ??
+      selectorNodes("game-source")[0]?.parentElement;
     addPart(desired, "home-hero", homeHero ? [homeHero] : []);
 
     for (const node of partNodes) {
@@ -633,7 +634,7 @@
       selectorHit("overlay-popper");
     let baseState = "thread";
     if (selectorHit("appearance-radio") || stableTestidHit("theme-preview")) baseState = "settings";
-    else if (selectorHit("home-icon") || selectorHit("home-route")) baseState = "home";
+    else if (selectorHit("home-route-css")) baseState = "home";
     else if (!selectorHit("shell-main")) baseState = "settings";
     const missingL1 = SELECTOR_CONTRACT.selectors
       .filter((entry) => entry.tier === "L1" && entry.required &&
@@ -733,7 +734,10 @@
   };
   if (typeof MutationObserver === "function") {
     rootObserver = new MutationObserver(() => scheduleEnsure({ root: true }));
-    partObserver = new MutationObserver(() => scheduleEnsure({ parts: true }, 80));
+    // Codex keeps app://-/index.html while switching between home and tasks,
+    // so those transitions do not always emit Navigation API events. The
+    // part-tree mutation is the reliable route boundary on current builds.
+    partObserver = new MutationObserver(() => scheduleEnsure({ scope: true, parts: true }, 80));
   }
 
   let mediaQuery = null;

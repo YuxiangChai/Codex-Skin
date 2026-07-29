@@ -1186,8 +1186,41 @@ html[data-dream-skin="active"]
   content: none !important;
 }
 
-html[data-dream-skin="active"] __DREAM_SELECTOR_HOME_ROUTE__ __DREAM_SELECTOR_HOME_SUGGESTIONS__ {
+html[data-dream-skin="active"] __DREAM_SELECTOR_HOME_ROUTE_CSS__ __DREAM_SELECTOR_HOME_SUGGESTIONS__ {
   display: none !important;
+}
+
+html[data-dream-skin="active"] __DREAM_SELECTOR_HOME_ROUTE_CSS__ __DREAM_SELECTOR_GAME_SOURCE__ {
+  position: relative !important;
+  color: transparent !important;
+  text-shadow: none !important;
+}
+
+html[data-dream-skin="active"] __DREAM_SELECTOR_HOME_ROUTE_CSS__ __DREAM_SELECTOR_GAME_SOURCE__::before {
+  content: "Jarvis at your service" !important;
+  position: absolute;
+  inset: 0;
+  display: block !important;
+  margin: 0 !important;
+  color: var(--ds-text) !important;
+  font: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  text-align: inherit;
+  text-shadow: 0 1px 8px rgb(var(--ds-bg-rgb) / .48);
+}
+
+html[data-dream-skin="active"] __DREAM_SELECTOR_HOME_ROUTE_CSS__ __DREAM_SELECTOR_GAME_SOURCE__::after {
+  content: none !important;
+}
+
+/* Codex 26.721+ keeps the native composer in the second row of the home
+   grid. Preserve the native control and its utility bar, but anchor that row
+   to the bottom after the recommendation section is removed. */
+html[data-dream-skin="active"] __DREAM_SELECTOR_HOME_ROUTE_CSS__
+  > div:first-child > div:has(__DREAM_SELECTOR_COMPOSER_CHROME__) {
+  margin-top: 0 !important;
+  justify-content: flex-end !important;
 }
 
 @media (max-width: 1120px) {
