@@ -399,4 +399,12 @@ Updated: 2026-07-28 (Asia/Shanghai)
     remains intentionally skipped in the suite because it requires the
     installed signed client and was not needed for this CSS-only renderer
     change.
-  - [ ] Commit/push, CI and public Release verification.
+  - [x] Pushed release commit `49665a9`; CI and Release workflows passed.
+  - [x] Public Release `v1.5.8` was published from exact commit `49665a9`
+    with non-empty DMG (3,350,526 bytes), Windows Setup
+    (24,463,409 bytes), and `SHA256SUMS.txt`.
+  - [x] Independently downloaded the DMG and matched SHA-256
+    `c0319306d927be8506a5c12945d869d79d43bcdc6dfdedcb18f8b30a50d7ec5f`;
+    its read-only mount, code signature, bundled `1.5.8` engine and native
+    composer policy all passed. The Windows asset begins with the expected
+    `MZ` executable magic.
