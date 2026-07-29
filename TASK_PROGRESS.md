@@ -439,8 +439,8 @@ Updated: 2026-07-28 (Asia/Shanghai)
     release for each iteration.
   - [x] Added bounded, checksum-verified installer download to the personal
     release channel from the existing update menu.
-  - [ ] Run the final dual-platform tests, push, and let Windows CI perform the
-    PowerShell 5.1/7 gates.
+  - [x] Ran the final dual-platform tests, pushed commit `8e3ea9c`, and passed
+    the Windows PowerShell 5.1/7 CI gates.
 - Live renderer evidence:
   - Chat shows `Jarvis at your service`; the native pill composer is
     x=576/y=881/w=640/h=44 in a 1512x949 viewport.
@@ -464,7 +464,15 @@ Updated: 2026-07-28 (Asia/Shanghai)
   - Full macOS regression passes outside the enclosing sandbox, including the
     native Swift build and all 10 XCTest cases.
   - Windows updater and installer tests are prepared; this macOS host has no
-    `powershell.exe` or `pwsh`, so executable Windows verification remains a CI
-    gate.
+    `powershell.exe` or `pwsh`; GitHub CI run `30459877021` passed macOS,
+    static, Windows PowerShell 7 and Windows PowerShell 5.1 jobs.
+- Publication state:
+  - Commit `8e3ea9c` is pushed to `personal/main`.
+  - No version source changed. The Release workflow completed without
+    publishing a new package, and the latest public version remains v1.5.8.
+  - The current live renderer has the source payload hot-loaded. Persistent
+    local installation still requires closing this ChatGPT / Codex task and
+    running `tools/apply-local-development-engine-macos.sh`; doing so during
+    this task would terminate the active conversation.
 - Safety: no official app bundle, `app.asar`, signature, ACL, user data or
   `~/.codex/logs_2.sqlite` is modified.
