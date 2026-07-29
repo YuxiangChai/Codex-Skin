@@ -362,3 +362,7 @@ Updated: 2026-07-28 (Asia/Shanghai)
   - [x] Applied the source payload to the live renderer and captured a visual smoke screenshot: home scope is L1, verification passes, recommendation cards are hidden, composer is at y=787 in a 949px viewport, and the utility bar ends at y=925.
 - Live-test note: the current renderer has the fixed source payload temporarily hot-loaded. Persistence across a ChatGPT restart still requires installing this branch's engine while ChatGPT is closed, or packaging this branch in a new app build.
 - Safety: no official app bundle, `app.asar`, signature, ACL, user data, or `~/.codex/logs_2.sqlite` is modified.
+- Release preparation:
+  - [x] Bumped all six platform version sources and bound assertions to `1.5.7`.
+  - [x] Full macOS suite passed with its built-in Doctor skip because the terminal test runner hides the active Codex renderer; the same v1.5.7 Doctor passed independently when Codex returned to a verifiable state.
+  - [ ] Push the v1.5.7 release commit, wait for CI/Release, and verify the public DMG, Setup.exe and SHA256SUMS assets.

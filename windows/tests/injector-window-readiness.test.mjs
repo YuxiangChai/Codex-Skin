@@ -13,7 +13,7 @@ const selectors = {
   shell: "main.main-surface",
   sidebar: "aside.app-shell-left-panel",
   composer: ".composer-surface-chrome",
-  home: '[role="main"]:has([data-testid="home-icon"])',
+  home: '[role="main"]',
   settings: 'input[name="appearance-theme"]',
   themePreview: '[data-testid="theme-preview"]',
 };
@@ -83,7 +83,7 @@ function makeDomFixture({
   };
   const window = {
     __CODEX_DREAM_SKIN_STATE__: {
-      version: "1.5.6",
+      version: "1.5.7",
       themeId: "fixture-theme",
       revision: "fixture-revision",
       styleMode: "style",
