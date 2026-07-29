@@ -1,0 +1,11 @@
+{
+  "tag_name": "v9.8.7",
+  "assets": [
+    {
+      "name": "CodexDreamSkin-Setup-v9.8.7.exe",
+      "browser_download_url": "https://github.com/YuxiangChai/Codex-Skin/releases/download/v9.8.7/CodexDreamSkin-Setup-v9.8.7.exe",
+      "size": 24463409,
+      "digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    }
+  ]
+}

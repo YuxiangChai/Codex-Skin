@@ -1214,6 +1214,33 @@ html[data-dream-skin="active"] [role="main"] [data-feature="game-source"]::after
   content: none !important;
 }
 
+/* Chat mode uses a visible h1 plus an invisible sizing/accessibility twin
+   instead of Work mode's game-source heading. Replace only the visible h1 so
+   both home modes share one greeting without disturbing native semantics. */
+html[data-dream-skin="active"]
+  [role="main"]:not(:has([data-feature="game-source"]))
+  h1.heading-xl:not(.invisible) {
+  position: relative !important;
+  color: transparent !important;
+  text-shadow: none !important;
+}
+
+html[data-dream-skin="active"]
+  [role="main"]:not(:has([data-feature="game-source"]))
+  h1.heading-xl:not(.invisible)::before {
+  content: "Jarvis at your service" !important;
+  position: absolute;
+  inset: 0;
+  display: block !important;
+  margin: 0 !important;
+  color: var(--ds-text) !important;
+  font: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  text-align: inherit;
+  text-shadow: 0 1px 8px rgb(var(--ds-bg-rgb) / .48);
+}
+
 /* Codex 26.721+ keeps the native composer in the second row of the home
    grid. Preserve the native control and its utility bar, but anchor that row
    to the bottom after the recommendation section is removed. */

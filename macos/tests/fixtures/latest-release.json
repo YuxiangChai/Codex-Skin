@@ -1,4 +1,12 @@
 {
   "tag_name": "v9.8.7",
-  "html_url": "https://example.invalid/ignored"
+  "html_url": "https://example.invalid/ignored",
+  "assets": [
+    {
+      "name": "CodexDreamSkin-v9.8.7.dmg",
+      "size": 3350526,
+      "browser_download_url": "https://github.com/YuxiangChai/Codex-Skin/releases/download/v9.8.7/CodexDreamSkin-v9.8.7.dmg",
+      "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  ]
 }

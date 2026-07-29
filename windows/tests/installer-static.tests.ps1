@@ -8,10 +8,11 @@ $definitionPath = Join-Path $installerRoot 'codex-dream-skin.iss'
 $builderPath = Join-Path $installerRoot 'build-release.ps1'
 $bootstrapPath = Join-Path $installerRoot 'setup-bootstrap.ps1'
 $communityApplyPath = Join-Path $windowsRoot 'scripts\apply-community-theme.ps1'
+$checkUpdatePath = Join-Path $windowsRoot 'scripts\check-update.ps1'
 $manifestPath = Join-Path $installerRoot 'node-runtime.json'
 $builderAst = $null
 
-foreach ($scriptPath in @($builderPath, $bootstrapPath, $communityApplyPath)) {
+foreach ($scriptPath in @($builderPath, $bootstrapPath, $communityApplyPath, $checkUpdatePath)) {
   if (-not (Test-Path -LiteralPath $scriptPath -PathType Leaf)) {
     throw "Required installer PowerShell does not exist: $scriptPath"
   }
@@ -178,6 +179,27 @@ foreach ($requiredRepairContract in @(
   if (-not $bootstrap.Contains($requiredRepairContract)) {
     throw "Installer same-version repair coverage is missing: $requiredRepairContract"
   }
+}
+
+$checkUpdate = [System.IO.File]::ReadAllText(
+  (Join-Path (Split-Path -Parent $installerRoot) 'scripts\check-update.ps1'),
+  [System.Text.UTF8Encoding]::new($false)
+)
+foreach ($requiredUpdateContract in @(
+  'YuxiangChai/Codex-Skin',
+  'CodexDreamSkin-Setup-v',
+  'browser_download_url',
+  'ResponseHeadersRead',
+  'Get-FileHash',
+  'SHA256',
+  'Start-Process -FilePath $installerPath'
+)) {
+  if (-not $checkUpdate.Contains($requiredUpdateContract)) {
+    throw "Windows update downloader is missing a required contract: $requiredUpdateContract"
+  }
+}
+if (-not $definition.Contains('AppUpdatesURL=https://github.com/YuxiangChai/Codex-Skin/releases')) {
+  throw 'Windows installer update URL does not target the personal release channel.'
 }
 
 foreach ($requiredUninstallBinding in @(

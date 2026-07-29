@@ -47,6 +47,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     "scripts/check-update-macos.sh",
     "scripts/common-macos.sh",
     "scripts/customize-theme-macos.sh",
+    "scripts/download-update-macos.sh",
     "scripts/doctor-macos.sh",
     "scripts/extract-theme-zip-macos.sh",
     "scripts/image-metadata.mjs",
@@ -984,16 +985,42 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
       if available {
         let alert = NSAlert()
         alert.messageText = "发现新版本 \(latest)"
-        alert.informativeText = "当前版本为 \(current)。是否前往 GitHub Releases 下载？"
-        alert.addButton(withTitle: "前往下载")
+        alert.informativeText = "当前版本为 \(current)。Dream Skin 可以直接下载、校验并打开安装包。"
+        alert.addButton(withTitle: "下载并打开安装包")
         alert.addButton(withTitle: "稍后")
         self.activateForUserInteraction()
-        if alert.runModal() == .alertFirstButtonReturn,
-           let url = URL(string: "https://github.com/Fei-Away/Codex-Dream-Skin/releases/latest") {
-          NSWorkspace.shared.open(url)
+        if alert.runModal() == .alertFirstButtonReturn {
+          self.downloadAndOpenUpdate()
         }
       } else {
         self.showInfo(title: "已是最新版本", message: "当前安装的是 \(current)。")
+      }
+    }
+  }
+
+  private func downloadAndOpenUpdate() {
+    guard !operationInFlight,
+          let script = installedScript(named: "download-update-macos.sh")
+            ?? bundledScript(named: "download-update-macos.sh") else {
+      showError(title: "无法下载更新", message: "更新下载脚本缺失，请从个人 Release 页面手动下载。")
+      return
+    }
+    operationInFlight = true
+    rebuildMenu()
+    ScriptRunner.run(script: script) { [weak self] result in
+      guard let self else { return }
+      self.operationInFlight = false
+      self.rebuildMenu()
+      if result.succeeded {
+        self.showInfo(
+          title: "安装包已校验并打开",
+          message: "把 DMG 里的 Codex Dream Skin 拖到“应用程序”并选择替换；主题和图片会保留。"
+        )
+      } else {
+        self.showError(
+          title: "下载更新失败",
+          message: self.conciseOutput(result.output, fallback: "无法下载或校验安装包，请稍后重试。")
+        )
       }
     }
   }

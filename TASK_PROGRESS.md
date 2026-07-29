@@ -408,3 +408,63 @@ Updated: 2026-07-28 (Asia/Shanghai)
     its read-only mount, code signature, bundled `1.5.8` engine and native
     composer policy all passed. The Windows asset begins with the expected
     `MZ` executable magic.
+
+## 2026-07-29 — Unified Chat/Work home and simpler updates
+
+- Goals:
+  - show `Jarvis at your service` on both Chat and Work home modes;
+  - keep both native composers at their original 640px width and anchor them
+    at the bottom;
+  - stop requiring a GitHub release for every local CSS iteration;
+  - make the menu-bar/tray “Check for updates” action use the personal release
+    channel and download the verified installer directly.
+- Branch: `codex/custom-engine` tracking `personal/main`.
+- Confirmed live DOM:
+  - Work home uses `[data-feature="game-source"]`, a 640x98 composer and a
+    native utility bar.
+  - Chat home has no game-source; it uses a visible `h1.heading-xl`, a 640x44
+    pill composer and no utility bar.
+  - The existing v1.5.8 bottom-row rule already moves both modes to the bottom
+    without setting their width. Only the Chat heading replacement is missing.
+- Confirmed persistence/update causes:
+  - the source injector hot-load is renderer-session-only; reopening ChatGPT
+    lets the installed engine take over again;
+  - the installed updater is hard-coded to the upstream repository and only
+    opens the GitHub release page.
+- Current work:
+  - [x] Collected live Chat and Work home geometry/structure.
+  - [x] Added dual-home CSS regression and implementation, synced macOS and
+    Windows generated assets, and hot-loaded the source payload.
+  - [x] Added a source-development apply workflow that does not require a
+    release for each iteration.
+  - [x] Added bounded, checksum-verified installer download to the personal
+    release channel from the existing update menu.
+  - [ ] Run the final dual-platform tests, push, and let Windows CI perform the
+    PowerShell 5.1/7 gates.
+- Live renderer evidence:
+  - Chat shows `Jarvis at your service`; the native pill composer is
+    x=576/y=881/w=640/h=44 in a 1512x949 viewport.
+  - Work shows the same greeting; the native composer is
+    x=576/y=787/w=640/h=98 and its utility bar ends at y=925.
+  - Screenshots are `/tmp/dream-skin-chat-home.png` and
+    `/tmp/dream-skin-work-home.png`.
+- Update/development evidence:
+  - The real personal v1.5.8 GitHub response resolves the exact 3,350,526-byte
+    DMG and SHA-256
+    `c0319306d927be8506a5c12945d869d79d43bcdc6dfdedcb18f8b30a50d7ec5f`.
+  - An end-to-end v1.5.7-to-v1.5.8 download-only smoke fetched the DMG into the
+    private update directory and verified both bytes and SHA-256 without
+    opening it.
+  - The local development helper safely refuses to install while ChatGPT /
+    Codex is running. A persistence smoke must wait until this active task is
+    closed so the app can be quit without terminating the conversation.
+- Verification so far:
+  - Shared asset synchronization check and focused macOS/Windows renderer
+    tests pass.
+  - Full macOS regression passes outside the enclosing sandbox, including the
+    native Swift build and all 10 XCTest cases.
+  - Windows updater and installer tests are prepared; this macOS host has no
+    `powershell.exe` or `pwsh`, so executable Windows verification remains a CI
+    gate.
+- Safety: no official app bundle, `app.asar`, signature, ACL, user data or
+  `~/.codex/logs_2.sqlite` is modified.

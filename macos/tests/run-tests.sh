@@ -76,8 +76,9 @@ fi
 /usr/bin/grep -F -q 'recovery/community-*/active-before' \
   "$ROOT/scripts/switch-theme-macos.sh"
 /usr/bin/grep -F -q 'CFBundleURLTypes.0.CFBundleURLSchemes.0' "$ROOT/scripts/build-dmg.sh"
-for required_runtime in apply-community-theme-macos.sh snapshot-active-theme-macos.sh \
-  theme-content-fingerprint.mjs theme-switch-lock-macos.sh; do
+for required_runtime in apply-community-theme-macos.sh download-update-macos.sh \
+  snapshot-active-theme-macos.sh theme-content-fingerprint.mjs \
+  theme-switch-lock-macos.sh; do
   /usr/bin/grep -F -q "$required_runtime" "$ROOT/scripts/build-dmg.sh"
 done
 UPDATE_JSON="$({
@@ -88,8 +89,22 @@ UPDATE_JSON="$({
   const value = JSON.parse(process.argv[1]);
   if (value.currentVersion !== "v1.5.8" || value.latestVersion !== "v9.8.7") process.exit(1);
   if (!value.updateAvailable) process.exit(1);
-  if (value.releaseUrl !== "https://github.com/Fei-Away/Codex-Dream-Skin/releases/latest") process.exit(1);
+  if (value.releaseUrl !== "https://github.com/YuxiangChai/Codex-Skin/releases/latest") process.exit(1);
+  if (value.assetName !== "CodexDreamSkin-v9.8.7.dmg") process.exit(1);
+  if (value.assetUrl !== "https://github.com/YuxiangChai/Codex-Skin/releases/download/v9.8.7/CodexDreamSkin-v9.8.7.dmg") process.exit(1);
+  if (value.assetBytes !== 3350526) process.exit(1);
+  if (value.assetSha256 !== "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa") process.exit(1);
 ' "$UPDATE_JSON"
+/usr/bin/grep -F -q '"scripts/download-update-macos.sh"' \
+  "$ROOT/menubar-app/Sources/CodexDreamSkinMenuBar/AppDelegate.swift"
+/usr/bin/grep -F -q '下载并打开安装包' \
+  "$ROOT/menubar-app/Sources/CodexDreamSkinMenuBar/AppDelegate.swift"
+/usr/bin/grep -F -q 'YuxiangChai/Codex-Skin' "$ROOT/scripts/check-update-macos.sh"
+/usr/bin/grep -F -q -- '--max-filesize 1048576' "$ROOT/scripts/check-update-macos.sh"
+/usr/bin/grep -F -q 'shasum -a 256' "$ROOT/scripts/download-update-macos.sh"
+/usr/bin/grep -F -q 'plutil -convert binary1 -o /dev/null' \
+  "$ROOT/scripts/download-update-macos.sh"
+/usr/bin/grep -F -q -- '--download-only' "$ROOT/scripts/download-update-macos.sh"
 if /usr/bin/grep -R -n -E --exclude-dir='.build' \
   'xattr|spctl[[:space:]]+--master-disable' \
   "$ROOT/menubar-app" "$ROOT/scripts/build-menubar-app.sh" "$ROOT/scripts/build-dmg.sh" >/dev/null; then

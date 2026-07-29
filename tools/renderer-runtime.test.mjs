@@ -311,6 +311,16 @@ export async function runRendererRuntimeTest(assetRoot) {
     /\[role="main"\]\s+\[data-feature="game-source"\]::before\s*\{[\s\S]{0,220}content:\s*"Jarvis at your service"\s*!important;/,
     "Personal builds must replace the native home heading without restoring engine brand text.",
   );
+  assert.match(
+    customPolicy,
+    /\[role="main"\]:not\(:has\(\[data-feature="game-source"\]\)\)\s+h1\.heading-xl:not\(\.invisible\)\s*\{[\s\S]{0,220}position:\s*relative\s*!important;[\s\S]{0,220}color:\s*transparent\s*!important;/,
+    "Personal builds must target the visible Chat home heading without hiding its accessible duplicate.",
+  );
+  assert.match(
+    customPolicy,
+    /\[role="main"\]:not\(:has\(\[data-feature="game-source"\]\)\)\s+h1\.heading-xl:not\(\.invisible\)::before\s*\{[\s\S]{0,220}content:\s*"Jarvis at your service"\s*!important;/,
+    "Personal builds must give Chat and Work the same visible Jarvis heading.",
+  );
   assert.match(css, /--ds-task-full-veil/);
   assert.match(css, /data-dream-task-mode="full"/);
   assert.match(css, /background-image:\s*var\(--ds-task-full-veil\),\s*var\(--dream-skin-art\)/);

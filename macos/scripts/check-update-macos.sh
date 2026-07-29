@@ -3,7 +3,7 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
 VERSION_PATH="$ROOT/VERSION"
-REPOSITORY="Fei-Away/Codex-Dream-Skin"
+REPOSITORY="YuxiangChai/Codex-Skin"
 RELEASE_URL="https://github.com/$REPOSITORY/releases/latest"
 JSON="false"
 INTERACTIVE="false"
@@ -61,6 +61,7 @@ if [ -n "${CODEX_DREAM_SKIN_TEST_RESPONSE_FILE:-}" ]; then
 else
   /usr/bin/curl --proto '=https' --tlsv1.2 --fail --silent --show-error \
     --connect-timeout 5 --max-time 12 \
+    --max-filesize 1048576 \
     --header 'Accept: application/vnd.github+json' \
     --header 'X-GitHub-Api-Version: 2022-11-28' \
     --user-agent 'CodexDreamSkin-UpdateCheck' \
@@ -76,6 +77,30 @@ LATEST_TAG="$(/usr/bin/plutil -extract tag_name raw -o - "$RESPONSE" 2>/dev/null
 [ -n "$LATEST_TAG" ] || fail "GitHub response does not contain a release tag."
 LATEST_VERSION="$(normalize_version "$LATEST_TAG")" \
   || fail "GitHub returned an unsupported release tag: $LATEST_TAG"
+ASSET_NAME="CodexDreamSkin-v${LATEST_VERSION}.dmg"
+ASSET_URL_EXPECTED="https://github.com/${REPOSITORY}/releases/download/v${LATEST_VERSION}/${ASSET_NAME}"
+ASSET_URL=""
+ASSET_BYTES=""
+ASSET_SHA256=""
+ASSET_INDEX=0
+while [ "$ASSET_INDEX" -lt 64 ]; do
+  CANDIDATE_NAME="$(/usr/bin/plutil -extract "assets.${ASSET_INDEX}.name" raw -o - "$RESPONSE" 2>/dev/null || true)"
+  if [ "$CANDIDATE_NAME" = "$ASSET_NAME" ]; then
+    ASSET_URL="$(/usr/bin/plutil -extract "assets.${ASSET_INDEX}.browser_download_url" raw -o - "$RESPONSE" 2>/dev/null || true)"
+    ASSET_BYTES="$(/usr/bin/plutil -extract "assets.${ASSET_INDEX}.size" raw -o - "$RESPONSE" 2>/dev/null || true)"
+    ASSET_DIGEST="$(/usr/bin/plutil -extract "assets.${ASSET_INDEX}.digest" raw -o - "$RESPONSE" 2>/dev/null || true)"
+    ASSET_SHA256="${ASSET_DIGEST#sha256:}"
+    break
+  fi
+  ASSET_INDEX=$((ASSET_INDEX + 1))
+done
+[ "$ASSET_URL" = "$ASSET_URL_EXPECTED" ] \
+  || fail "GitHub release does not contain the expected macOS installer."
+case "$ASSET_BYTES" in ''|*[!0-9]*) fail "GitHub returned an invalid installer size." ;; esac
+[ "$ASSET_BYTES" -gt 0 ] && [ "$ASSET_BYTES" -le 134217728 ] \
+  || fail "GitHub returned an unsupported installer size."
+printf '%s' "$ASSET_SHA256" | /usr/bin/grep -Eq '^[0-9a-f]{64}$' \
+  || fail "GitHub release does not contain a valid installer digest."
 
 UPDATE_AVAILABLE="false"
 if version_is_newer "$LATEST_VERSION" "$CURRENT_VERSION"; then
@@ -83,8 +108,9 @@ if version_is_newer "$LATEST_VERSION" "$CURRENT_VERSION"; then
 fi
 
 if [ "$JSON" = "true" ]; then
-  printf '{"currentVersion":"v%s","latestVersion":"v%s","updateAvailable":%s,"releaseUrl":"%s"}\n' \
-    "$CURRENT_VERSION" "$LATEST_VERSION" "$UPDATE_AVAILABLE" "$RELEASE_URL"
+  printf '{"currentVersion":"v%s","latestVersion":"v%s","updateAvailable":%s,"releaseUrl":"%s","assetName":"%s","assetUrl":"%s","assetBytes":%s,"assetSha256":"%s"}\n' \
+    "$CURRENT_VERSION" "$LATEST_VERSION" "$UPDATE_AVAILABLE" "$RELEASE_URL" \
+    "$ASSET_NAME" "$ASSET_URL" "$ASSET_BYTES" "$ASSET_SHA256"
 fi
 
 if [ "$INTERACTIVE" = "true" ]; then
@@ -92,12 +118,12 @@ if [ "$INTERACTIVE" = "true" ]; then
     if /usr/bin/osascript - "v$LATEST_VERSION" "v$CURRENT_VERSION" <<'APPLESCRIPT' >/dev/null
 on run argv
   display dialog "发现新版本 " & (item 1 of argv) & return & return & \
-    "当前版本为 " & (item 2 of argv) & "。" buttons {"稍后", "前往下载"} \
-    default button "前往下载" with title "Codex Dream Skin"
+    "当前版本为 " & (item 2 of argv) & "。" buttons {"稍后", "下载并打开安装包"} \
+    default button "下载并打开安装包" with title "Codex Dream Skin"
 end run
 APPLESCRIPT
     then
-      /usr/bin/open "$RELEASE_URL"
+      "$ROOT/scripts/download-update-macos.sh"
     fi
   else
     /usr/bin/osascript - "v$CURRENT_VERSION" <<'APPLESCRIPT' >/dev/null

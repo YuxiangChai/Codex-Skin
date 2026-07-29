@@ -91,6 +91,7 @@ RUNTIME_SCRIPTS=(
   check-update-macos.sh
   common-macos.sh
   customize-theme-macos.sh
+  download-update-macos.sh
   doctor-macos.sh
   extract-theme-zip-macos.sh
   image-metadata.mjs

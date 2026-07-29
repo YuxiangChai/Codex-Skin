@@ -10,6 +10,28 @@ $temporaryRoot = Join-Path ([System.IO.Path]::GetTempPath()) "codex-dream-skin-t
 New-Item -ItemType Directory -Path $temporaryRoot | Out-Null
 
 try {
+  $previousUpdateFixture = $env:CODEX_DREAM_SKIN_TEST_RESPONSE_FILE
+  try {
+    $env:CODEX_DREAM_SKIN_TEST_RESPONSE_FILE = Join-Path `
+      $PSScriptRoot 'fixtures\latest-release.json'
+    $updateJson = & (Join-Path $Root 'scripts\check-update.ps1') -Json
+    $updateResult = "$updateJson" | ConvertFrom-Json
+    if ($updateResult.currentVersion -cne 'v1.5.8' -or
+      $updateResult.latestVersion -cne 'v9.8.7' -or
+      -not $updateResult.updateAvailable -or
+      $updateResult.releaseUrl -cne 'https://github.com/YuxiangChai/Codex-Skin/releases/latest' -or
+      $updateResult.assetName -cne 'CodexDreamSkin-Setup-v9.8.7.exe' -or
+      $updateResult.assetUrl -cne
+        'https://github.com/YuxiangChai/Codex-Skin/releases/download/v9.8.7/CodexDreamSkin-Setup-v9.8.7.exe' -or
+      [long]$updateResult.assetBytes -ne 24463409L -or
+      $updateResult.assetSha256 -cne
+        'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb') {
+      throw 'Windows personal release update metadata validation failed.'
+    }
+  } finally {
+    $env:CODEX_DREAM_SKIN_TEST_RESPONSE_FILE = $previousUpdateFixture
+  }
+
   $runtimeSourceName = 'runtime source ' + (-join @([char]0x6D4B, [char]0x8BD5))
   $runtimeSourceRoot = Join-Path $temporaryRoot $runtimeSourceName
   $runtimeStateRoot = Join-Path $temporaryRoot 'runtime-state'
@@ -1213,6 +1235,20 @@ try {
   foreach ($requiredReleaseAction in @('check-update.ps1', '检查更新', '打开 DreamSkin.cc', '登录时启动')) {
     if (-not $traySource.Contains($requiredReleaseAction)) {
       throw "Tray release action is missing: $requiredReleaseAction"
+    }
+  }
+  $updateSource = Read-DreamSkinUtf8File -Path (Join-Path $Root 'scripts\check-update.ps1')
+  foreach ($requiredUpdateContract in @(
+    'YuxiangChai/Codex-Skin',
+    'CodexDreamSkin-Setup-v',
+    'browser_download_url',
+    'ResponseHeadersRead',
+    'Get-FileHash',
+    'SHA256',
+    'Start-Process -FilePath $installerPath'
+  )) {
+    if (-not $updateSource.Contains($requiredUpdateContract)) {
+      throw "Windows update downloader is missing: $requiredUpdateContract"
     }
   }
   $trayTokens = $null
