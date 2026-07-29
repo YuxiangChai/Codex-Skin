@@ -365,4 +365,6 @@ Updated: 2026-07-28 (Asia/Shanghai)
 - Release preparation:
   - [x] Bumped all six platform version sources and bound assertions to `1.5.7`.
   - [x] Full macOS suite passed with its built-in Doctor skip because the terminal test runner hides the active Codex renderer; the same v1.5.7 Doctor passed independently when Codex returned to a verifiable state.
-  - [ ] Push the v1.5.7 release commit, wait for CI/Release, and verify the public DMG, Setup.exe and SHA256SUMS assets.
+  - [x] Pushed release commit `147ae9f`; CI passed static, macOS, Windows PowerShell 5.1 and PowerShell 7 jobs.
+  - [x] Public Release `v1.5.7` published from exact commit `147ae9f` with non-empty `CodexDreamSkin-v1.5.7.dmg` (3,350,075 bytes), `CodexDreamSkin-Setup-v1.5.7.exe` (24,463,567 bytes), and `SHA256SUMS.txt`.
+  - [x] Independently downloaded the DMG and matched SHA-256 `20e1dda96b6395a3321d4761e7e817b92bf42847e79ed6dab4805d7b3174dc86`; read-only mount, app code-signature check, bundled engine version `1.5.7`, personal policy marker, and `Jarvis at your service` payload all passed. Windows asset begins with the expected `MZ` executable magic; the Release validation job verified the published asset set and checksums.
