@@ -368,3 +368,35 @@ Updated: 2026-07-28 (Asia/Shanghai)
   - [x] Pushed release commit `147ae9f`; CI passed static, macOS, Windows PowerShell 5.1 and PowerShell 7 jobs.
   - [x] Public Release `v1.5.7` published from exact commit `147ae9f` with non-empty `CodexDreamSkin-v1.5.7.dmg` (3,350,075 bytes), `CodexDreamSkin-Setup-v1.5.7.exe` (24,463,567 bytes), and `SHA256SUMS.txt`.
   - [x] Independently downloaded the DMG and matched SHA-256 `20e1dda96b6395a3321d4761e7e817b92bf42847e79ed6dab4805d7b3174dc86`; read-only mount, app code-signature check, bundled engine version `1.5.7`, personal policy marker, and `Jarvis at your service` payload all passed. Windows asset begins with the expected `MZ` executable magic; the Release validation job verified the published asset set and checksums.
+
+## 2026-07-29 — Restore native home composer chrome
+
+- Goal: restore the official Codex home composer surface while retaining the
+  personal 640px width and bottom alignment.
+- Branch: `codex/custom-engine` tracking `personal/main`.
+- Evidence:
+  - [x] Compared the skinned and unskinned live Codex 26.721.41059 composer.
+    Native geometry is 640x98 with a 614x40 inset utility bar; native chrome
+    uses the host radius, elevation, blur and appearance color tokens.
+  - [x] Added a personal-policy regression that rejects the themed joined
+    panel and requires the native composer/utility tokens without widening the
+    composer.
+  - [x] Synced the canonical runtime to macOS and Windows; both focused
+    renderer tests pass.
+  - [x] Hot-loaded the source payload into the live home renderer. Exact
+    verification passes, the composer remains x=576/y=787/w=640/h=98 in the
+    1512x949 viewport, and the utility bar is inset at x=589/w=614.
+  - [x] Captured visual smoke evidence at
+    `/tmp/codex-dream-skin-native-composer.png`.
+- Safety: the official app bundle, `app.asar`, signature, ACL, user data and
+  `~/.codex/logs_2.sqlite` remain untouched.
+- Remaining: full regression, version preparation, push, CI and public Release.
+- Release preparation:
+  - [x] Bumped all six platform version sources and bound assertions to
+    `1.5.8`; the version consistency check passes.
+  - [x] Portable macOS/Windows Node regressions pass (71 tests).
+  - [x] Full macOS regression passes, including Swift package tests; Doctor
+    remains intentionally skipped in the suite because it requires the
+    installed signed client and was not needed for this CSS-only renderer
+    change.
+  - [ ] Commit/push, CI and public Release verification.

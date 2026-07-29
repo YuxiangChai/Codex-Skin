@@ -1223,6 +1223,52 @@ html[data-dream-skin="active"] [role="main"]
   justify-content: flex-end !important;
 }
 
+/* Keep the compact home width, but restore Codex's native composer chrome.
+   These rules intentionally use Codex's own design tokens so light/dark
+   appearance changes continue to follow the host application. */
+html[data-dream-skin="active"] body
+  [role="main"]:has([class*="_homeUtilityBar_"])
+  .composer-surface-chrome {
+  --tw-backdrop-blur: blur(var(--blur-lg));
+  background-color: color-mix(in oklab, var(--color-token-input-background) 90%, transparent) !important;
+  border: 0 solid transparent !important;
+  border-radius: var(--radius-3xl) !important;
+  box-shadow: var(--elevation-prominent) !important;
+  backdrop-filter:
+    var(--tw-backdrop-blur,)
+    var(--tw-backdrop-brightness,)
+    var(--tw-backdrop-contrast,)
+    var(--tw-backdrop-grayscale,)
+    var(--tw-backdrop-hue-rotate,)
+    var(--tw-backdrop-invert,)
+    var(--tw-backdrop-opacity,)
+    var(--tw-backdrop-saturate,)
+    var(--tw-backdrop-sepia,) !important;
+}
+
+html[data-dream-skin="active"][data-dream-shell="dark"] body
+  [role="main"]:has([class*="_homeUtilityBar_"])
+  .composer-surface-chrome {
+  background-color: var(--color-token-input-background) !important;
+}
+
+html[data-dream-skin="active"] body
+  [role="main"] [class*="_homeUtilityBar_"] {
+  top: auto !important;
+  width: auto !important;
+  margin-inline: var(--home-composer-inline-inset) !important;
+  padding-inline: calc(var(--spacing) * 1.5) !important;
+  border-radius: 0 0 var(--radius-2xl) var(--radius-2xl) !important;
+  background-color: var(--color-token-side-bar-background) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+html[data-dream-skin="active"][data-dream-shell="dark"] body
+  [role="main"] [class*="_homeUtilityBar_"] {
+  background-color: var(--color-token-bg-fog) !important;
+}
+
 @media (max-width: 1120px) {
   html[data-dream-skin="active"]
     main.main-surface:has([role="main"])::after { content: none; }

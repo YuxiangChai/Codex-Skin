@@ -293,6 +293,21 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     customPolicy,
+    /\[role="main"\]:has\(\[class\*="_homeUtilityBar_"\]\)\s+\.composer-surface-chrome\s*\{[\s\S]{0,420}background-color:\s*color-mix\(in oklab,\s*var\(--color-token-input-background\)\s*90%,\s*transparent\)\s*!important;[\s\S]{0,420}border-radius:\s*var\(--radius-3xl\)\s*!important;[\s\S]{0,420}box-shadow:\s*var\(--elevation-prominent\)\s*!important;/,
+    "Personal builds must restore the native home composer surface instead of repainting it as a theme panel.",
+  );
+  assert.match(
+    customPolicy,
+    /data-dream-shell="dark"[\s\S]{0,220}\[role="main"\]:has\(\[class\*="_homeUtilityBar_"\]\)\s+\.composer-surface-chrome\s*\{[\s\S]{0,220}background-color:\s*var\(--color-token-input-background\)\s*!important;/,
+    "The restored home composer must retain Codex's native dark appearance token.",
+  );
+  assert.match(
+    customPolicy,
+    /\[role="main"\]\s+\[class\*="_homeUtilityBar_"\]\s*\{[\s\S]{0,520}top:\s*auto\s*!important;[\s\S]{0,220}width:\s*auto\s*!important;[\s\S]{0,220}margin-inline:\s*var\(--home-composer-inline-inset\)\s*!important;[\s\S]{0,220}padding-inline:\s*calc\(var\(--spacing\)\s*\*\s*1\.5\)\s*!important;[\s\S]{0,220}border-radius:\s*0\s+0\s+var\(--radius-2xl\)\s+var\(--radius-2xl\)\s*!important;[\s\S]{0,220}box-shadow:\s*none\s*!important;/,
+    "Personal builds must restore the native inset utility bar while keeping the outer composer width unchanged.",
+  );
+  assert.match(
+    customPolicy,
     /\[role="main"\]\s+\[data-feature="game-source"\]::before\s*\{[\s\S]{0,220}content:\s*"Jarvis at your service"\s*!important;/,
     "Personal builds must replace the native home heading without restoring engine brand text.",
   );
