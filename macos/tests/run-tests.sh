@@ -770,7 +770,13 @@ PAYLOAD_JSON="$("$NODE" "$ROOT/scripts/injector.mjs" --check-payload --theme-dir
 "$NODE" -e '
   const theme = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
   if (theme.appearance !== "auto") process.exit(1);
-  if (theme.art?.safeArea !== "auto" || theme.art?.taskMode !== "auto") process.exit(1);
+  if (
+    theme.art?.safeArea !== "auto"
+    || theme.art?.taskMode !== "auto"
+    || theme.art?.scope !== "window"
+    || theme.art?.sidebar !== "solid"
+    || theme.art?.dim !== 0
+  ) process.exit(1);
   if (Object.hasOwn(theme.art, "focusX") || Object.hasOwn(theme.art, "focusY")) process.exit(1);
 ' "$TMP/theme/theme.json"
 "$NODE" -e '
@@ -785,7 +791,8 @@ PAYLOAD_JSON="$("$NODE" "$ROOT/scripts/injector.mjs" --check-payload --theme-dir
 /bin/cp "$ROOT/assets/portal-hero.png" "$TMP/explicit-theme/background.png"
 "$NODE" "$ROOT/scripts/write-theme.mjs" custom --output-dir "$TMP/explicit-theme" \
   --image background.png --name '显式自适应主题' --appearance dark \
-  --focus-x 0.12 --focus-y 0.88 --safe-area none --task-mode off >/dev/null
+  --focus-x 0.12 --focus-y 0.88 --safe-area none --task-mode off \
+  --art-scope main --art-sidebar shared --art-dim 0.18 >/dev/null
 EXPLICIT_PAYLOAD_JSON="$(
   "$NODE" "$ROOT/scripts/injector.mjs" --check-payload --theme-dir "$TMP/explicit-theme"
 )"
@@ -795,7 +802,13 @@ EXPLICIT_PAYLOAD_JSON="$(
   const payload = JSON.parse(process.argv[2]);
   if (theme.appearance !== "dark") process.exit(1);
   if (theme.art?.focusX !== 0.12 || theme.art?.focusY !== 0.88) process.exit(1);
-  if (theme.art?.safeArea !== "none" || theme.art?.taskMode !== "off") process.exit(1);
+  if (
+    theme.art?.safeArea !== "none"
+    || theme.art?.taskMode !== "off"
+    || theme.art?.scope !== "main"
+    || theme.art?.sidebar !== "shared"
+    || theme.art?.dim !== 0.18
+  ) process.exit(1);
   if (!payload.pass || payload.themeName !== "显式自适应主题") process.exit(1);
 ' "$TMP/explicit-theme/theme.json" "$EXPLICIT_PAYLOAD_JSON"
 
@@ -811,6 +824,9 @@ assert_write_theme_rejected() {
 assert_write_theme_rejected appearance --appearance sepia
 assert_write_theme_rejected safe-area --safe-area edge
 assert_write_theme_rejected task-mode --task-mode fullscreen
+assert_write_theme_rejected art-scope --art-scope sidebar
+assert_write_theme_rejected art-sidebar --art-sidebar repeat
+assert_write_theme_rejected art-dim --art-dim 1.01
 assert_write_theme_rejected focus-x --focus-x -0.01
 assert_write_theme_rejected focus-y --focus-y 1.01
 assert_write_theme_rejected name-control --name $'unsafe\nname'

@@ -2,6 +2,28 @@
 
 Updated: 2026-07-30 (Asia/Shanghai)
 
+## Main-Surface Artwork Scope (2026-07-30)
+
+- [complete] Added an opt-in `art.scope: "main"` theme setting so artwork is
+  painted inside the responsive Codex/ChatGPT main surface instead of the
+  full window. The default remains `"window"` for every existing theme.
+- [complete] For main-scoped artwork, the default solid-sidebar mode keeps the
+  native sidebar on the theme's opaque `panel` color and paints its resize
+  extension the same color.
+  The artwork must stay centered in `main.main-surface` as the sidebar expands,
+  collapses, or disappears; no measured width or fixed pixel offset is allowed.
+- [complete] Added the opt-in shared-sidebar variant that
+  paints one continuous window background while keeping its focal center pinned
+  to the responsive main surface. The renderer may parse Codex's sanitized
+  inline sidebar width and observe that one style attribute, but must not add
+  layout reads, polling, duplicate artwork, or fixed-width assumptions.
+- [complete] Covered the shared renderer attribute/CSS contract, strict official
+  package schema, and both macOS and Windows theme loaders before changing the
+  runtime implementation.
+- [complete] Set only the local Iron Man theme to main/shared scope with
+  theme-owned dimming, applied the live payload, and verified expanded,
+  collapsed, and restored sidebar states against the real app.
+
 ## Personal Release Download Link Fix (2026-07-28)
 
 - [complete] The installed App and managed engine were both confirmed to
@@ -559,3 +581,61 @@ Updated: 2026-07-30 (Asia/Shanghai)
     local macOS/Windows verification evidence above.
 - Safety: renderer CSS only; native controls and project functionality remain
   intact, and no official application files or user data are modified.
+
+## 2026-07-30 — Main-centered continuous wallpaper and theme-owned dim
+
+- Goal: let one wallpaper continue underneath the resizable sidebar while its
+  focal point remains centered on the responsive main surface; remove the
+  sidebar/task brightness seam and let each theme own its uniform dim value.
+- Branch: `codex/custom-engine` tracking `personal/main`.
+- Current work:
+  - [x] Added the strict `art.scope: main` + `art.sidebar: shared` theme
+    contract across the canonical validator, macOS/Windows injectors, macOS
+    image-theme writer/loader, documentation, and synchronized runtime assets.
+  - [x] Observe only Codex's sanitized inline sidebar `style.width` (no layout
+    reads), shift the single body wallpaper by half that width, and return the
+    focal point to the window center when the sidebar is hidden.
+  - [x] Diagnosed live that the first coverage rule exposed a body-color strip
+    after shifting; the shared canvas now grows enough to cover the sidebar
+    edge.
+  - [x] Added strict `art.dim` (`0..1`, default `0`) as a theme-owned uniform
+    shared-canvas overlay. The engine no longer changes shared-canvas exposure
+    between home and task routes.
+  - [x] Diagnosed live that the task main surface still carried a legacy
+    immersive gradient. Shared mode now clears both that background and the
+    task-only `::before` veil while preserving message/composer surfaces.
+  - [x] Updated saved and active `custom-iron-man` to theme-owned
+    `art.dim: 0.28` (raised from `0.12`) so only this theme receives the
+    stronger uniform background dim. Live inspection confirms the body
+    renders one `rgba(0,0,0,.28)` overlay while composer/text surfaces remain
+    unaffected.
+  - [x] Hot-applied and inspected the real 1512x949 task page. Expanded:
+    sidebar 240px, wallpaper position `calc(50% + 120px) 42%`; collapsed:
+    sidebar 0px, wallpaper position `50% 42%`; restored values match expanded.
+    In all three states the body contains one image plus one rgba(0,0,0,.28)
+    overlay, main background image is `none`, main `::before` content is
+    `none`, and sidebar/resize chrome are transparent.
+  - [x] Captured current expanded/collapsed evidence at
+    `/private/tmp/iron-man-main-scope-sidebar-expanded.png` and
+    `/private/tmp/iron-man-main-scope-sidebar-collapsed.png`.
+  - [x] Diagnosed the remaining solid strip below the session composer as
+    Codex's two native `bg-gradient-to-t from-token-main-surface-primary`
+    footer layers. Main/shared session pages now clear only those gradient
+    images, leaving the native composer surface, shadow, blur, layout, and all
+    home-page styling intact. Live evidence:
+    `/private/tmp/iron-man-session-footer-fixed.png`.
+  - [x] Focused renderer, package contract, all 17 Windows Node tests, syntax,
+    runtime sync, and whitespace validation pass.
+  - [x] Complete macOS regression passes, including shell checks, synchronized
+    renderer/Safe CSS/package tests, the native Swift build, and all 10 XCTest
+    cases. Signed installed-runtime integrations remain explicit environment
+    skips on this source test pass.
+- Persistence:
+  - The active renderer is hot-loaded from this repository, so the verified
+    behavior is live now.
+  - The installed managed engine has not yet been replaced. After saving and
+    fully closing ChatGPT/Codex, run
+    `./tools/apply-local-development-engine-macos.sh` from the repository root
+    to persist these engine changes across an ordinary restart/login.
+- Safety: no official app bundle, `app.asar`, signature, ACL, user data, or
+  SQLite log is modified.

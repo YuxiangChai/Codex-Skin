@@ -666,6 +666,9 @@ export async function loadTheme(themeDir) {
     focusY: unit(rawArt.focusY, "art.focusY"),
     safeArea: choice(rawArt.safeArea, "art.safeArea", ["auto", "left", "right", "center", "none"]),
     taskMode: choice(rawArt.taskMode, "art.taskMode", ["auto", "ambient", "banner", "full", "off"]),
+    scope: choice(rawArt.scope, "art.scope", ["window", "main"]),
+    sidebar: choice(rawArt.sidebar, "art.sidebar", ["solid", "shared"]),
+    dim: unit(rawArt.dim, "art.dim"),
   };
   const theme = {
     schemaVersion: 1,

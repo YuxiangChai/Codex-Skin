@@ -173,7 +173,9 @@ Theme metadata is optional. The defaults are deliberately adaptive:
     "focusX": 0.72,
     "focusY": 0.45,
     "safeArea": "auto",
-    "taskMode": "auto"
+    "taskMode": "auto",
+    "scope": "window",
+    "sidebar": "solid"
   }
 }
 ```
@@ -191,9 +193,24 @@ Theme metadata is optional. The defaults are deliberately adaptive:
   art uses a quieter ambient layer. `full` keeps the artwork at normal strength
   with only the baseline readability veil; `off` removes the task-page artwork
   while leaving the rest of the theme active.
+- `art.scope`: `window` or `main`. `window` preserves the full-window immersive
+  layout. `main` paints the image only inside the responsive main surface and
+  keeps the sidebar on the theme's solid `panel` color, so the image stays
+  centered when the sidebar is expanded, collapsed, or absent.
+- `art.sidebar`: `solid` or `shared`. It only changes `scope: main`: `solid`
+  keeps the sidebar on `panel`, while `shared` extends one continuous wallpaper
+  under the sidebar and shifts its focal point by half the current inline
+  sidebar width. Collapsing the sidebar returns the focal point to the window
+  center. The renderer observes the sidebar's style attribute without layout
+  reads. Shared mode does not add a separate task-page veil over the main
+  surface, so the sidebar and conversation always have the same exposure.
+- `art.dim`: a number from `0` to `1`. The theme owns this uniform black
+  overlay for the shared canvas (`0` is unchanged, `1` is fully black). The
+  engine does not change it between home and task routes.
 
 The image-derived palette is used unless a theme explicitly supplies color
-fields. Explicit art metadata (`focusX`, `focusY`, `safeArea`, `taskMode`) has
+fields. Explicit art metadata (`focusX`, `focusY`, `safeArea`, `taskMode`,
+`scope`, `sidebar`, `dim`) has
 the same priority over automatic inference. The home route remains expressive;
 task routes keep native content, cards, composer, and code readable above the
 image layer.
@@ -217,7 +234,8 @@ the image loader:
   --file "/path/to/image.png" \
   --appearance auto \
   --focus-x 0.72 --focus-y 0.45 \
-  --safe-area left --task-mode banner
+  --safe-area left --task-mode banner \
+  --art-scope main --art-sidebar shared --art-dim 0.18
 ```
 
 Reset to the bundled abstract demo:

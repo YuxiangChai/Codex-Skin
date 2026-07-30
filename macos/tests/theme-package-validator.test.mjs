@@ -72,7 +72,15 @@ async function makeOfficial(name, options = {}) {
     name: options.themeName ?? "Studio Contract Theme",
     image: options.themeImage ?? "background.png",
     appearance: "auto",
-    art: { focusX: 0.7, focusY: 0.5, safeArea: "left", taskMode: "full" },
+    art: {
+      focusX: 0.7,
+      focusY: 0.5,
+      safeArea: "left",
+      taskMode: "full",
+      scope: "main",
+      sidebar: "shared",
+      dim: 0.18,
+    },
     colors,
   };
   if (options.mutateTheme) options.mutateTheme(theme);
@@ -200,8 +208,38 @@ try {
 
   for (const [injector, stage] of [[macosInjector, macos.stage], [windowsInjector, windows.stage]]) {
     const checked = await run(process.execPath, [injector, "--check-payload", "--theme-dir", stage]);
-    assert.equal(JSON.parse(checked.stdout).pass, true, "Studio taskMode=full must pass both payload validators");
+    assert.equal(
+      JSON.parse(checked.stdout).pass,
+      true,
+      "Studio taskMode=full and art.scope=main must pass both payload validators",
+    );
   }
+
+  const invalidScope = await makeOfficial("official-invalid-art-scope", {
+    mutateTheme: (theme) => { theme.art.scope = "sidebar"; },
+  });
+  await expectRejected(invalidScope.source, "macos", /art\.scope is unsupported/, "invalid-art-scope");
+  await assert.rejects(loadMacTheme(invalidScope.source), /invalid art\.scope field/);
+  await assert.rejects(loadWindowsTheme(invalidScope.source), /art\.scope has an unsupported value/);
+
+  const invalidSidebar = await makeOfficial("official-invalid-art-sidebar", {
+    mutateTheme: (theme) => { theme.art.sidebar = "repeat"; },
+  });
+  await expectRejected(
+    invalidSidebar.source,
+    "windows",
+    /art\.sidebar is unsupported/,
+    "invalid-art-sidebar",
+  );
+  await assert.rejects(loadMacTheme(invalidSidebar.source), /invalid art\.sidebar field/);
+  await assert.rejects(loadWindowsTheme(invalidSidebar.source), /art\.sidebar has an unsupported value/);
+
+  const invalidDim = await makeOfficial("official-invalid-art-dim", {
+    mutateTheme: (theme) => { theme.art.dim = 1.1; },
+  });
+  await expectRejected(invalidDim.source, "macos", /art\.dim must be between 0 and 1/, "invalid-art-dim");
+  await assert.rejects(loadMacTheme(invalidDim.source), /invalid art\.dim field/);
+  await assert.rejects(loadWindowsTheme(invalidDim.source), /art\.dim must be null or a number between 0 and 1/);
 
   const boundaryColors = {
     background: "#abc",

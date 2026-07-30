@@ -81,7 +81,11 @@ function makeFixture({
   };
   const partFixtures = {};
   if (!settings) {
-    partFixtures.sidebar = makeDomNode("sidebar", body);
+    partFixtures.sidebar = makeDomNode(
+      "sidebar",
+      body,
+      new Map([["style", "padding-top: 40px; width: 280px;"]]),
+    );
     partFixtures.main = makeDomNode("main", body);
     partFixtures.header = makeDomNode("header", body);
     partFixtures.home = makeDomNode("home", partFixtures.main);
@@ -268,6 +272,46 @@ export async function runRendererRuntimeTest(assetRoot) {
   assert.match(css, /main\.main-surface:has\(\[role="main"\]\)/);
   assert.match(css, /main\.main-surface:not\(:has\(\[role="main"\]\)\)/);
   assert.doesNotMatch(css, /:has\([^()]*:has\(/);
+  assert.match(
+    css,
+    /data-dream-art-scope="main"[\s\S]{0,240}body\s*\{[\s\S]{0,180}background-image:\s*none\s*!important;/,
+    "Main-scoped artwork must be removed from the full-window body canvas.",
+  );
+  assert.match(
+    css,
+    /data-dream-art-scope="main"[\s\S]{0,260}aside\.app-shell-left-panel\s*\{[\s\S]{0,180}background:\s*var\(--ds-panel\)\s*!important;/,
+    "Main-scoped artwork must leave the sidebar on one opaque theme color.",
+  );
+  assert.match(
+    css,
+    /data-dream-art-scope="main"[\s\S]{0,320}main\.main-surface:has\(\[role="main"\]\)\s*\{[\s\S]{0,240}background-image:\s*var\(--dream-skin-art\)\s*!important;[\s\S]{0,180}background-position:\s*var\(--ds-art-position\)\s*!important;/,
+    "Home artwork must be centered by the responsive main surface itself.",
+  );
+  assert.match(
+    css,
+    /data-dream-art-sidebar="shared"[\s\S]{0,420}body\s*\{[\s\S]{0,320}background-image:\s*linear-gradient\(\s*rgb\(0 0 0 \/ var\(--ds-theme-image-dim\)\),\s*rgb\(0 0 0 \/ var\(--ds-theme-image-dim\)\)\),\s*var\(--dream-skin-art\)\s*!important;[\s\S]{0,320}background-position:\s*center,\s*calc\(var\(--ds-focus-x\)\s*\+\s*var\(--dream-skin-sidebar-offset\)\)\s+var\(--ds-focus-y\)\s*!important;/,
+    "Shared-sidebar artwork must use one body canvas shifted to the main-surface center.",
+  );
+  assert.match(
+    css,
+    /data-dream-art-sidebar="shared"[\s\S]{0,900}background-size:\s*100%\s+100%,\s*max\(\s*calc\(100%\s*\+\s*var\(--dream-skin-sidebar-width\)\),\s*var\(--dream-skin-art-cover-width\)\)\s*auto\s*!important;/,
+    "A shifted shared canvas must grow enough to cover the sidebar-side edge.",
+  );
+  assert.match(
+    css,
+    /data-dream-art-sidebar="shared"[\s\S]{0,360}aside\.app-shell-left-panel\s*\{[\s\S]{0,180}background:\s*transparent\s*!important;/,
+    "Shared-sidebar artwork must remain continuous underneath a transparent sidebar.",
+  );
+  assert.match(
+    css,
+    /data-dream-art-sidebar="shared"[\s\S]{0,520}main\.main-surface:not\(:has\(\[role="main"\]\)\)::before\s*\{[\s\S]{0,120}content:\s*none\s*!important;/,
+    "Shared canvases must not apply a second route-specific dim layer over only the main surface.",
+  );
+  assert.match(
+    css,
+    /data-dream-art-sidebar="shared"[\s\S]{0,1300}main\.main-surface:not\(:has\(\[role="main"\]\)\)\s*\{[\s\S]{0,180}background:\s*transparent\s*!important;[\s\S]{0,120}box-shadow:\s*none\s*!important;/,
+    "Shared canvases must clear the legacy task-only main-surface gradient.",
+  );
   assert.match(css, /content:\s*var\(--dream-skin-name[\s\S]{0,180}var\(--dream-skin-brand-subtitle/);
   assert.match(css, /content:\s*var\(--dream-skin-status/);
   assert.match(css, /content:\s*var\(--dream-skin-quote/);
@@ -343,6 +387,11 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     customPolicy,
+    /data-dream-art-scope="main"\]\[data-dream-art-sidebar="shared"\][\s\S]{0,320}main\.main-surface:not\(:has\(\[role="main"\]\)\)[\s\S]{0,220}\.thread-scroll-container\s+\.sticky\.bottom-0[\s\S]{0,160}\[class~="bg-gradient-to-t"\]\[class~="from-token-main-surface-primary"\]\s*\{[\s\S]{0,120}background-image:\s*none\s*!important;/,
+    "Shared-canvas sessions must clear native footer gradients below the composer.",
+  );
+  assert.match(
+    customPolicy,
     /\[role="main"\]:not\(:has\(\[data-feature="game-source"\]\)\)\s+h1\.heading-xl:not\(\.invisible\)\s*\{[\s\S]{0,220}position:\s*relative\s*!important;[\s\S]{0,220}color:\s*transparent\s*!important;/,
     "Personal builds must target the visible Chat home heading without hiding its accessible duplicate.",
   );
@@ -362,10 +411,20 @@ export async function runRendererRuntimeTest(assetRoot) {
   assert.doesNotMatch(unscoped, /\.group\\\/project-selector/);
 
   const home = makeFixture({ nativeAppearance: "dark" });
-  vm.runInNewContext(home.payloadFor({ art: { safeArea: "left", taskMode: "banner" } }), home.context);
+  vm.runInNewContext(home.payloadFor({
+    art: {
+      safeArea: "left",
+      taskMode: "banner",
+      scope: "main",
+      sidebar: "shared",
+      dim: 0.18,
+    },
+  }), home.context);
   const state = home.window.__CODEX_DREAM_SKIN_STATE__;
   assert.equal(home.attrs.get("data-dream-skin"), "active");
   assert.equal(home.attrs.get("data-dream-shell"), "dark");
+  assert.equal(home.attrs.get("data-dream-art-scope"), "main");
+  assert.equal(home.attrs.get("data-dream-art-sidebar"), "shared");
   assert.equal(home.attrs.get("data-ds-part"), "root");
   assert.equal(state.styleMode, "adopted");
   assert.equal(home.document.adoptedStyleSheets.length, 1);
@@ -382,7 +441,6 @@ export async function runRendererRuntimeTest(assetRoot) {
     "--ds-theme-surface-border-alpha": "0.14",
     "--ds-theme-surface-shadow": "soft",
     "--ds-theme-image-zoom": "1",
-    "--ds-theme-image-dim": "0",
     "--ds-theme-image-task-intensity": "0.35",
     "--ds-theme-density-scale": "standard",
     "--ds-theme-motion-level": "standard",
@@ -392,6 +450,10 @@ export async function runRendererRuntimeTest(assetRoot) {
   }
   assert.equal(home.rootStyle.values.get("--ds-theme-image-focus-x"), "0.72");
   assert.equal(home.rootStyle.values.get("--ds-theme-image-focus-y"), "0.5");
+  assert.equal(home.rootStyle.values.get("--dream-skin-sidebar-width"), "280px");
+  assert.equal(home.rootStyle.values.get("--dream-skin-sidebar-offset"), "140px");
+  assert.equal(home.rootStyle.values.get("--dream-skin-art-cover-width"), "100vw");
+  assert.equal(home.rootStyle.values.get("--ds-theme-image-dim"), "0.18");
   assert.equal(state.metrics.routePasses, 1);
   assert.equal(state.metrics.partPasses, 1);
   assert.equal(state.metrics.layoutReads, 0, "Runtime must not perform layout reads");
@@ -400,6 +462,14 @@ export async function runRendererRuntimeTest(assetRoot) {
   const rootObserver = home.observers.find((observer) => observer.options?.attributes);
   assert.ok(partObserver?.options?.subtree, "Dynamic parts require one subtree child-list observer");
   assert.ok(rootObserver && !rootObserver.options?.childList && !rootObserver.options?.subtree);
+  const sidebarObserver = home.observers.find((observer) =>
+    observer.options?.attributeFilter?.includes("style"));
+  assert.equal(sidebarObserver?.target, home.partFixtures.sidebar);
+  home.partFixtures.sidebar.setAttribute("style", "width: 312.5px;");
+  sidebarObserver.callback([{ type: "attributes", attributeName: "style" }]);
+  assert.equal(home.rootStyle.values.get("--dream-skin-sidebar-width"), "312.5px",
+    "A sidebar resize must update the shared canvas offset without reading layout.");
+  assert.equal(home.rootStyle.values.get("--dream-skin-sidebar-offset"), "156.25px");
   const expectedParts = {
     sidebar: "sidebar",
     main: "main",
@@ -443,6 +513,10 @@ export async function runRendererRuntimeTest(assetRoot) {
 
   const full = makeFixture({ nativeAppearance: "dark" });
   vm.runInNewContext(full.payloadFor({ art: { taskMode: "full" } }), full.context);
+  assert.equal(full.attrs.get("data-dream-art-scope"), "window");
+  assert.equal(full.attrs.get("data-dream-art-sidebar"), "solid");
+  assert.equal(full.rootStyle.values.get("--dream-skin-sidebar-width"), "0px");
+  assert.equal(full.rootStyle.values.get("--dream-skin-sidebar-offset"), "0px");
   assert.equal(full.attrs.get("data-dream-task-mode"), "full");
   assert.equal(full.attrs.get("data-dream-art-task-mode"), "full");
 

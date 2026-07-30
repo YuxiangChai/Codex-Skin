@@ -76,7 +76,7 @@ preset-<slug>/
 
 ### art 元数据
 
-`art.focusX` / `art.focusY`（`0..1`，画面主体位置）、`art.safeArea`（`auto | left | right | center | none`，低信息留白侧）、`art.taskMode`（`auto | ambient | banner | full | off`，任务页呈现）。显式值优先于引擎自动分析；拿不准可先不填，实测后补。
+`art.focusX` / `art.focusY`（`0..1`，画面主体位置）、`art.safeArea`（`auto | left | right | center | none`，低信息留白侧）、`art.taskMode`（`auto | ambient | banner | full | off`，任务页呈现）、`art.scope`（`window | main`，整窗画布或以响应式主内容区为中心）、`art.sidebar`（`solid | shared`，仅在 `scope: main` 时选择纯色侧栏或让同一张连续壁纸延伸到侧栏）、`art.dim`（`0..1`，主题自行决定的统一暗度）。`main + solid` 使用不透明 `panel` 底色；`main + shared` 会按当前侧栏宽度移动整张壁纸焦点，并在整张连续画布上统一应用 `dim`，不会由引擎单独压暗对话区。两种模式都能在侧栏展开、收起或隐藏时保持主内容区居中。显式值优先于引擎自动分析；拿不准可先不填，`dim` 缺省为 `0`。
 
 ## 素材红线（务必阅读）
 

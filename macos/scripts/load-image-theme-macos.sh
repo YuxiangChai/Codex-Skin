@@ -13,6 +13,9 @@ APPLY_NOW="true"
 APPEARANCE="auto"
 SAFE_AREA="auto"
 TASK_MODE="auto"
+ART_SCOPE="window"
+ART_SIDEBAR="solid"
+ART_DIM="0"
 FOCUS_X=""
 FOCUS_Y=""
 
@@ -24,6 +27,9 @@ while [ "$#" -gt 0 ]; do
     --appearance) APPEARANCE="${2:-}"; shift 2 ;;
     --safe-area) SAFE_AREA="${2:-}"; shift 2 ;;
     --task-mode) TASK_MODE="${2:-}"; shift 2 ;;
+    --art-scope) ART_SCOPE="${2:-}"; shift 2 ;;
+    --art-sidebar) ART_SIDEBAR="${2:-}"; shift 2 ;;
+    --art-dim) ART_DIM="${2:-}"; shift 2 ;;
     --focus-x) FOCUS_X="${2:-}"; shift 2 ;;
     --focus-y) FOCUS_Y="${2:-}"; shift 2 ;;
     --no-apply) APPLY_NOW="false"; shift ;;
@@ -34,6 +40,11 @@ done
 case "$APPEARANCE" in auto|light|dark) ;; *) fail "Invalid appearance: $APPEARANCE" ;; esac
 case "$SAFE_AREA" in auto|left|right|center|none) ;; *) fail "Invalid safe area: $SAFE_AREA" ;; esac
 case "$TASK_MODE" in auto|ambient|banner|off) ;; *) fail "Invalid task mode: $TASK_MODE" ;; esac
+case "$ART_SCOPE" in window|main) ;; *) fail "Invalid art scope: $ART_SCOPE" ;; esac
+case "$ART_SIDEBAR" in solid|shared) ;; *) fail "Invalid art sidebar: $ART_SIDEBAR" ;; esac
+case "$ART_DIM" in
+  ''|*[!0-9.]*|*.*.*) fail "Invalid art dim: $ART_DIM" ;;
+esac
 
 ensure_state_root
 IMAGES_DIR="$STATE_ROOT/images"
@@ -77,6 +88,10 @@ progress "Loading image..."
 
 # Fast Node for write-theme (avoid full codesign when possible)
 ensure_node_runtime
+"$NODE" -e '
+  const value = Number(process.argv[1]);
+  if (!Number.isFinite(value) || value < 0 || value > 1) process.exit(1);
+' "$ART_DIM" || fail "Invalid art dim: $ART_DIM"
 
 image_name="background.jpg"
 temporary="$THEME_DIR/.background.$$.tmp.jpg"
@@ -112,6 +127,9 @@ theme_args=(
   --appearance "$APPEARANCE"
   --safe-area "$SAFE_AREA"
   --task-mode "$TASK_MODE"
+  --art-scope "$ART_SCOPE"
+  --art-sidebar "$ART_SIDEBAR"
+  --art-dim "$ART_DIM"
 )
 [ -n "$FOCUS_X" ] && theme_args+=(--focus-x "$FOCUS_X")
 [ -n "$FOCUS_Y" ] && theme_args+=(--focus-y "$FOCUS_Y")

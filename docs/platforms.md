@@ -73,12 +73,15 @@ Windows 普通启动、失败回滚与恢复重开均从已注册的 `OpenAI.Cod
 - `art.focusX` / `art.focusY`：`0..1` 的归一化焦点坐标（左/上为 `0`，右/下为 `1`）。用于控制背景定位，超出范围的值会被拒绝或限制。
 - `art.safeArea`：`auto | left | right | center | none`。`auto` 根据左右信息量推断适合放置原生首页内容的一侧；其余值显式指定安全区，`none` 表示不保留安全区。
 - `art.taskMode`：`auto | ambient | banner | full | off`。`auto` 对超宽图使用横幅/纵向渐隐，对普通比例图使用低噪环境背景；`full` 保留完整画面并仅叠加基础可读性遮罩；`off` 在任务页关闭背景图。
+- `art.scope`：`window | main`。默认 `window` 继续使用整窗沉浸背景；`main` 只在响应式主内容区绘制图片，并用主题 `panel` 色填充侧栏，因此侧栏展开、收起或隐藏时图片都以主内容区自身为中心。
+- `art.sidebar`：`solid | shared`，仅在 `art.scope: main` 时生效。`solid` 保持纯色侧栏；`shared` 让同一张连续壁纸延伸到侧栏，并依据 Codex 当前的内联侧栏宽度把焦点锁定在主内容区中心。隐藏侧栏后偏移自动归零；实现不读取布局尺寸。
+- `art.dim`：`0..1` 的主题级统一暗度。仅由主题决定；`0` 不压暗，`1` 全黑。`main + shared` 会把同一个遮罩铺到整张连续画布，首页、侧栏和对话区不会再由引擎分别调节亮度。
 
 显式的 `appearance` 优先于 Codex/ChatGPT 外观；焦点、安全区和任务模式的显式值优先于图像分析。首页保留更完整的主视觉和原生控件，任务页默认降低背景干扰以保证代码、消息和输入框可读。
 
 ### 平台差异
 
-- macOS 的选图脚本会把这些字段写入主题库，可通过 `--appearance`、`--focus-x`、`--focus-y`、`--safe-area`、`--task-mode` 设置。
+- macOS 的选图脚本会把这些字段写入主题库，可通过 `--appearance`、`--focus-x`、`--focus-y`、`--safe-area`、`--task-mode`、`--art-scope`、`--art-sidebar`、`--art-dim` 设置。
 - Windows 安装会把运行所需的 `assets/`、`presets/`、`scripts/` 与可选内置运行时原子复制到 `%LOCALAPPDATA%\CodexDreamSkin\engine`，所有快捷方式均指向该受管副本，因此安装后可移动或删除源码目录。源码安装会保留「桥本有菜」与 Gothic Void Crusade 两个本地参考主题；公开 Setup.exe 只使用已确认可分发的 Gothic Void Crusade 作为首次默认和可切换主题。系统托盘支持更换背景、保存当前主题、从「已保存主题」切换、暂停和恢复；图片与 `theme.json` 保存在主题仓库中，不写进 Codex 的 `config.toml`。安装会保留用户已有的 `appearanceTheme`；仅在识别到旧版精确托管的浅色三元组时按备份迁移。
 - Windows 渲染器仍支持在注入前用 `window.__CODEX_DREAM_SKIN_CONFIG__` 提供内存级可选覆盖（形状同上，颜色覆盖使用 `palette.accent`），但普通用户应优先使用持久化主题仓库与托盘。
 

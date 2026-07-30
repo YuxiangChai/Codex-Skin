@@ -10,7 +10,8 @@
   const ROOT_ATTRS = [
     "data-dream-skin", SHELL_ATTR,
     "data-dream-art-wide", "data-dream-art-safe", "data-dream-task-mode",
-    "data-dream-art-safe-area", "data-dream-art-task-mode", "data-dream-art-aspect",
+    "data-dream-art-safe-area", "data-dream-art-task-mode", "data-dream-art-scope",
+    "data-dream-art-sidebar", "data-dream-art-aspect",
     "data-dream-art-ready",
   ];
   const VERSION = __DREAM_SKIN_VERSION_JSON__;
@@ -29,6 +30,8 @@
     "--ds-text-rgb", "--ds-muted-rgb", "--ds-line-rgb",
     "--dream-art-focus-x", "--dream-art-focus-y", "--dream-art-position",
     "--dream-skin-focus-x", "--dream-skin-focus-y", "--dream-skin-art-position",
+    "--dream-skin-sidebar-width", "--dream-skin-sidebar-offset",
+    "--dream-skin-art-cover-width",
     "--dream-skin-name", "--dream-skin-tagline", "--dream-skin-project-prefix",
     "--dream-skin-project-label", "--dream-skin-brand-subtitle", "--dream-skin-status",
     "--dream-skin-quote", "--dream-skin-art",
@@ -57,6 +60,8 @@
   let analysisTimer = null;
   let rootObserver = null;
   let partObserver = null;
+  let sidebarObserver = null;
+  let observedSidebar = null;
   let bodyReadyHandler = null;
   let styleMode = null;
   let styleNode = null;
@@ -289,7 +294,9 @@
     setStyleProperty(root, "--ds-theme-surface-border-alpha", "0.14");
     setStyleProperty(root, "--ds-theme-surface-shadow", "soft");
     setStyleProperty(root, "--ds-theme-image-zoom", "1");
-    setStyleProperty(root, "--ds-theme-image-dim", "0");
+    const imageDim = typeof ART.dim === "number" && Number.isFinite(ART.dim)
+      ? clamp(ART.dim, 0, 1) : 0;
+    setStyleProperty(root, "--ds-theme-image-dim", String(imageDim));
     setStyleProperty(root, "--ds-theme-image-task-intensity", "0.35");
     setStyleProperty(root, "--ds-theme-density-scale", "standard");
     setStyleProperty(root, "--ds-theme-motion-level", "standard");
@@ -331,8 +338,12 @@
     const focusY = typeof ART.focusY === "number" ? ART.focusY : profile?.focusY ?? 0.5;
     const taskMode = ART.taskMode && ART.taskMode !== "auto"
       ? ART.taskMode : profile?.taskMode || "ambient";
+    const artScope = ART.scope === "main" ? "main" : "window";
+    const artSidebar = artScope === "main" && ART.sidebar === "shared" ? "shared" : "solid";
     const wide = profile?.wide || false;
     const aspect = profile?.aspect || "unknown";
+    const ratio = typeof profile?.ratio === "number" && Number.isFinite(profile.ratio)
+      && profile.ratio > 0 ? profile.ratio : null;
     const focusXValue = `${(clamp(focusX, 0, 1) * 100).toFixed(2)}%`;
     const focusYValue = `${(clamp(focusY, 0, 1) * 100).toFixed(2)}%`;
 
@@ -341,6 +352,8 @@
     setAttribute(root, "data-dream-task-mode", taskMode);
     setAttribute(root, "data-dream-art-safe-area", safeArea);
     setAttribute(root, "data-dream-art-task-mode", taskMode);
+    setAttribute(root, "data-dream-art-scope", artScope);
+    setAttribute(root, "data-dream-art-sidebar", artSidebar);
     setAttribute(root, "data-dream-art-aspect", aspect);
     setAttribute(root, "data-dream-art-ready", artAnalysis ? "true" : "false");
     setStyleProperty(root, "--dream-art-focus-x", focusXValue);
@@ -351,6 +364,8 @@
     setStyleProperty(root, "--dream-skin-art-position", `${focusXValue} ${focusYValue}`);
     setStyleProperty(root, "--ds-theme-image-focus-x", String(Number(focusX.toFixed(4))));
     setStyleProperty(root, "--ds-theme-image-focus-y", String(Number(focusY.toFixed(4))));
+    setStyleProperty(root, "--dream-skin-art-cover-width",
+      ratio ? `${Number((ratio * 100).toFixed(4))}vh` : "100vw");
   };
 
   const analyzeArt = () => new Promise((resolve) => {
@@ -574,6 +589,31 @@
     try { return [...document.querySelectorAll(selector)]; } catch { return []; }
   };
   const selectorNodes = (key) => queryAll(selectorByKey.get(key)?.selector);
+  const inlineSidebarWidth = (node) => {
+    const inlineWidth = typeof node?.style?.width === "string" ? node.style.width : "";
+    const source = inlineWidth || node?.getAttribute?.("style") || "";
+    const match = inlineWidth
+      ? /^\s*([0-9]+(?:\.[0-9]+)?)px\s*$/i.exec(inlineWidth)
+      : /(?:^|;)\s*width\s*:\s*([0-9]+(?:\.[0-9]+)?)px\s*(?:;|$)/i.exec(source);
+    if (!match) return 0;
+    const width = Number(match[1]);
+    return Number.isFinite(width) && width > 0 && width <= 2048 ? width : 0;
+  };
+  const refreshSidebarGeometry = () => {
+    const root = document.documentElement;
+    const shared = ART.scope === "main" && ART.sidebar === "shared";
+    const sidebar = shared ? selectorNodes("left-panel")[0] ?? null : null;
+    if (sidebar !== observedSidebar) {
+      sidebarObserver?.disconnect();
+      observedSidebar = sidebar;
+      if (sidebarObserver && sidebar) {
+        sidebarObserver.observe(sidebar, { attributes: true, attributeFilter: ["style"] });
+      }
+    }
+    const width = shared ? inlineSidebarWidth(sidebar) : 0;
+    setStyleProperty(root, "--dream-skin-sidebar-width", `${width}px`);
+    setStyleProperty(root, "--dream-skin-sidebar-offset", `${width / 2}px`);
+  };
   const addPart = (desired, part, nodes) => {
     for (const node of nodes) {
       if (node && typeof node.setAttribute === "function" && !desired.has(node)) {
@@ -613,6 +653,7 @@
       }
       partNodes.add(node);
     }
+    refreshSidebarGeometry();
   };
 
   const removeParts = () => {
@@ -688,6 +729,7 @@
     removeParts();
     state?.rootObserver?.disconnect();
     state?.partObserver?.disconnect();
+    state?.sidebarObserver?.disconnect();
     if (bodyReadyHandler && typeof document.removeEventListener === "function") {
       document.removeEventListener("DOMContentLoaded", bodyReadyHandler);
     }
@@ -738,6 +780,7 @@
     // so those transitions do not always emit Navigation API events. The
     // part-tree mutation is the reliable route boundary on current builds.
     partObserver = new MutationObserver(() => scheduleEnsure({ scope: true, parts: true }, 80));
+    sidebarObserver = new MutationObserver(() => refreshSidebarGeometry());
   }
 
   let mediaQuery = null;
@@ -759,6 +802,7 @@
     cleanup,
     rootObserver,
     partObserver,
+    sidebarObserver,
     timer: null,
     scheduler,
     mediaQuery,

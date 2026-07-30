@@ -290,8 +290,13 @@ function validateOfficialTheme(value) {
   }
   if (theme.art !== undefined) {
     const art = assertObject(theme.art, "theme.json.art");
-    assertExactKeys(art, [], ["focusX", "focusY", "safeArea", "taskMode"], "theme.json.art");
-    for (const key of ["focusX", "focusY"]) {
+    assertExactKeys(
+      art,
+      [],
+      ["focusX", "focusY", "safeArea", "taskMode", "scope", "sidebar", "dim"],
+      "theme.json.art",
+    );
+    for (const key of ["focusX", "focusY", "dim"]) {
       if (art[key] !== undefined && (typeof art[key] !== "number" || !Number.isFinite(art[key]) || art[key] < 0 || art[key] > 1)) {
         fail(`theme.json.art.${key} must be between 0 and 1`);
       }
@@ -301,6 +306,12 @@ function validateOfficialTheme(value) {
     }
     if (art.taskMode !== undefined && !new Set(["ambient", "full", "off"]).has(art.taskMode)) {
       fail("theme.json.art.taskMode is unsupported");
+    }
+    if (art.scope !== undefined && !new Set(["window", "main"]).has(art.scope)) {
+      fail("theme.json.art.scope is unsupported");
+    }
+    if (art.sidebar !== undefined && !new Set(["solid", "shared"]).has(art.sidebar)) {
+      fail("theme.json.art.sidebar is unsupported");
     }
   }
   if (theme.colors !== undefined) {

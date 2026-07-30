@@ -1176,6 +1176,214 @@ html[data-dream-skin="active"] button[class~="bg-token-foreground"] {
 html[data-dream-skin="active"] article,
 html[data-dream-skin="active"] [data-message-author-role] { border-radius: 16px; }
 
+/* Themes may opt into a main-surface canvas. The native main surface owns its
+   responsive width, so background-position stays centered when the resizable
+   sidebar is expanded, collapsed, or absent without any measured offsets. */
+html[data-dream-skin="active"][data-dream-art-scope="main"] body {
+  background-image: none !important;
+}
+
+html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-wide="true"]:has(
+  main.main-surface [role="main"]) body,
+html[data-dream-skin="active"][data-dream-art-scope="main"]:is(
+  [data-dream-task-mode="ambient"],
+  [data-dream-art-task-mode="ambient"],
+  [data-dream-task-mode="banner"],
+  [data-dream-art-task-mode="banner"],
+  [data-dream-task-mode="full"],
+  [data-dream-art-task-mode="full"])[data-dream-art-wide="true"]:has(
+  main.main-surface):not(:has(main.main-surface [role="main"])) body {
+  background-image: none !important;
+}
+
+html[data-dream-skin="active"][data-dream-art-scope="main"]
+  aside.app-shell-left-panel {
+  background: var(--ds-panel) !important;
+}
+
+html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-wide="true"]:has(
+  main.main-surface [role="main"])
+  aside.app-shell-left-panel,
+html[data-dream-skin="active"][data-dream-art-scope="main"]:is(
+  [data-dream-task-mode="ambient"],
+  [data-dream-art-task-mode="ambient"],
+  [data-dream-task-mode="banner"],
+  [data-dream-art-task-mode="banner"],
+  [data-dream-task-mode="full"],
+  [data-dream-art-task-mode="full"])[data-dream-art-wide="true"]:has(
+  main.main-surface):not(:has(main.main-surface [role="main"]))
+  aside.app-shell-left-panel {
+  background: var(--ds-panel) !important;
+}
+
+html[data-dream-skin="active"][data-dream-art-scope="main"]
+  aside.app-shell-left-panel::after {
+  background: var(--ds-panel) !important;
+}
+
+html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-wide="true"]:has(
+  main.main-surface [role="main"])
+  aside.app-shell-left-panel::after,
+html[data-dream-skin="active"][data-dream-art-scope="main"]:is(
+  [data-dream-task-mode="ambient"],
+  [data-dream-art-task-mode="ambient"],
+  [data-dream-task-mode="banner"],
+  [data-dream-art-task-mode="banner"],
+  [data-dream-task-mode="full"],
+  [data-dream-art-task-mode="full"])[data-dream-art-wide="true"]:has(
+  main.main-surface):not(:has(main.main-surface [role="main"]))
+  aside.app-shell-left-panel::after {
+  background: var(--ds-panel) !important;
+}
+
+html[data-dream-skin="active"][data-dream-art-scope="main"]
+  main.main-surface:has([role="main"]) {
+  background-color: var(--ds-bg) !important;
+  background-image: var(--dream-skin-art) !important;
+  background-position: var(--ds-art-position) !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  background-attachment: scroll !important;
+}
+
+html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-wide="true"]
+  main.main-surface:has([role="main"]) {
+  background-color: var(--ds-bg) !important;
+  background-image: var(--dream-skin-art) !important;
+  background-position: var(--ds-art-position) !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  background-attachment: scroll !important;
+}
+
+html[data-dream-skin="active"][data-dream-art-scope="main"]
+  main.main-surface:not(:has([role="main"]))::before {
+  content: "" !important;
+}
+
+html[data-dream-skin="active"][data-dream-art-scope="main"]:is(
+  [data-dream-task-mode="off"],
+  [data-dream-art-task-mode="off"])
+  main.main-surface:not(:has([role="main"]))::before {
+  content: none !important;
+}
+
+/* A main-centered theme can let the same body canvas continue underneath the
+   sidebar. The renderer exposes Codex's sanitized inline sidebar width without
+   reading layout; half that width shifts the wallpaper focal point from the
+   window center to the responsive main-surface center. */
+html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"] body {
+  background-image:
+    linear-gradient(
+      rgb(0 0 0 / var(--ds-theme-image-dim)),
+      rgb(0 0 0 / var(--ds-theme-image-dim))),
+    var(--dream-skin-art) !important;
+  background-position:
+    center,
+    calc(var(--ds-focus-x) + var(--dream-skin-sidebar-offset))
+    var(--ds-focus-y) !important;
+  background-size:
+    100% 100%,
+    max(
+      calc(100% + var(--dream-skin-sidebar-width)),
+      var(--dream-skin-art-cover-width))
+    auto !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+}
+
+html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"]
+  aside.app-shell-left-panel {
+  background: transparent !important;
+}
+
+html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"]
+  aside.app-shell-left-panel::after {
+  background: transparent !important;
+}
+
+html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"][data-dream-art-wide="true"]:has(
+  main.main-surface [role="main"]) body,
+html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"]:is(
+  [data-dream-task-mode="ambient"],
+  [data-dream-art-task-mode="ambient"],
+  [data-dream-task-mode="banner"],
+  [data-dream-art-task-mode="banner"],
+  [data-dream-task-mode="full"],
+  [data-dream-art-task-mode="full"])[data-dream-art-wide="true"]:has(
+  main.main-surface):not(:has(main.main-surface [role="main"])) body {
+  background-image:
+    linear-gradient(
+      rgb(0 0 0 / var(--ds-theme-image-dim)),
+      rgb(0 0 0 / var(--ds-theme-image-dim))),
+    var(--dream-skin-art) !important;
+  background-position:
+    center,
+    calc(var(--ds-focus-x) + var(--dream-skin-sidebar-offset))
+    var(--ds-focus-y) !important;
+  background-size:
+    100% 100%,
+    max(
+      calc(100% + var(--dream-skin-sidebar-width)),
+      var(--dream-skin-art-cover-width))
+    auto !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+}
+
+html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"][data-dream-art-wide="true"]:has(
+  main.main-surface [role="main"])
+  aside.app-shell-left-panel,
+html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"]:is(
+  [data-dream-task-mode="ambient"],
+  [data-dream-art-task-mode="ambient"],
+  [data-dream-task-mode="banner"],
+  [data-dream-art-task-mode="banner"],
+  [data-dream-task-mode="full"],
+  [data-dream-art-task-mode="full"])[data-dream-art-wide="true"]:has(
+  main.main-surface):not(:has(main.main-surface [role="main"]))
+  aside.app-shell-left-panel,
+html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"][data-dream-art-wide="true"]:has(
+  main.main-surface [role="main"])
+  aside.app-shell-left-panel::after,
+html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"]:is(
+  [data-dream-task-mode="ambient"],
+  [data-dream-art-task-mode="ambient"],
+  [data-dream-task-mode="banner"],
+  [data-dream-art-task-mode="banner"],
+  [data-dream-task-mode="full"],
+  [data-dream-art-task-mode="full"])[data-dream-art-wide="true"]:has(
+  main.main-surface):not(:has(main.main-surface [role="main"]))
+  aside.app-shell-left-panel::after {
+  background: transparent !important;
+}
+
+html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"]
+  main.main-surface:has([role="main"]) {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"]
+  main.main-surface:not(:has([role="main"])),
+html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"]:is(
+  [data-dream-task-mode="ambient"],
+  [data-dream-art-task-mode="ambient"],
+  [data-dream-task-mode="banner"],
+  [data-dream-art-task-mode="banner"],
+  [data-dream-task-mode="full"],
+  [data-dream-art-task-mode="full"])[data-dream-art-wide="true"]:has(
+  main.main-surface):not(:has(main.main-surface [role="main"]))
+  main.main-surface:not(:has([role="main"])) {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"]
+  main.main-surface:not(:has([role="main"]))::before {
+  content: none !important;
+}
+
 /* Personal custom engine policy. */
 html[data-dream-skin="active"]
   main.main-surface:not(:has([role="main"])) > header.app-header-tint::before,
@@ -1394,6 +1602,17 @@ html[data-dream-skin="active"] body
   background: transparent !important;
   color: var(--ds-muted) !important;
   box-shadow: none !important;
+}
+
+/* Codex paints two native bottom-fade layers inside the sticky session footer.
+   On a shared canvas their solid token stop becomes a rectangular band below
+   the composer. Keep the native footer geometry and controls, but reveal the
+   wallpaper through those gradient-only layers. */
+html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"]
+  main.main-surface:not(:has([role="main"]))
+  .thread-scroll-container .sticky.bottom-0
+  [class~="bg-gradient-to-t"][class~="from-token-main-surface-primary"] {
+  background-image: none !important;
 }
 
 @media (max-width: 1120px) {

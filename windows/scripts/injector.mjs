@@ -449,6 +449,8 @@ const THEME_CHOICES = {
   appearance: new Set(["auto", "light", "dark"]),
   safeArea: new Set(["auto", "left", "right", "center", "none"]),
   taskMode: new Set(["auto", "ambient", "banner", "full", "off"]),
+  scope: new Set(["window", "main"]),
+  sidebar: new Set(["solid", "shared"]),
 };
 
 function normalizedUnit(value, name) {
@@ -576,6 +578,9 @@ export async function loadTheme(themeDir) {
       focusY: normalizedUnit(art.focusY, "art.focusY"),
       safeArea: normalizedChoice(art.safeArea, "art.safeArea", THEME_CHOICES.safeArea, "auto"),
       taskMode: normalizedChoice(art.taskMode, "art.taskMode", THEME_CHOICES.taskMode, "auto"),
+      scope: normalizedChoice(art.scope, "art.scope", THEME_CHOICES.scope, "window"),
+      sidebar: normalizedChoice(art.sidebar, "art.sidebar", THEME_CHOICES.sidebar, "solid"),
+      dim: normalizedUnit(art.dim, "art.dim"),
     },
     colorMode: rawColors ? "explicit" : (paletteAccent ? "explicit" : "auto"),
     explicitColorKeys: rawColors
