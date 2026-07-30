@@ -509,7 +509,8 @@ Updated: 2026-07-30 (Asia/Shanghai)
     x=596/y=907/w=156/h=28 with no page overflow.
   - [x] Captured final visual evidence at
     `/tmp/codex-project-home-work-style-final.png`.
-  - [ ] Commit and push the verified CSS-only change; no version or public
-    Release is required for this source-development iteration.
+  - [x] Committed the verified CSS-only change as `53ebe7a` and pushed it to
+    `personal/main`; no version or public Release was created for this
+    source-development iteration.
 - Safety: the fix remains renderer CSS only; it does not modify the official
   application bundle, `app.asar`, signature, ACL, user data, or SQLite logs.
