@@ -82,7 +82,7 @@ Windows 普通启动、失败回滚与恢复重开均从已注册的 `OpenAI.Cod
 ### 平台差异
 
 - macOS 的选图脚本会把这些字段写入主题库，可通过 `--appearance`、`--focus-x`、`--focus-y`、`--safe-area`、`--task-mode`、`--art-scope`、`--art-sidebar`、`--art-dim` 设置。
-- Windows 安装会把运行所需的 `assets/`、`presets/`、`scripts/` 与可选内置运行时原子复制到 `%LOCALAPPDATA%\CodexDreamSkin\engine`，所有快捷方式均指向该受管副本，因此安装后可移动或删除源码目录。源码安装会保留「桥本有菜」与 Gothic Void Crusade 两个本地参考主题；公开 Setup.exe 只使用已确认可分发的 Gothic Void Crusade 作为首次默认和可切换主题。系统托盘支持更换背景、保存当前主题、从「已保存主题」切换、暂停和恢复；图片与 `theme.json` 保存在主题仓库中，不写进 Codex 的 `config.toml`。安装会保留用户已有的 `appearanceTheme`；仅在识别到旧版精确托管的浅色三元组时按备份迁移。
+- Windows 安装会把运行所需的 `assets/`、`presets/`、`scripts/` 与可选内置运行时原子复制到 `%LOCALAPPDATA%\CodexDreamSkin\engine`，所有快捷方式均指向该受管副本，因此安装后可移动或删除源码目录。源码安装与公开 Setup.exe 都只播种已确认可分发的 Iron Man 主题。系统托盘支持更换背景、保存当前主题、从「已保存主题」切换、暂停和恢复；图片、`theme.json` 与 `theme.css` 保存在主题仓库中，不写进 Codex 的 `config.toml`。安装会保留用户已有的 `appearanceTheme`；仅在识别到旧版精确托管的浅色三元组时按备份迁移。
 - Windows 渲染器仍支持在注入前用 `window.__CODEX_DREAM_SKIN_CONFIG__` 提供内存级可选覆盖（形状同上，颜色覆盖使用 `palette.accent`），但普通用户应优先使用持久化主题仓库与托盘。
 
 ### 主题 ZIP 与手动目录
@@ -96,10 +96,9 @@ Windows 普通启动、失败回滚与恢复重开均从已注册的 `OpenAI.Cod
 
 ## 预设与图片类型
 
-- `macos/presets/preset-arina-hashimoto/` 是「桥本有菜 / Arina Hashimoto」源码参考主题；公开安装包在人物与素材分发权确认前明确排除它。
-- 该 preset pack 中只有 `background.jpg`（`2560 × 1440`、16:9、纯背景）和 `theme.json` 会被播种；它由用户提供的 `1672 × 941` 源 PNG 标准化导出，不代表增加了源图细节。Byte-identical 源图归档在 `docs/images/presets/arina-hashimoto-source.png`，不会随 preset 播种；`arina-hashimoto-light.jpg` 与 `arina-hashimoto-dark.jpg` 是 `2308 × 1572` Retina 浅/暗真实首页截图，未发送输入仅在截图时用临时本地样式遮蔽，只作效果预览，绝不能当背景导入。
-- `macos/presets/preset-gothic-void-crusade/` 是社区作者贡献的原创哥特科幻主题；macOS 没有活动主题时默认启用它。升级只清理固定的旧内置预设 ID，不删除 `custom-*` 或当前活动主题副本。
-- 源码树中的 `windows/assets/dream-reference.jpg` 与 macOS 人物参考素材 byte-identical，仅用于本地参考；Windows Release 构建会在打包前以经过固定哈希核验的 Gothic Void Crusade 替换它，确保 Setup.exe 不分发权利未确认的人物素材。README 实机截图仍只作预览，绝不能作为背景导入。
+- `macos/presets/preset-iron-man/` 是 macOS 与 Windows 共用的唯一发行预设，包含非空 `theme.json`、`theme.css` 和 `background.jpg` 三件套。背景为用户确认可分发的 AI 生成素材。
+- 源码树中的 `windows/assets/dream-reference.jpg` 与发行预设背景 byte-identical；Windows Release 构建会再次核对固定 SHA-256，并把同一主题作为首次默认和唯一内置可切换主题。
+- 升级清理已经退役的 Gothic Void Crusade、Arina Hashimoto 等内置预设 ID，不删除 `custom-*` 或当前活动主题副本。macOS 用户可用主题库内的 `.disable-bundled-presets` 常规文件选择以后不再播种发行预设。
 - Windows 导入和 macOS 快速加载入口会拒绝空文件或超过 10 MB 的输入；macOS 主定制入口可接收最高 50 MB 的源图，但转换后的主题文件必须不超过 10 MB。两端 payload 构建还会拒绝任一边超过 16384px 或总像素超过 50MP 的声明尺寸；Windows 在复制导入图前复用 Node 元数据解析器执行同一限制。Windows 注入器用图片、主题和 Safe CSS 内容的 SHA-256 修订值识别热更新，并在构建首帧 payload 前同步读取图片比例。
 - 自定义生图优先使用 `2560 × 1440`（16:9）：左侧约 50%～58% 保持低信息、低对比，主体放在右侧约 58%～88%。输出必须是连续铺满画布的纯背景，禁止窗口、侧栏、卡片、输入框、文字、Logo 和水印。
 - 可直接复制的无人物、右侧成年人物与参考图编辑模板见 `docs/reference-background-prompt-guide.md`；公共默认提示词不指定真人或名人。

@@ -6,14 +6,24 @@ Chinese guide: [`reference-background-prompt-guide.md`](./reference-background-p
 
 > Public prompts default to an original fictional adult. They do not name or imitate a celebrity, private individual, copyrighted character, or living artist's signature style. Use an authorized identity reference only when you hold the necessary likeness and asset rights. Generated artwork is not an official OpenAI/Codex visual or endorsement.
 
-## Source-Only Reference: Arina Hashimoto (Excluded From Public Packages)
+## Current Release Preset: Iron Man
 
-- **Source-only switchable reference:** `macos/presets/preset-arina-hashimoto/`; source Windows runs can use `windows/assets/theme.json` plus the byte-identical `windows/assets/dream-reference.jpg`. Public DMG and Setup.exe exclude these files and seed only the rights-reviewed Gothic Void Crusade.
-- **User-supplied pure source:** `docs/images/presets/arina-hashimoto-source.png` (`1672 × 941`). The preset's `2560 × 1440` JPEG is a standardized release derivative and does not create additional source detail.
-- **Real runtime results:** `arina-hashimoto-light.jpg` and `arina-hashimoto-dark.jpg` are light/dark screenshots for preview only. They are not importable wallpapers.
-- **Relationship to earlier examples:** this is the current tested preset, not `docs/images/gallery/skin-01.jpg` and not one of the skin-01–08 concept mockups. skin-01 contributes only a related pink-rose direction and UI-copy reference.
+- **Complete packs:** `macos/presets/preset-iron-man/` and
+  `windows/presets/preset-iron-man/`, each with non-empty `theme.json`,
+  `theme.css`, and `background.jpg`.
+- **Windows seed source:** `windows/assets/theme.json`,
+  `windows/assets/theme.css`, and the byte-identical
+  `windows/assets/dream-reference.jpg`.
+- **Wallpaper:** `1864 × 1088` JPEG, SHA-256
+  `59e09087072b7d66d988fe9c286bbff724118f8e1e73c9c25235d5eefa690eaf`.
+- **Behavior:** dark appearance, main-content-centered focus, one continuous
+  canvas shared with the sidebar, `0.4` dim, and
+  `Jarvis at your service` as the home title.
 
-The user describes this material as an Arina Hashimoto reference version, and the maintainer explicitly directed that its source, switchable preset, and runtime previews be included in the repository. That records the intended reference and inclusion decision; it is not a likeness, generation, or redistribution license. `macos/NOTICE.md` excludes the listed files from the MIT software license, and users and downstream distributors must review the relevant rights independently. The public copy-ready prompt below still uses an original fictional adult.
+The user confirmed that this AI-generated image may ship with the personal
+release. It is outside the repository's MIT software license and implies no
+Marvel, Disney, OpenAI, or Codex affiliation or endorsement. See
+`macos/NOTICE.md` for the exact boundary.
 
 ## Separate Presets, Source Art, Screenshots, And Concepts
 
@@ -21,17 +31,18 @@ The “effect” shown in a README is not automatically an importable wallpaper.
 
 | Type | Repository path | What it is | A complete theme? |
 |---|---|---|---|
-| **Source-only reference preset** | `macos/presets/preset-arina-hashimoto/`; source Windows runs use `windows/assets/theme.json` plus the byte-identical `dream-reference.jpg` | Use locally only after an independent rights review; public DMG/Setup.exe use Gothic Void Crusade instead | **Only in an authorized local source checkout** |
-| **Pure source art** | `docs/images/presets/arina-hashimoto-source.png` | User-supplied source wallpaper around `1672 × 941`; no `theme.json` | **No**; it can be selected as an image, but is not a complete pack |
-| **Real injected previews** | `docs/images/presets/arina-hashimoto-light.jpg`, `arina-hashimoto-dark.jpg` | Light/dark Codex screenshots containing real controls | **No** |
+| **Current release preset** | `macos/presets/preset-iron-man/`, `windows/presets/preset-iron-man/` | The complete three-file Iron Man theme | **Yes**, after manifest and Safe CSS validation |
+| **Windows seed source** | `windows/assets/theme.json`, `theme.css`, `dream-reference.jpg` | Managed installer source matching the release preset | **Not a ZIP**; safely seeded by the installer |
 | **Concept gallery** | `docs/images/gallery/skin-01.jpg`–`skin-08.jpg` | UI effect mockups used only to communicate visual directions | **No** |
 | **Experimental/history images** | `docs/images/banner-*.png`, `docs/images/generated-*.png` | Unapproved local experiments or references | **No**; do not ship without rights/provenance review |
 
 `docs/images/hero-banner-red-white.png` and `macos/assets/portal-hero.png` are legacy 3:1 banner assets, not the current 16:9 universal-theme master. Do not substitute either for `preset-*/background.jpg` unless the output is intentionally homepage-banner-only.
 
-Rule of thumb: **public installers default to Gothic Void Crusade; use the source-only reference preset locally only after a rights review.** Generate from this guide; study directions in `docs/images/gallery/`; inspect runtime results in `docs/images/presets/*-light.jpg` / `*-dark.jpg`. A `theme.json` and a `background.jpg` in the same `preset-*` directory form a seedable theme; `docs/images/` is documentation/archive space, not a mirror of the theme library.
-
-Path classification is not a likeness or redistribution license. The current `preset-arina-hashimoto` contains user-provided human/AI portrait material included at the maintainer's direction. Public repository inclusion neither grants nor proves likeness, generation, commercial-use, or further-redistribution rights; see `macos/NOTICE.md` for the file-level boundary.
+Rule of thumb: **public installers seed only Iron Man.** Generate from this guide
+and study directions in `docs/images/gallery/`. A complete theme places
+non-empty `theme.json`, `theme.css`, and its unique background image in the
+same `preset-*` directory; `docs/images/` is documentation/archive space, not
+a mirror of the theme library.
 
 Save new generations outside the repository while drafting and run the acceptance checklist at the end. Only after approval should you export the **pure wallpaper** as `background.jpg` beside its `theme.json` in a new `macos/presets/preset-<slug>/`. Do not place drafts, UI screenshots, or unverified human-likeness images in `docs/images/` and assume they become switchable themes.
 
@@ -41,9 +52,9 @@ Save new generations outside the repository while drafting and run the acceptanc
 
 | Concept location | Reference copy | Current recommendation |
 |---|---|---|
-| Top brand title | `桥本有菜专属定制皮肤` | Use only after likeness and redistribution rights are confirmed; the current runtime does not show this brand layer, so keep it as a future UI field |
+| Top brand title | `Custom theme` | The current runtime does not show this brand layer, so keep it as a future UI field |
 | Top subtitle | `Codex App 限定版` | Not visible in the current runtime; do not bake it into `background.jpg` |
-| Script signature | `Arina Hashimoto♡` | Independent signature layer; the base runtime has no generic signature field yet |
+| Script signature | `Your Theme` | Independent signature layer; the base runtime has no generic signature field yet |
 | Home title | `我们该构建什么？` | Put it in `homeTitle`; Chat, Work, and Codex render it with the same typography at the full-window vertical center |
 | Home subtitle | `与有菜一起，用灵感创造无限可能` | macOS can currently show it through `tagline`; Windows does not yet render theme copy |
 | Composer placeholder | `随心输入，让灵感陪你一起写代码吧～` | Use only where product configuration explicitly permits a custom placeholder; never overwrite user input |
@@ -67,7 +78,7 @@ Image numbers follow the actual upload order. Generators and the CLI do not rese
 
 The safest first pass uses Image 1 only and generates an original fictional adult. This guide makes no rights claim about any specific person or asset.
 
-Names of specific real people (for example, “Arina Hashimoto”) must not be put in a public default prompt to induce imitation. If you genuinely hold the necessary rights, use a clear adult identity image as Image 3 only in the local authorized workflow below; otherwise use the original-fictional-adult version.
+Names of specific real people must not be put in a public default prompt to induce imitation. If you genuinely hold the necessary rights, use a clear adult identity image as Image 3 only in the local authorized workflow below; otherwise use the original-fictional-adult version.
 
 ## Set The Output Size
 

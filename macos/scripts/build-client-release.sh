@@ -19,7 +19,6 @@ trap '/bin/rm -rf "$TMP"' EXIT
   --exclude '.DS_Store' \
   --exclude 'release/' \
   --exclude 'runtime/' \
-  --exclude 'presets/preset-arina-hashimoto/' \
   "$ROOT/" "$ENGINE/"
 
 # Keep the customer ZIP self-contained: bundle prompt docs and referenced
@@ -30,7 +29,7 @@ if [ -f "$STANDALONE_README" ]; then
   temporary="${STANDALONE_README}.standalone"
   /usr/bin/sed \
     -e 's#\.\./docs/#docs/#g' \
-    -e 's#\.\./windows/#https://github.com/Fei-Away/Codex-Dream-Skin/tree/main/windows/#g' \
+    -e 's#\.\./windows/#https://github.com/YuxiangChai/Codex-Skin/tree/main/windows/#g' \
     "$STANDALONE_README" > "$temporary"
   /bin/mv "$temporary" "$STANDALONE_README"
 fi
@@ -62,8 +61,6 @@ fi
 /bin/chmod 755 "$CLIENT_ROOT/安装 Codex 主题编辑器.command"
 /bin/chmod 755 "$ENGINE"/*.command "$ENGINE"/scripts/*.sh "$ENGINE"/tests/*.sh
 /usr/bin/find "$CLIENT_ROOT" -type f \( -name '.DS_Store' -o -name '._*' \) -delete
-[ ! -e "$ENGINE/presets/preset-arina-hashimoto" ] \
-  || { printf 'Restricted Arina preset entered the standalone ZIP.\n' >&2; exit 1; }
 if /usr/bin/find "$CLIENT_ROOT" -type f -name 'arina-hashimoto-*' -print -quit | /usr/bin/grep -q .; then
   printf 'Restricted Arina documentation asset entered the standalone ZIP.\n' >&2
   exit 1

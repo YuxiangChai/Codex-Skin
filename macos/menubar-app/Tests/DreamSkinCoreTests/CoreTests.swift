@@ -24,21 +24,21 @@ final class CoreTests: XCTestCase {
     XCTAssertFalse(snapshot.busy)
   }
 
-  func testSavedThemesCollapseOnlyBundledAliasAndKeepCurrentSelection() {
+  func testSavedThemesCollapseOnlyIronManAliasesAndKeepCurrentSelection() {
     let themes = [
-      SavedThemeOption(id: "gothic-void-crusade", name: "Gothic Void Crusade"),
-      SavedThemeOption(id: "preset-gothic-void-crusade", name: "Gothic Void Crusade"),
+      SavedThemeOption(id: "custom-iron-man", name: "Iron Man"),
+      SavedThemeOption(id: "preset-iron-man", name: "Iron Man"),
       SavedThemeOption(id: "forest", name: "Forest"),
       SavedThemeOption(id: "preset-forest", name: "Forest")
     ]
 
     XCTAssertEqual(
-      Set(deduplicatedSavedThemes(themes, currentThemeID: "preset-gothic-void-crusade").map(\.id)),
-      Set(["preset-gothic-void-crusade", "forest", "preset-forest"])
+      Set(deduplicatedSavedThemes(themes, currentThemeID: "preset-iron-man").map(\.id)),
+      Set(["preset-iron-man", "forest", "preset-forest"])
     )
     XCTAssertEqual(
-      Set(deduplicatedSavedThemes(themes, currentThemeID: "gothic-void-crusade").map(\.id)),
-      Set(["gothic-void-crusade", "forest", "preset-forest"])
+      Set(deduplicatedSavedThemes(themes, currentThemeID: "custom-iron-man").map(\.id)),
+      Set(["custom-iron-man", "forest", "preset-forest"])
     )
   }
 

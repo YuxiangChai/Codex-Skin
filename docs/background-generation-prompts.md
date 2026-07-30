@@ -12,12 +12,12 @@
 
 | 你要做的事 | 应看的文件 | 说明 |
 |---|---|---|
-| 在获权的源码 checkout 中切换参考主题 | `macos/presets/preset-arina-hashimoto/theme.json` + `background.jpg`；源码 Windows 对应 `windows/assets/theme.json` + `dream-reference.jpg` | 仅限本地权利核验后的源码使用；公开 DMG/Setup.exe 只播种 Gothic Void Crusade，不是 `docs/images/presets/*-light/dark` 截图 |
+| 切换当前发行主题 | `macos/presets/preset-iron-man/` 或 `windows/presets/preset-iron-man/` 中的 `theme.json` + `theme.css` + `background.jpg` | 公开 DMG/Setup.exe 只播种 Iron Man；Windows 默认源位于 `windows/assets/` |
 | 重新生成一张纯背景 | 本文件的通用模板或 [`reference-background-prompt-guide.md`](./reference-background-prompt-guide.md) | 输出应是独立的 `2560 × 1440`、16:9 图片，不是截图 |
 | 只看效果或找风格 | `docs/images/gallery/skin-01.jpg` ～ `skin-08.jpg` | 带 UI 的概念效果图，不能改名为 `background.jpg` 后导入 |
-| 查看当前主题在浅/暗色下的实机结果 | `docs/images/presets/arina-hashimoto-light.jpg`、`arina-hashimoto-dark.jpg` | 仅预览，包含真实控件，不能作为背景素材 |
+| 查看当前发行背景 | `macos/presets/preset-iron-man/background.jpg` | 纯背景素材；完整主题仍必须同时包含 `theme.json` 与 `theme.css` |
 
-特别注意：`skin-01` 的粉色玫瑰方向与 `preset-arina-hashimoto` 有相近气质，但**不是同一文件、同一尺寸或同一资产**。`skin-01`～`skin-08` 只提供灵感；实际预设以 `macos/presets/preset-*` 目录中的 `theme.json` + `background.jpg` 为准。任何 `banner-*.png` / `generated-*.png` 实验图也不自动获得预设或发行资格；真人肖像和模型输出必须先完成权利核验。
+特别注意：`skin-01`～`skin-08` 只提供灵感，与 `preset-iron-man` 不是同一文件或同一资产；实际预设以 `preset-*` 目录中的三文件主题包为准。任何 `banner-*.png` / `generated-*.png` 实验图也不自动获得预设或发行资格；真人肖像和模型输出必须先完成权利核验。
 
 另外，`docs/images/hero-banner-red-white.png` 与 `macos/assets/portal-hero.png` 是旧的 3:1 首页横幅资源，不是这份文档推荐的 16:9 通用背景母版。
 
@@ -344,10 +344,10 @@ UI, UX, app interface, software window, desktop screenshot, mockup, title bar, m
 
 ## 当前仓库已有的纯背景
 
-- 用户提供的「桥本有菜」byte-identical 源图：`docs/images/presets/arina-hashimoto-source.png`（`1672 × 941` PNG）
-- macOS 实测精选可切换背景：`macos/presets/preset-arina-hashimoto/background.jpg`（由上述源 PNG 派生为 `2560 × 1440` JPEG；标准化尺寸不代表增加源图细节）
-- 对应浅/暗真实截图：`docs/images/presets/arina-hashimoto-light.jpg`、`arina-hashimoto-dark.jpg`（仅预览，禁止当背景导入）
+- Iron Man 发行背景：`macos/presets/preset-iron-man/background.jpg`（`1864 × 1088` JPEG）
+- Windows byte-identical 默认背景：`windows/assets/dream-reference.jpg`
+- 两端完整预设：`macos/presets/preset-iron-man/` 与 `windows/presets/preset-iron-man/`，各含 `theme.json`、`theme.css` 和 `background.jpg`
 - 红白未来城市纯背景：`docs/images/hero-banner-red-white.png`（`2168 × 725`、约 3:1，仅适合首页横幅）
 - 红白未来城市运行时副本：`macos/assets/portal-hero.png`（同为 3:1，不是通用 16:9 母版）
 
-其余 `docs/images/gallery/skin-XX.jpg` 都是效果预览，不应直接导入主题。用户提供的 AI 示例不代表 OpenAI/Codex 官方视觉或背书；公开再分发前请确认肖像、模型输出和素材权利。
+其余 `docs/images/gallery/skin-XX.jpg` 都是效果预览，不应直接导入主题。Iron Man 背景经用户确认可随本个人发行版分发，但不代表 Marvel、Disney、OpenAI 或 Codex 的关联或背书。

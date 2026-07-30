@@ -749,3 +749,41 @@ Updated: 2026-07-30 (Asia/Shanghai)
     both Windows renderer/payload/package Node paths passed locally.
 - Safety: this remains external renderer/theme data. Do not modify the
   official app bundle, `app.asar`, signing state, ACL, user data or logs.
+
+## 2026-07-30 — Personal v1.5.9 single-theme release
+
+- Goal: publish the merged upstream v1.5.9 engine while preserving the custom
+  home layout/title and shipping only the user-approved Iron Man theme.
+- Branch/remotes: `codex/custom-engine`; upstream is `origin/main`, personal
+  release target is `personal/main`.
+- Release scope:
+  - [x] merged upstream v1.5.9 into the custom engine without losing the
+    main-content-centered wallpaper or unified home layout;
+  - [x] removed retired bundled preset directories and references from public
+    package documentation;
+  - [x] added one complete macOS/Windows `preset-iron-man` pack with non-empty
+    `theme.json`, `theme.css`, and `background.jpg`;
+  - [x] set dark appearance, shared sidebar canvas, main-content focus,
+    `homeTitle: "Jarvis at your service"`, and theme-owned `dim: 0.4`;
+  - [x] pinned the AI-generated wallpaper's dimensions and SHA-256 in both
+    platform builders; user explicitly confirmed it may be distributed with
+    this personal release;
+  - [x] added macOS `.disable-bundled-presets` support and kept the user's local
+    theme library at one Iron Man entry;
+  - [x] complete local source, native macOS, and package validation: 76
+    cross-platform Node tests pass; synchronized payload checks pass; the full
+    macOS suite passes with 10 XCTest cases; and the universal v1.5.9 DMG
+    mounts read-only with a valid ad-hoc signature and exactly one complete
+    Iron Man preset;
+  - [note] Windows PowerShell-native validation is CI-only because this macOS
+    host has no `pwsh`; Windows renderer, metadata, payload, package-contract,
+    and installer-source assertions run locally where portable;
+  - [ ] complete repository CI validation;
+  - [x] commit the single-theme release implementation on
+    `codex/custom-engine`;
+  - [ ] push `personal/main`, then verify repository CI and the public v1.5.9
+    Release plus DMG, Setup.exe, and `SHA256SUMS.txt` assets.
+- Version: all six required version sources are expected to remain at v1.5.9;
+  do not create or reuse a different tag without re-running consistency checks.
+- Safety: no official Codex/ChatGPT bundle, signature, protected path, ACL,
+  user database, or logs are modified.

@@ -30,19 +30,20 @@ public func deduplicatedSavedThemes(
   return Array(selected.values)
 }
 
-private let bundledGothicAliases = Set([
-  "gothic-void-crusade",
-  "preset-gothic-void-crusade"
+private let bundledIronManAliases = Set([
+  "iron-man",
+  "preset-iron-man",
+  "custom-iron-man"
 ])
 
 private func logicalThemeID(_ id: String) -> String {
   let normalized = id.lowercased()
-  return bundledGothicAliases.contains(normalized) ? "gothic-void-crusade" : normalized
+  return bundledIronManAliases.contains(normalized) ? "iron-man" : normalized
 }
 
 private func themePriority(_ theme: SavedThemeOption, currentID: String) -> Int {
   let id = theme.id.lowercased()
   if !currentID.isEmpty && id == currentID { return 0 }
-  if id == "preset-gothic-void-crusade" { return 1 }
+  if id == "preset-iron-man" { return 1 }
   return 2
 }

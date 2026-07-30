@@ -1,0 +1,13 @@
+[data-ds-part="composer"] {
+  backdrop-filter: blur(16px);
+  transition-duration: 0.2s;
+  transition-property: background-color, box-shadow;
+}
+
+[data-ds-part="composer-toolbar"] {
+  color: #8deaff;
+}
+
+[data-ds-part="project-list"] {
+  color: #f0b13f;
+}

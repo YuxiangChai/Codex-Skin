@@ -16,10 +16,10 @@ const featured = await fs.readFile(path.join(windowsRoot, "assets", "dream-refer
 const helper = path.join(windowsRoot, "scripts", "image-metadata.mjs");
 
 assert.deepEqual(readImageMetadata(featured, ".jpg"), {
-  width: 2560,
-  height: 1440,
-  ratio: 2560 / 1440,
-  wide: true,
+  width: 1864,
+  height: 1088,
+  ratio: 1864 / 1088,
+  wide: false,
   aspect: "wide",
   taskMode: "ambient",
 });

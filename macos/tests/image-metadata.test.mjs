@@ -25,17 +25,17 @@ const malformedPng = Buffer.from(portal);
 malformedPng[0] = 0;
 assert.equal(readImageMetadata(malformedPng, ".png"), null);
 
-const gothic = await fs.readFile(path.join(
+const ironMan = await fs.readFile(path.join(
   macosRoot,
   "presets",
-  "preset-gothic-void-crusade",
+  "preset-iron-man",
   "background.jpg",
 ));
-assert.deepEqual(readImageMetadata(gothic, ".jpg"), {
-  width: 2560,
-  height: 1440,
-  ratio: 2560 / 1440,
-  wide: true,
+assert.deepEqual(readImageMetadata(ironMan, ".jpg"), {
+  width: 1864,
+  height: 1088,
+  ratio: 1864 / 1088,
+  wide: false,
   aspect: "wide",
   taskMode: "ambient",
 });

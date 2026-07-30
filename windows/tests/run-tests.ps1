@@ -1004,35 +1004,45 @@ try {
   }
 
   $themeStateRoot = Join-Path $temporaryRoot 'theme-state'
-  $legacyPresetDirectory = Join-Path $themeStateRoot 'themes\preset-romantic-rose'
+  $legacyPresetDirectories = @(
+    (Join-Path $themeStateRoot 'themes\preset-romantic-rose'),
+    (Join-Path $themeStateRoot 'themes\preset-gothic-void-crusade'),
+    (Join-Path $themeStateRoot 'themes\preset-arina-hashimoto')
+  )
   $customThemeDirectory = Join-Path $themeStateRoot 'themes\custom-keepme'
-  New-Item -ItemType Directory -Force -Path $legacyPresetDirectory, $customThemeDirectory | Out-Null
-  [System.IO.File]::WriteAllText((Join-Path $legacyPresetDirectory 'retired-marker'), 'retired', $utf8NoBom)
+  New-Item -ItemType Directory -Force -Path ($legacyPresetDirectories + @($customThemeDirectory)) | Out-Null
+  foreach ($legacyPresetDirectory in $legacyPresetDirectories) {
+    [System.IO.File]::WriteAllText((Join-Path $legacyPresetDirectory 'retired-marker'), 'retired', $utf8NoBom)
+  }
   [System.IO.File]::WriteAllText((Join-Path $customThemeDirectory 'keep-marker'), 'keep', $utf8NoBom)
   $themePaths = Initialize-DreamSkinThemeStore -SkillRoot $Root -StateRoot $themeStateRoot
-  if ((Test-Path -LiteralPath $legacyPresetDirectory) -or
+  if (@($legacyPresetDirectories | Where-Object { Test-Path -LiteralPath $_ }).Count -ne 0 -or
     -not (Test-Path -LiteralPath (Join-Path $customThemeDirectory 'keep-marker'))) {
     throw 'Theme-store migration did not retire the old preset ID while preserving custom themes.'
   }
   $initialTheme = Read-DreamSkinTheme -ThemeDirectory $themePaths.Active
-  if ($initialTheme.Theme.id -cne 'preset-arina-hashimoto' -or
-    $initialTheme.Theme.name -cne '桥本有菜' -or
-    $initialTheme.Theme.appearance -cne 'auto' -or
-    $initialTheme.Theme.art.safeArea -cne 'left' -or
+  if ($initialTheme.Theme.id -cne 'preset-iron-man' -or
+    $initialTheme.Theme.name -cne 'Iron Man' -or
+    $initialTheme.Theme.appearance -cne 'dark' -or
+    $initialTheme.Theme.homeTitle -cne 'Jarvis at your service' -or
+    $initialTheme.Theme.art.safeArea -cne 'none' -or
     $initialTheme.Theme.art.taskMode -cne 'ambient' -or
+    $initialTheme.Theme.art.scope -cne 'main' -or
+    $initialTheme.Theme.art.sidebar -cne 'shared' -or
+    $initialTheme.Theme.art.dim -ne 0.4 -or
     [System.IO.Path]::GetExtension($initialTheme.ImagePath) -cne '.jpg') {
-    throw 'Default Windows theme did not seed the Arina Hashimoto wallpaper contract.'
+    throw 'Default Windows theme did not seed the Iron Man wallpaper contract.'
   }
   $preseededThemes = @(Get-DreamSkinSavedThemes -StateRoot $themeStateRoot)
   $preseededIds = @($preseededThemes | ForEach-Object { $_.Id })
-  if ($preseededThemes.Count -lt 2 -or
-    $preseededIds -notcontains 'preset-arina-hashimoto' -or
-    $preseededIds -notcontains 'preset-gothic-void-crusade') {
-    throw 'Windows did not preseed both Arina Hashimoto and Gothic Void Crusade.'
+  if ($preseededThemes.Count -ne 1 -or
+    $preseededIds -notcontains 'preset-iron-man') {
+    throw 'Windows did not preseed exactly one Iron Man theme.'
   }
-  $gothicSeed = $preseededThemes | Where-Object { $_.Id -ceq 'preset-gothic-void-crusade' } | Select-Object -First 1
-  if ($null -eq $gothicSeed -or $gothicSeed.Name -cne 'Gothic Void Crusade') {
-    throw 'Gothic Void Crusade was not preseeded with the expected display name.'
+  $ironManSeed = $preseededThemes | Where-Object { $_.Id -ceq 'preset-iron-man' } | Select-Object -First 1
+  if ($null -eq $ironManSeed -or $ironManSeed.Name -cne 'Iron Man' -or
+    -not (Test-Path -LiteralPath (Join-Path $ironManSeed.Directory 'theme.css') -PathType Leaf)) {
+    throw 'Iron Man was not preseeded as a complete three-file theme.'
   }
   $updatedTheme = Set-DreamSkinActiveTheme -ImagePath (Join-Path $Root 'assets\dream-reference.jpg') `
     -Theme $null -Name '测试主题' -StateRoot $themeStateRoot
@@ -1047,7 +1057,7 @@ try {
   $null = Initialize-DreamSkinThemeStore -SkillRoot $Root -StateRoot $themeStateRoot
   $idempotentTheme = Read-DreamSkinTheme -ThemeDirectory $themePaths.Active
   $afterReinitCount = @(Get-DreamSkinSavedThemes -StateRoot $themeStateRoot).Count
-  if ($idempotentTheme.Theme.id -cne 'custom' -or $afterReinitCount -ne 2) {
+  if ($idempotentTheme.Theme.id -cne 'custom' -or $afterReinitCount -ne 1) {
     throw 'Theme-store initialization overwrote the active custom theme or duplicated its bundled presets.'
   }
 
@@ -1055,15 +1065,15 @@ try {
   $releaseFixtureAssets = Join-Path $releaseFixtureRoot 'assets'
   $releaseFixtureScripts = Join-Path $releaseFixtureRoot 'scripts'
   $releaseFixturePresets = Join-Path $releaseFixtureRoot 'presets'
-  $releaseFixturePresetDirectory = Join-Path $releaseFixturePresets 'preset-gothic-void-crusade'
+  $releaseFixturePresetDirectory = Join-Path $releaseFixturePresets 'preset-iron-man'
   $releaseFixtureState = Join-Path $temporaryRoot 'release-theme-state'
   $repositoryRoot = Split-Path -Parent $Root
-  $publicPresetRoot = Join-Path $repositoryRoot 'macos\presets\preset-gothic-void-crusade'
+  $publicPresetRoot = Join-Path $repositoryRoot 'macos\presets\preset-iron-man'
   New-Item -ItemType Directory -Path $releaseFixtureAssets, $releaseFixtureScripts, $releaseFixturePresetDirectory -Force | Out-Null
   Copy-Item -LiteralPath (Join-Path $Root 'VERSION') -Destination $releaseFixtureRoot -Force
   foreach ($releaseAsset in @(
     'dream-skin.css', 'renderer-inject.js', 'safe-css-policy.json', 'safe-css-validator.mjs', 'selectors.json',
-    'theme-package-validator.mjs'
+    'theme-package-validator.mjs', 'theme.css'
   )) {
     Copy-Item -LiteralPath (Join-Path $Root "assets\$releaseAsset") `
       -Destination $releaseFixtureAssets -Force
@@ -1085,8 +1095,12 @@ try {
     -Destination $releaseFixturePresetDirectory -Force
   Copy-Item -LiteralPath (Join-Path $publicPresetRoot 'theme.json') `
     -Destination $releaseFixturePresetDirectory -Force
+  Copy-Item -LiteralPath (Join-Path $publicPresetRoot 'theme.css') `
+    -Destination $releaseFixturePresetDirectory -Force
   Copy-Item -LiteralPath (Join-Path $publicPresetRoot 'background.jpg') `
     -Destination (Join-Path $releaseFixtureAssets 'dream-reference.jpg') -Force
+  Copy-Item -LiteralPath (Join-Path $publicPresetRoot 'theme.css') `
+    -Destination (Join-Path $releaseFixtureAssets 'theme.css') -Force
   $releaseFixtureTheme = (Read-DreamSkinUtf8File -Path (Join-Path $publicPresetRoot 'theme.json')) |
     ConvertFrom-Json
   $releaseFixtureTheme.image = 'dream-reference.jpg'
@@ -1096,19 +1110,19 @@ try {
     -StateRoot $releaseFixtureState
   $releaseActiveTheme = Read-DreamSkinTheme -ThemeDirectory $releaseThemePaths.Active
   $releaseSavedThemes = @(Get-DreamSkinSavedThemes -StateRoot $releaseFixtureState)
-  if ($releaseActiveTheme.Theme.id -cne 'preset-gothic-void-crusade' -or
+  if ($releaseActiveTheme.Theme.id -cne 'preset-iron-man' -or
     $releaseSavedThemes.Count -ne 1 -or
-    $releaseSavedThemes[0].Id -cne 'preset-gothic-void-crusade') {
+    $releaseSavedThemes[0].Id -cne 'preset-iron-man') {
     throw 'Release-safe bundled theme did not seed dynamically by its validated preset id.'
   }
   $releaseEngine = Install-DreamSkinRuntimeEngine -SkillRoot $releaseFixtureRoot `
     -StateRoot (Join-Path $temporaryRoot 'release-engine-state')
-  if (-not (Test-Path -LiteralPath (Join-Path $releaseEngine.Root 'presets\preset-gothic-void-crusade\theme.json') -PathType Leaf)) {
-    throw 'Release-shaped payload could not stage its public Gothic preset into the managed engine.'
+  if (-not (Test-Path -LiteralPath (Join-Path $releaseEngine.Root 'presets\preset-iron-man\theme.json') -PathType Leaf)) {
+    throw 'Release-shaped payload could not stage its public Iron Man preset into the managed engine.'
   }
 
   $savedTheme = Save-DreamSkinCurrentTheme -Name '已保存主题' -StateRoot $themeStateRoot
-  if ($savedTheme.Theme.name -cne '已保存主题' -or @(Get-DreamSkinSavedThemes -StateRoot $themeStateRoot).Count -ne 3) {
+  if ($savedTheme.Theme.name -cne '已保存主题' -or @(Get-DreamSkinSavedThemes -StateRoot $themeStateRoot).Count -ne 2) {
     throw 'Saved theme creation or discovery failed.'
   }
   $null = Use-DreamSkinSavedTheme -ThemeDirectory $savedTheme.Directory -StateRoot $themeStateRoot

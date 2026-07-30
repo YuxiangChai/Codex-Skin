@@ -16,7 +16,7 @@ This project injects through **local loopback CDP**. It does **not** modify the 
 
 ## Release install (recommended)
 
-普通用户请从 [GitHub Releases](https://github.com/Fei-Away/Codex-Dream-Skin/releases) 下载
+普通用户请从 [GitHub Releases](https://github.com/YuxiangChai/Codex-Skin/releases) 下载
 `CodexDreamSkin-vX.Y.Z.dmg`，按 [`docs/install-macos.md`](../docs/install-macos.md) 的图形界面步骤
 拖入 Applications。首次运行可能需要在“系统设置 → 隐私与安全性 → 仍要打开”确认一次；不需要
 运行 `xattr` 或安装源码。后续更新下载新的 DMG 覆盖安装即可，用户主题和图片会保留。
@@ -34,7 +34,7 @@ contributors, diagnostics, and legacy deployments.
 ./scripts/install-dream-skin-macos.sh --no-launch
 
 # 3) Switch to the tested featured preset, or import your own pure background
-~/.codex/codex-dream-skin-studio/scripts/switch-theme-macos.sh --id preset-arina-hashimoto
+~/.codex/codex-dream-skin-studio/scripts/switch-theme-macos.sh --id preset-iron-man
 # ~/.codex/codex-dream-skin-studio/scripts/customize-theme-macos.sh
 
 # 4) Start/re-apply, verify, or restore via Desktop:
@@ -65,11 +65,9 @@ To build the “double-click install” folder layout for non-git users:
 ```
 
 That ZIP contains a visible installer plus a hidden `.codex-dream-skin-studio`
-engine and is staged as a rights-clean package with only the redistributable
-Gothic Void Crusade preset. It is retained for existing offline workflows;
-prefer the DMG for ordinary users, and do not share a source checkout or an
-archive containing the excluded Arina reference files. Do not ship only
-CSS/images.
+engine and is staged with only the redistributable Iron Man preset. It is
+retained for existing offline workflows; prefer the DMG for ordinary users.
+Do not ship only CSS/images.
 
 ## How it works (security boundary)
 
@@ -89,27 +87,17 @@ CDP is powerful and unauthenticated on loopback. Prefer Restore when you are don
 
 ## Bundled presets
 
-The public DMG seeds **Gothic Void Crusade**, contributed through PR #134, as
-its redistributable default. A source checkout also contains the
-**桥本有菜 / Arina Hashimoto** reference material, but the public app bundle
-deliberately excludes it until independent likeness and redistribution rights
-are confirmed.
+The public DMG and source checkout seed only **Iron Man**. Its pack contains
+`background.jpg`, `theme.json`, and Safe CSS in `theme.css`; the image and both
+configuration files are pinned by SHA-256 in the macOS and Windows release
+builders. The user confirmed that the background is AI generated and may be
+redistributed. It is not an official OpenAI/Codex or Marvel visual or
+endorsement.
 
-The user-provided source PNG is `1672 × 941`. Its pack contains a standardized
-derived `2560 × 1440` JPEG plus theme metadata; the derived export does not add
-source detail. The byte-identical source PNG is archived at
-[`docs/images/presets/arina-hashimoto-source.png`](../docs/images/presets/arina-hashimoto-source.png).
-The [light](../docs/images/presets/arina-hashimoto-light.jpg) and
-[dark](../docs/images/presets/arina-hashimoto-dark.jpg) images are real injected
-Codex screenshots for preview only — never import either screenshot as a
-background. The artwork is a user-provided AI-generated example, not an
-official OpenAI/Codex visual or endorsement; confirm likeness and asset rights
-before redistributing it.
-
-Seeding is idempotent. Upgrades remove only retired bundled preset IDs; your
-own `custom-*` themes from “换一张图” and the currently active theme copy are
-never touched. Existing locally saved reference themes are not deleted by an
-upgrade, but they are not copied into newly downloaded public packages.
+Seeding is idempotent. Upgrades remove retired bundled preset IDs; your own
+`custom-*` themes from “换一张图” and the currently active theme copy are
+never touched. A regular `themes/.disable-bundled-presets` marker opts a local
+library out of future preset seeding without deleting custom themes.
 
 To contribute a preset, see [`presets/README.md`](./presets/README.md).
 

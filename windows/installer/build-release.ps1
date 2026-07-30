@@ -27,11 +27,13 @@ $innoSetupLicensePath = Join-Path $innoLanguageRoot 'Inno-Setup-License.txt'
 $innoChineseLanguageSha256 = '7d544b9bb1d142cfa11f2e5d3cc8abe2e55f8e066c5124e3772675aa236e1278'
 $innoSetupLicenseSha256 = '0c81595601bce47eeef8d865d5da7f9ca2c6a12235b7482b29f5ab23ed02ee5a'
 $publicPresetRoot = Join-Path (Join-Path (Join-Path $repositoryRoot 'macos') 'presets') `
-  'preset-gothic-void-crusade'
+  'preset-iron-man'
 $publicPresetImagePath = Join-Path $publicPresetRoot 'background.jpg'
 $publicPresetThemePath = Join-Path $publicPresetRoot 'theme.json'
-$publicPresetImageSha256 = 'b76a7cbe2ff9d923846e931984d243a7ba1f25de8d190b5c6412c809c41aee42'
-$publicPresetThemeSha256 = '8316c6ad29e3b84806358ab4a730c7e063b261e379179b9608cf751c282d66a7'
+$publicPresetCssPath = Join-Path $publicPresetRoot 'theme.css'
+$publicPresetImageSha256 = '59e09087072b7d66d988fe9c286bbff724118f8e1e73c9c25235d5eefa690eaf'
+$publicPresetThemeSha256 = '37c751260b0b56f6ce98756d460b0e36ff43c2f7a28dec7dcc67bc8f72fd0025'
+$publicPresetCssSha256 = 'ab3417924523d617ff88d21abae84e62f322ef7781a588d2753ae426be5b620c'
 
 function Read-ReleaseTextFile {
   param([Parameter(Mandatory = $true)][string]$Path)
@@ -287,7 +289,7 @@ if ($innoSetupLicenseHash -cne $innoSetupLicenseSha256) {
   throw "The pinned Inno Setup license changed. Expected $innoSetupLicenseSha256, found $innoSetupLicenseHash."
 }
 $publicPresetTheme = (Read-ReleaseTextFile -Path $publicPresetThemePath) | ConvertFrom-Json
-if ("$($publicPresetTheme.id)" -cne 'preset-gothic-void-crusade' -or
+if ("$($publicPresetTheme.id)" -cne 'preset-iron-man' -or
   "$($publicPresetTheme.image)" -cne 'background.jpg') {
   throw 'The public Windows release preset metadata is unexpected.'
 }
@@ -301,6 +303,10 @@ if ($publicPresetImageHash -cne $publicPresetImageSha256) {
 $publicPresetThemeHash = (Get-FileHash -LiteralPath $publicPresetThemePath -Algorithm SHA256).Hash.ToLowerInvariant()
 if ($publicPresetThemeHash -cne $publicPresetThemeSha256) {
   throw "The reviewed public preset metadata changed. Expected $publicPresetThemeSha256, found $publicPresetThemeHash."
+}
+$publicPresetCssHash = (Get-FileHash -LiteralPath $publicPresetCssPath -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($publicPresetCssHash -cne $publicPresetCssSha256) {
+  throw "The reviewed public preset CSS changed. Expected $publicPresetCssSha256, found $publicPresetCssHash."
 }
 $compiler = Resolve-IsccExecutable -RequestedPath $IsccPath
 
@@ -354,9 +360,11 @@ try {
   Copy-ReleaseDirectory -Source (Join-Path $windowsRoot 'assets') -Destination (Join-Path $payloadRoot 'assets')
   Copy-ReleaseDirectory -Source (Join-Path $windowsRoot 'scripts') -Destination (Join-Path $payloadRoot 'scripts')
   Copy-ReleaseDirectory -Source $publicPresetRoot `
-    -Destination (Join-Path $payloadRoot 'presets\preset-gothic-void-crusade')
+    -Destination (Join-Path $payloadRoot 'presets\preset-iron-man')
   Copy-Item -LiteralPath $publicPresetImagePath `
     -Destination (Join-Path (Join-Path $payloadRoot 'assets') 'dream-reference.jpg') -Force
+  Copy-Item -LiteralPath $publicPresetCssPath `
+    -Destination (Join-Path (Join-Path $payloadRoot 'assets') 'theme.css') -Force
   $publicPresetTheme.image = 'dream-reference.jpg'
   [System.IO.File]::WriteAllText(
     (Join-Path (Join-Path $payloadRoot 'assets') 'theme.json'),
@@ -397,9 +405,11 @@ try {
     'assets\selectors.json',
     'assets\theme-package-validator.mjs',
     'assets\theme.json',
+    'assets\theme.css',
     'assets\codex-dream-skin.ico',
-    'presets\preset-gothic-void-crusade\background.jpg',
-    'presets\preset-gothic-void-crusade\theme.json',
+    'presets\preset-iron-man\background.jpg',
+    'presets\preset-iron-man\theme.json',
+    'presets\preset-iron-man\theme.css',
     'scripts\apply-community-theme.ps1',
     'scripts\check-update.ps1',
     'scripts\common-windows.ps1',
@@ -424,13 +434,17 @@ try {
   $stagedPublicImage = Join-Path (Join-Path $payloadRoot 'assets') 'dream-reference.jpg'
   $stagedPublicImageHash = (Get-FileHash -LiteralPath $stagedPublicImage -Algorithm SHA256).Hash.ToLowerInvariant()
   $stagedPublicThemePath = Join-Path (Join-Path $payloadRoot 'presets') `
-    'preset-gothic-void-crusade\theme.json'
+    'preset-iron-man\theme.json'
   $stagedPublicThemeHash = (Get-FileHash -LiteralPath $stagedPublicThemePath -Algorithm SHA256).Hash.ToLowerInvariant()
+  $stagedPublicCssPath = Join-Path (Join-Path $payloadRoot 'presets') `
+    'preset-iron-man\theme.css'
+  $stagedPublicCssHash = (Get-FileHash -LiteralPath $stagedPublicCssPath -Algorithm SHA256).Hash.ToLowerInvariant()
   $stagedPublicTheme = (Read-ReleaseTextFile `
     -Path (Join-Path (Join-Path $payloadRoot 'assets') 'theme.json')) | ConvertFrom-Json
   if ($stagedPublicImageHash -cne $publicPresetImageSha256 -or
     $stagedPublicThemeHash -cne $publicPresetThemeSha256 -or
-    "$($stagedPublicTheme.id)" -cne 'preset-gothic-void-crusade' -or
+    $stagedPublicCssHash -cne $publicPresetCssSha256 -or
+    "$($stagedPublicTheme.id)" -cne 'preset-iron-man' -or
     "$($stagedPublicTheme.image)" -cne 'dream-reference.jpg') {
     throw 'Staged installer payload did not retain the reviewed public release theme.'
   }

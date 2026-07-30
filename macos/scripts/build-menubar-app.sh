@@ -122,9 +122,10 @@ for name in "${RUNTIME_SCRIPTS[@]}"; do
 done
 [ -d "$ROOT/assets" ] || { printf 'Engine directory missing: assets\n' >&2; exit 1; }
 /usr/bin/rsync -a "$ROOT/assets/" "$ENGINE/assets/"
-PUBLIC_PRESET="preset-gothic-void-crusade"
-PUBLIC_PRESET_SHA256="b76a7cbe2ff9d923846e931984d243a7ba1f25de8d190b5c6412c809c41aee42"
-PUBLIC_PRESET_THEME_SHA256="8316c6ad29e3b84806358ab4a730c7e063b261e379179b9608cf751c282d66a7"
+PUBLIC_PRESET="preset-iron-man"
+PUBLIC_PRESET_SHA256="59e09087072b7d66d988fe9c286bbff724118f8e1e73c9c25235d5eefa690eaf"
+PUBLIC_PRESET_THEME_SHA256="37c751260b0b56f6ce98756d460b0e36ff43c2f7a28dec7dcc67bc8f72fd0025"
+PUBLIC_PRESET_CSS_SHA256="ab3417924523d617ff88d21abae84e62f322ef7781a588d2753ae426be5b620c"
 [ -d "$ROOT/presets/$PUBLIC_PRESET" ] \
   || { printf 'Public release preset missing: %s\n' "$PUBLIC_PRESET" >&2; exit 1; }
 actual_public_preset_sha256="$(LC_ALL=C /usr/bin/shasum -a 256 \
@@ -135,6 +136,10 @@ actual_public_preset_theme_sha256="$(LC_ALL=C /usr/bin/shasum -a 256 \
   "$ROOT/presets/$PUBLIC_PRESET/theme.json" | /usr/bin/awk '{print $1}')"
 [ "$actual_public_preset_theme_sha256" = "$PUBLIC_PRESET_THEME_SHA256" ] \
   || { printf 'Reviewed public preset metadata hash changed: %s\n' "$actual_public_preset_theme_sha256" >&2; exit 1; }
+actual_public_preset_css_sha256="$(LC_ALL=C /usr/bin/shasum -a 256 \
+  "$ROOT/presets/$PUBLIC_PRESET/theme.css" | /usr/bin/awk '{print $1}')"
+[ "$actual_public_preset_css_sha256" = "$PUBLIC_PRESET_CSS_SHA256" ] \
+  || { printf 'Reviewed public preset CSS hash changed: %s\n' "$actual_public_preset_css_sha256" >&2; exit 1; }
 /bin/mkdir -p "$ENGINE/presets/$PUBLIC_PRESET"
 /usr/bin/rsync -a "$ROOT/presets/$PUBLIC_PRESET/" "$ENGINE/presets/$PUBLIC_PRESET/"
 /bin/cp "$ROOT/VERSION" "$ENGINE/VERSION"
@@ -143,8 +148,10 @@ actual_public_preset_theme_sha256="$(LC_ALL=C /usr/bin/shasum -a 256 \
 /bin/chmod 755 "$ENGINE/scripts/"*.sh
 /bin/chmod 644 "$ENGINE/scripts/"*.mjs
 /bin/chmod 644 "$ENGINE/VERSION"
-[ ! -e "$ENGINE/presets/preset-arina-hashimoto" ] \
-  || { printf 'Rights-restricted preset entered the public app bundle.\n' >&2; exit 1; }
+PRESET_COUNT="$(/usr/bin/find "$ENGINE/presets" -mindepth 1 -maxdepth 1 -type d \
+  -name 'preset-*' | /usr/bin/wc -l | /usr/bin/tr -d ' ')"
+[ "$PRESET_COUNT" -eq 1 ] \
+  || { printf 'Public app bundle must contain exactly one preset.\n' >&2; exit 1; }
 
 "$ROOT/scripts/generate-app-icon.sh" "$RESOURCES/DreamSkin.icns"
 [ -s "$RESOURCES/DreamSkin.icns" ] \

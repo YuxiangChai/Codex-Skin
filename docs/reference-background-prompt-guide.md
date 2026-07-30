@@ -6,14 +6,22 @@
 
 English guide: [`reference-background-prompt-guide.en.md`](./reference-background-prompt-guide.en.md)
 
-## 当前源码参考：桥本有菜（不随公开安装包提供）
+## 当前发行预设：Iron Man
 
-- **源码中的可切换参考主题**：`macos/presets/preset-arina-hashimoto/`；源码 Windows 运行时使用 `windows/assets/theme.json` 与 byte-identical 的 `windows/assets/dream-reference.jpg`。公开 DMG 和 Setup.exe 不包含这套素材，公开包只播种已确认可分发的 Gothic Void Crusade。
-- **用户提供的纯背景源图**：`docs/images/presets/arina-hashimoto-source.png`（`1672 × 941`）；preset 中的 `2560 × 1440` JPEG 是标准化发行副本，不会凭空增加源图细节。
-- **真实运行效果**：`arina-hashimoto-light.jpg` 与 `arina-hashimoto-dark.jpg` 是浅色/暗色实机截图，只用于预览，不能导入为背景。
-- **与历史示例的关系**：它是当前实际预设，不是 `docs/images/gallery/skin-01.jpg`，也不是 skin-01～08 的概念效果图。skin-01 只提供相近的粉色玫瑰视觉方向和 UI 文案参考。
+- **完整主题包**：`macos/presets/preset-iron-man/` 与
+  `windows/presets/preset-iron-man/`，均包含非空 `theme.json`、
+  `theme.css` 和 `background.jpg`。
+- **Windows 默认播种源**：`windows/assets/theme.json`、
+  `windows/assets/theme.css` 与 byte-identical 的
+  `windows/assets/dream-reference.jpg`。
+- **纯背景图**：`1864 × 1088` JPEG，SHA-256
+  `59e09087072b7d66d988fe9c286bbff724118f8e1e73c9c25235d5eefa690eaf`。
+- **主题行为**：深色外观、主内容区居中焦点、侧栏共享同一连续画布，
+  暗度为 `0.4`，首页标题为 `Jarvis at your service`。
 
-该素材由用户说明为桥本有菜参考版，并按维护者明确要求作为源图、可切换预设和实机预览随仓库收录；这只记录素材指向与收录决定，不构成肖像、生成或再分发授权声明。`macos/NOTICE.md` 已将相关文件排除在 MIT 软件许可之外，使用者与下游分发者仍需独立核验相应权利。下面的公共可复制提示词继续使用原创虚构成年人物。
+用户确认该 AI 生成图片可随个人发行版分发；它不受本仓库 MIT 软件许可
+覆盖，也不表示 Marvel、Disney、OpenAI 或 Codex 的关联或背书。具体边界
+见 `macos/NOTICE.md`。
 
 ## 先分清：实际预设、纯背景、效果图和提示词
 
@@ -21,17 +29,14 @@ README 里的“效果图”不等于可以导入的背景。下面这些文件�
 
 | 类型 | 仓库路径 | 作用 | 能否直接作为完整主题导入 |
 |---|---|---|---|
-| **源码参考预设（非公开包）** | `macos/presets/preset-arina-hashimoto/`；源码 Windows 播种源为 `windows/assets/theme.json` + byte-identical 的 `dream-reference.jpg` | 仅在本地源码且完成权利核验后使用；公开 DMG/Setup.exe 改用 Gothic Void Crusade | **仅限获权的本地源码场景** |
-| **纯背景源图** | `docs/images/presets/arina-hashimoto-source.png` | 用户提供的原始纯背景，约 `1672 × 941`；只有图片，没有 `theme.json` | **不能作为完整主题**；可手动换图，但应先检查比例和裁切 |
-| **真实实机效果预览** | `docs/images/presets/arina-hashimoto-light.jpg`、`arina-hashimoto-dark.jpg` | 浅色/暗色 Codex 注入截图，包含真实侧栏、卡片和输入框 | **不可以** |
+| **当前发行预设** | `macos/presets/preset-iron-man/`、`windows/presets/preset-iron-man/` | Iron Man 的三文件主题包 | **可以**，打包前仍须通过 manifest 与 Safe CSS 校验 |
+| **Windows 默认播种源** | `windows/assets/theme.json`、`theme.css`、`dream-reference.jpg` | 与发行预设内容一致的受管安装源 | **不是 ZIP**；由安装器安全播种 |
 | **概念效果图** | `docs/images/gallery/skin-01.jpg` ～ `skin-08.jpg` | 只表达八种视觉方向的带 UI 示例；配套的 `background-generation-prompts.md` 按这些方向拆解 | **不可以** |
 | **实验/历史图片** | `docs/images/banner-*.png`、`docs/images/generated-*.png` | 尚未批准的本地实验图或参考图；不属于任何 preset pack | **不可以**，也不要未经权利核验放进发行包 |
 
 `docs/images/hero-banner-red-white.png` 与 `macos/assets/portal-hero.png` 是旧的 3:1 横幅资源，不是当前 16:9 通用主题母版；除非明确只做首页横幅，否则不要拿它们替代 `preset-*/background.jpg`。
 
-一句话判断：**公开安装包的默认主题是 Gothic Void Crusade；源码中的参考主题仅在完成权利核验后本地切换。** 要生成新图看本指南；要看视觉方向看 `docs/images/gallery/`；要看真实运行结果看 `docs/images/presets/*-light.jpg` / `*-dark.jpg`。`theme.json` 和 `background.jpg` 同在一个 `preset-*` 目录时才是一套可播种的主题；`docs/images/` 是文档/归档目录，不是主题库的镜像。
-
-路径分类不代表肖像或再分发许可。当前 `preset-arina-hashimoto` 含维护者指示收录的用户提供真人/AI 肖像素材；仓库公开包含这些文件并不授予或证明肖像、生成、商业使用或再次分发权利，具体边界以 `macos/NOTICE.md` 为准。
+一句话判断：**公开安装包只播种 Iron Man。** 要生成新图看本指南；要看视觉方向看 `docs/images/gallery/`。完整主题必须把非空 `theme.json`、`theme.css` 和唯一背景图放在同一个 `preset-*` 目录；`docs/images/` 是文档/归档目录，不是主题库的镜像。
 
 生成新图时先在仓库外保存草稿并按文末清单验收；通过后，才把**纯背景**等比导出为 `background.jpg`，与对应的 `theme.json` 放进新的 `macos/presets/preset-<slug>/`。不要把草稿、带 UI 的截图或未核验真人图放进 `docs/images/` 再误以为它会成为可切换主题。
 
@@ -41,9 +46,9 @@ README 里的“效果图”不等于可以导入的背景。下面这些文件�
 
 | 概念位置 | 参考文案 | 当前建议 |
 |---|---|---|
-| 顶部品牌标题 | `桥本有菜专属定制皮肤` | 只有在肖像与再分发权利已确认时才使用；当前运行时不显示该品牌层，留作未来独立 UI 字段 |
+| 顶部品牌标题 | `主题专属定制皮肤` | 当前运行时不显示该品牌层，留作未来独立 UI 字段 |
 | 顶部副标题 | `Codex App 限定版` | 当前运行时不显示；不烘焙到 `background.jpg` |
-| 花体签名 | `Arina Hashimoto♡` | 独立签名层；当前基础运行时没有通用签名字段，未实现前不要伪装成背景文字 |
+| 花体签名 | `Your Theme` | 独立签名层；当前基础运行时没有通用签名字段，未实现前不要伪装成背景文字 |
 | 首页主标题 | `我们该构建什么？` | 写入 `homeTitle`；Chat、Work、Codex 会使用相同排版在整窗垂直中心渲染 |
 | 首页副标题 | `与有菜一起，用灵感创造无限可能` | macOS 当前可用 `tagline` 显示；Windows 当前不渲染主题文案，留作后续独立字段 |
 | 输入框占位 | `随心输入，让灵感陪你一起写代码吧～` | 仅在产品明确允许自定义占位时使用；不能覆盖用户已输入内容 |
@@ -51,7 +56,7 @@ README 里的“效果图”不等于可以导入的背景。下面这些文件�
 
 这张表**不表示仓库已经支持所有字段**。`homeTitle` 已形成 macOS / Windows 以及 Chat / Work / Codex 共用的可见契约；主题名也会出现在两端的主题切换入口。顶部品牌、副标题、状态、quote、签名、拍立得和独立装饰仍不属于这次主标题能力。没有对应 schema 与 renderer 能力时，宁可不显示，也不要把文字或小照片拼进背景图。若以后实现 sticker，照片应作为主题目录里的独立 `sticker-*.jpg`，由装饰层在首页/任务页按断点显示，并设置 `pointer-events: none`；不要把它当成第二个背景或让它遮住 composer。
 
-人物姓名、肖像和这组文案都属于特定预设的内容，不应复制到“通用模板”里。没有相应授权时，改用原创虚构成年人物，并删除姓名、作品名和可识别身份词。
+人物姓名、肖像和主题文案不应复制到“通用模板”里。没有相应授权时，改用原创虚构成年人物，并删除姓名、作品名和可识别身份词。
 
 ## 先固定 Image 1 / 2 / 3 的职责
 
@@ -67,7 +72,7 @@ README 里的“效果图”不等于可以导入的背景。下面这些文件�
 
 最稳定的第一轮是只使用 Image 1，生成原创虚构成年人物。只有在用户明确确认必要的肖像和素材使用权后，才切换到 Image 3 身份参考流程；本文档不代表对任何具体素材做授权声明。
 
-像“桥本有菜”这类具体真人姓名不能写进默认公共 Prompt 来诱导模型模仿。若你确实拥有必要授权，只在本地授权流程中把清晰的成年身份图作为 Image 3，并按下方“已授权身份参考”模板生成；否则请使用原创虚构成年人物版本。
+具体真人姓名不能写进默认公共 Prompt 来诱导模型模仿。若你确实拥有必要授权，只在本地授权流程中把清晰的成年身份图作为 Image 3，并按下方“已授权身份参考”模板生成；否则请使用原创虚构成年人物版本。
 
 ## 使用前先设置尺寸
 

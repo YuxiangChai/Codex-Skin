@@ -212,6 +212,9 @@ seed_bundled_presets() {
   local themes_root="$STATE_ROOT/themes"
   /bin/mkdir -p "$themes_root"
   local src id dest entry
+  local retired_ids="preset-midnight-aurora preset-sakura-dawn preset-amber-dusk
+preset-forest-mist preset-cyber-neon preset-romantic-rose
+preset-gothic-void-crusade preset-arina-hashimoto"
   local disable_marker="$themes_root/.disable-bundled-presets"
   if [ -f "$disable_marker" ] && [ ! -L "$disable_marker" ]; then
     for src in "$presets_root"/preset-*/; do
@@ -219,13 +222,13 @@ seed_bundled_presets() {
       id="$(/usr/bin/basename "$src")"
       /bin/rm -rf "$themes_root/$id"
     done
+    for id in $retired_ids; do
+      /bin/rm -rf "$themes_root/$id"
+    done
     return 0
   fi
-  local retired
-  for retired in \
-    preset-midnight-aurora preset-sakura-dawn preset-amber-dusk \
-    preset-forest-mist preset-cyber-neon preset-romantic-rose; do
-    /bin/rm -rf "$themes_root/$retired"
+  for id in $retired_ids; do
+    /bin/rm -rf "$themes_root/$id"
   done
   for src in "$presets_root"/preset-*/; do
     [ -d "$src" ] || continue

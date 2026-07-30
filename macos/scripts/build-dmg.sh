@@ -73,10 +73,14 @@ MOUNTED_ICON_NAME="$(/usr/bin/plutil -extract CFBundleIconFile raw -o - \
 MOUNTED_ICON="$MOUNTED_APP/Contents/Resources/${MOUNTED_ICON_NAME%.icns}.icns"
 [ -s "$MOUNTED_ICON" ] \
   || { printf 'Mounted app icon is missing or empty: %s\n' "$MOUNTED_ICON" >&2; exit 1; }
-[ -f "$MOUNTED_APP/Contents/Resources/engine/presets/preset-gothic-void-crusade/theme.json" ] \
-  || { printf 'Mounted app is missing the public release preset.\n' >&2; exit 1; }
-[ ! -e "$MOUNTED_APP/Contents/Resources/engine/presets/preset-arina-hashimoto" ] \
-  || { printf 'Mounted app contains a rights-restricted preset.\n' >&2; exit 1; }
+[ -f "$MOUNTED_APP/Contents/Resources/engine/presets/preset-iron-man/theme.json" ] \
+  && [ -f "$MOUNTED_APP/Contents/Resources/engine/presets/preset-iron-man/theme.css" ] \
+  && [ -f "$MOUNTED_APP/Contents/Resources/engine/presets/preset-iron-man/background.jpg" ] \
+  || { printf 'Mounted app is missing the complete Iron Man release preset.\n' >&2; exit 1; }
+MOUNTED_PRESET_COUNT="$(/usr/bin/find "$MOUNTED_APP/Contents/Resources/engine/presets" \
+  -mindepth 1 -maxdepth 1 -type d -name 'preset-*' | /usr/bin/wc -l | /usr/bin/tr -d ' ')"
+[ "$MOUNTED_PRESET_COUNT" -eq 1 ] \
+  || { printf 'Mounted app must contain exactly one public release preset.\n' >&2; exit 1; }
 MOUNTED_ENGINE="$MOUNTED_APP/Contents/Resources/engine"
 [ -f "$MOUNTED_ENGINE/assets/selectors.json" ] \
   || { printf 'Mounted app is missing the selector contract.\n' >&2; exit 1; }

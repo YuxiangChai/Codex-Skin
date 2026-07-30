@@ -6,24 +6,15 @@
 
 ## 内置实测预设
 
-当前内置 `preset-gothic-void-crusade/`（Gothic Void Crusade）与
-`preset-arina-hashimoto/`（桥本有菜 / Arina Hashimoto）两套实机验证主题。
-前者是社区作者提供的原创哥特科幻背景；后者使用一张
-`2560 × 1440`（16:9）纯背景：左侧低信息留白承载 Codex 原生标题，人物和花卉主视觉集中在右侧。浅色与暗色截图均来自真实 Codex 注入，不是 AI 绘制的整窗 UI。
-
-来源尺寸必须如实区分：归档的用户源图（不随 preset 播种）是 `1672 × 941` PNG；preset 内的 `background.jpg` 保持其近 16:9 构图，标准化导出为 `2560 × 1440` JPEG，并不代表补回或新增了源图细节。派生文件使用 `sips -z 1440 2560 -s format jpeg -s formatOptions 90` 生成。
-
-- 可导入/可播种的主题素材只有 [`background.jpg`](./preset-arina-hashimoto/background.jpg) 与 [`theme.json`](./preset-arina-hashimoto/theme.json)。
-- 用户提供的 byte-identical 源 PNG 单独归档在 [`docs/images/presets/arina-hashimoto-source.png`](../../docs/images/presets/arina-hashimoto-source.png)，不放进 preset pack，因此不会被安装脚本播种为多余文件。
-- 当前浅色、暗色实测文档截图均为 `2308 × 1572` Retina JPEG（CSS viewport `1154 × 786`），来自同一真实 Codex 首页；为保护未发送草稿，截图时仅用临时本地样式隐藏输入文字并收起编辑区，没有修改草稿内容或伪造皮肤效果。它们包含真实侧栏、项目工具栏和输入框，**只作预览，绝不能当背景导入**。
-- 背景是用户提供的 AI 生成示例，不代表 OpenAI/Codex 官方视觉或背书；公开分发前仍需确认人物、模型输出与素材使用权。
-- 该维护者提供的精选预设是单独记录的发行例外，不纳入 MIT 软件许可；文件清单和限制见 [`../NOTICE.md`](../NOTICE.md)。这不表示以后可以提交其他可识别真人素材。
+当前只内置 `preset-iron-man/`。它包含用户确认可分发的 AI 生成
+`1864 × 1088` JPEG、主题元数据和通过 Safe CSS 策略的局部控件样式。
+macOS 与 Windows 发行构建都会核对三份文件的固定 SHA-256。
 
 安装后可直接切换：
 
 ```bash
 ~/.codex/codex-dream-skin-studio/scripts/switch-theme-macos.sh \
-  --id preset-arina-hashimoto
+  --id preset-iron-man
 ```
 
 ## 一套预设的结构
@@ -31,6 +22,7 @@
 ```
 preset-<slug>/
 ├── theme.json        # schemaVersion 1，与 assets/theme.json 同一格式
+├── theme.css         # 非空 Safe CSS，只允许登记的公开主题部件
 └── background.jpg    # 背景图（横向，JPEG）
 ```
 
@@ -44,7 +36,7 @@ preset-<slug>/
 
 ## theme.json 字段全解（投稿必读）
 
-以 `preset-gothic-void-crusade/theme.json` 为参考模板。除标注「可选」外均建议如实填写；文案留空会退回内置默认值，不会报错但会显得敷衍。
+以 `preset-iron-man/theme.json` 为参考模板。除标注「可选」外均建议如实填写；文案留空会退回内置默认值，不会报错但会显得敷衍。
 
 ### 文案字段（界面哪里能看到）
 
@@ -77,7 +69,7 @@ preset-<slug>/
 | `muted` | 次要文字与大多数描边（卡片/面板边框按它调透明度） |
 | `line` | 分隔线与细描边 |
 
-- 颜色必须与背景图协调：`accent` 建议直接从画面主体取色（Gothic 取的是烛金 `#c8a55a`）。
+- 颜色必须与背景图协调：`accent` 建议直接从画面主体取色（Iron Man 使用弧光青 `#64e6ff`）。
 - 声明 `appearance: dark` 的主题请给暗底亮字；`light` 反之；`auto` 主题两种模式都要自查对比度。
 
 ### art 元数据
@@ -96,7 +88,7 @@ preset-<slug>/
 除非维护者事先完成独立权利审核并在 `NOTICE.md` 逐项记录，否则**不接受**（PR 会被拒绝）：
 
 - ❌ 真人肖像（明星、网红、AV 演员等）——涉肖像权，且本仓库带 MIT 与商业赞助；
-- ❌ 受版权保护的动漫 / 游戏 / 影视角色与截图；
+- ❌ 未经明确分发授权与 `NOTICE.md` 逐项记录的动漫 / 游戏 / 影视角色与截图；
 - ❌ 任何你无权再分发的第三方素材。
 
 提交预设即视为你声明：对该素材拥有分发与再授权的权利。

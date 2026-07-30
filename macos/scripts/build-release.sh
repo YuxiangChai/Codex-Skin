@@ -18,7 +18,6 @@ if [ "${1:-}" != "--skip-tests" ]; then "$ROOT/tests/run-tests.sh"; fi
   --exclude '.git/' \
   --exclude '.DS_Store' \
   --exclude 'release/' \
-  --exclude 'presets/preset-arina-hashimoto/' \
   "$ROOT/" "$TMP/codex-dream-skin-studio/"
 
 # The macOS tree is also published as a standalone ZIP. Bundle prompt guides
@@ -29,7 +28,7 @@ rewrite_standalone_links() {
   local temporary="${file}.standalone"
   /usr/bin/sed \
     -e 's#\.\./docs/#docs/#g' \
-    -e 's#\.\./windows/#https://github.com/Fei-Away/Codex-Dream-Skin/tree/main/windows/#g' \
+    -e 's#\.\./windows/#https://github.com/YuxiangChai/Codex-Skin/tree/main/windows/#g' \
     "$file" > "$temporary"
   /bin/mv "$temporary" "$file"
 }
@@ -41,8 +40,6 @@ if [ -f "$PRESET_README" ]; then
   /bin/mv "$temporary" "$PRESET_README"
 fi
 /usr/bin/find "$TMP/codex-dream-skin-studio" -type f \( -name '.DS_Store' -o -name '._*' \) -delete
-[ ! -e "$TMP/codex-dream-skin-studio/presets/preset-arina-hashimoto" ] \
-  || { printf 'Restricted Arina preset entered the standalone ZIP.\n' >&2; exit 1; }
 if /usr/bin/find "$TMP/codex-dream-skin-studio" -type f -name 'arina-hashimoto-*' -print -quit | /usr/bin/grep -q .; then
   printf 'Restricted Arina documentation asset entered the standalone ZIP.\n' >&2
   exit 1

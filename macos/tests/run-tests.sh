@@ -113,14 +113,13 @@ if /usr/bin/grep -R -n -E --exclude-dir='.build' \
 fi
 if /usr/bin/grep -n -F -q 'xattr' \
   "$ROOT/scripts/build-client-release.sh" "$ROOT/scripts/build-release.sh" >/dev/null; then
-  printf 'Standalone release builders must not strip quarantine or include the restricted Arina preset.\n' >&2
+  printf 'Standalone release builders must not strip quarantine.\n' >&2
   exit 1
 fi
-if ! /usr/bin/grep -F -q "presets/preset-arina-hashimoto/" \
-  "$ROOT/scripts/build-client-release.sh" "$ROOT/scripts/build-release.sh"; then
-  printf 'Standalone release builders must explicitly exclude the restricted Arina preset.\n' >&2
-  exit 1
-fi
+for retired_preset in preset-gothic-void-crusade preset-arina-hashimoto; do
+  [ ! -e "$ROOT/presets/$retired_preset" ] \
+    || { printf 'Retired preset remains in the macOS source: %s\n' "$retired_preset" >&2; exit 1; }
+done
 if ! /usr/bin/grep -F -q 'DEPLOY_PREVIOUS' "$ROOT/scripts/install-dream-skin-macos.sh" ||
    ! /usr/bin/grep -F -q 'rollback_deployed_project' "$ROOT/scripts/install-dream-skin-macos.sh"; then
   printf 'The macOS outer installer must roll back a failed engine deployment.\n' >&2
@@ -267,7 +266,7 @@ STANDALONE_DOCS="$TMP/standalone-source-docs"
   "$STANDALONE_ROOT/docs/reference-background-prompt-guide.md"
 /usr/bin/grep -F -q 'assets/portal-hero.png' \
   "$STANDALONE_ROOT/docs/reference-background-prompt-guide.md"
-/usr/bin/grep -F -q 'https://github.com/Fei-Away/Codex-Dream-Skin/blob/main/windows/assets/theme.json' \
+/usr/bin/grep -F -q 'https://github.com/YuxiangChai/Codex-Skin/blob/main/windows/assets/theme.json' \
   "$STANDALONE_ROOT/docs/reference-background-prompt-guide.md"
 [ -f "$STANDALONE_ROOT/docs/images/hero-banner-red-white.png" ]
 [ ! -e "$STANDALONE_ROOT/docs/images/presets/arina-hashimoto-source.png" ]
@@ -289,7 +288,7 @@ STANDALONE_REPACK="$TMP/standalone-repack"
 "$STANDALONE_SOURCE/scripts/prepare-standalone-docs.sh" "$STANDALONE_REPACK"
 REPACK_GUIDE="$STANDALONE_REPACK/docs/reference-background-prompt-guide.md"
 /usr/bin/grep -F -q \
-  'https://github.com/Fei-Away/Codex-Dream-Skin/blob/main/windows/assets/theme.json' \
+  'https://github.com/YuxiangChai/Codex-Skin/blob/main/windows/assets/theme.json' \
   "$REPACK_GUIDE"
 if /usr/bin/grep -E -q 'tree/main/windows/assets|blob/main/https://' "$REPACK_GUIDE"; then
   printf 'Standalone prompt URL rewriting is not idempotent.\n' >&2
@@ -336,21 +335,20 @@ fi
   themes="$STATE_ROOT/themes"
   /bin/mkdir -p "$themes/custom-keepme"
   : > "$themes/custom-keepme/theme.json"
-  retired="preset-midnight-aurora preset-sakura-dawn preset-amber-dusk preset-forest-mist preset-cyber-neon preset-romantic-rose"
+  retired="preset-midnight-aurora preset-sakura-dawn preset-amber-dusk preset-forest-mist preset-cyber-neon preset-romantic-rose preset-gothic-void-crusade preset-arina-hashimoto"
   for id in $retired; do
     /bin/mkdir -p "$themes/$id"
     : > "$themes/$id/retired-marker"
   done
   seed_bundled_presets
   seed_bundled_presets
-  [ -f "$themes/preset-gothic-void-crusade/theme.json" ] || exit 1
-  [ -f "$themes/preset-gothic-void-crusade/background.jpg" ] || exit 1
-  [ -f "$themes/preset-arina-hashimoto/theme.json" ] || exit 1
-  [ -f "$themes/preset-arina-hashimoto/background.jpg" ] || exit 1
+  [ -f "$themes/preset-iron-man/theme.json" ] || exit 1
+  [ -f "$themes/preset-iron-man/theme.css" ] || exit 1
+  [ -f "$themes/preset-iron-man/background.jpg" ] || exit 1
   [ -f "$themes/custom-keepme/theme.json" ] || exit 1
   for id in $retired; do [ ! -e "$themes/$id" ] || exit 1; done
   seeded="$(/usr/bin/find "$themes" -maxdepth 1 -type d -name "preset-*" | /usr/bin/wc -l | /usr/bin/tr -d " ")"
-  [ "$seeded" -eq 2 ] || exit 1
+  [ "$seeded" -eq 1 ] || exit 1
 ' _ "$ROOT"
 
 # A user-owned marker can keep an existing custom-only library free of bundled
@@ -361,11 +359,13 @@ fi
   ensure_state_root
   themes="$STATE_ROOT/themes"
   /bin/mkdir -p "$themes/custom-keepme" \
-    "$themes/preset-gothic-void-crusade" "$themes/preset-arina-hashimoto"
+    "$themes/preset-iron-man" "$themes/preset-gothic-void-crusade" \
+    "$themes/preset-arina-hashimoto"
   : > "$themes/custom-keepme/theme.json"
   : > "$themes/.disable-bundled-presets"
   seed_bundled_presets
   [ -f "$themes/custom-keepme/theme.json" ] || exit 1
+  [ ! -e "$themes/preset-iron-man" ] || exit 1
   [ ! -e "$themes/preset-gothic-void-crusade" ] || exit 1
   [ ! -e "$themes/preset-arina-hashimoto" ] || exit 1
   seeded="$(/usr/bin/find "$themes" -maxdepth 1 -type d -name "preset-*" | /usr/bin/wc -l | /usr/bin/tr -d " ")"
@@ -705,7 +705,7 @@ STATUS_PID=""
 # The common stop path must reject a real watcher running on 19341 when the
 # saved state claims 1934, even though nodePath/injectorPath/start-time all
 # match. This exercises the signal gate directly (status has its own matcher).
-"$NODE" "$ROOT/scripts/injector.mjs" --watch --port 19341 --theme-dir "$ROOT/presets/preset-gothic-void-crusade" \
+"$NODE" "$ROOT/scripts/injector.mjs" --watch --port 19341 --theme-dir "$ROOT/presets/preset-iron-man" \
   >"$TMP/near-prefix-injector.out" 2>&1 &
 WATCH_PID="$!"
 /bin/sleep 0.2

@@ -45,7 +45,7 @@ Passion8 has a benefit for this project's users: register through <a href="https
 ## Install directly
 
 Ordinary users first install and quit the official Codex / ChatGPT app once,
-then download from [GitHub Releases](https://github.com/Fei-Away/Codex-Dream-Skin/releases):
+then download from [GitHub Releases](https://github.com/YuxiangChai/Codex-Skin/releases):
 
 - macOS: open `CodexDreamSkin-vX.Y.Z.dmg` and drag the app to Applications.
 - Windows: run `CodexDreamSkin-Setup-vX.Y.Z.exe` and follow the wizard.
@@ -128,43 +128,20 @@ one-click button. Anything else goes through the manual import below.
 
 ## Tested featured presets
 
-### Gothic Void Crusade / 哥特虚空远征
+### Iron Man
 
-**Special thanks to [@seansong-ideogram](https://github.com/seansong-ideogram) for designing and contributing this striking, atmospheric original gothic science-fiction work to the community.** It leads the tested featured presets and is the default theme for fresh macOS installs.
-
-<p align="center">
-  <img src="docs/images/presets/gothic-void-crusade-preview.jpg" alt="Gothic Void Crusade theme running in Codex" width="900"><br>
-  <sub>Real injected Codex home screen (preview only)</sub>
-</p>
-
-After installing on macOS, switch directly from **Saved Themes** in the menu bar.
-
-### Arina Hashimoto / 桥本有菜
-
-“Arina Hashimoto / 桥本有菜” has been verified on the real Codex home screen in
-both light and dark appearances. The user-provided source PNG is `1672 × 941`;
-the preset's `2560 × 1440` JPEG is a standardized derived export that preserves
-the source's near-16:9 composition and does not add source detail. The sidebar,
-cards, project picker, and composer
-shown below are native Codex controls.
+This personal release bundles exactly one theme. Its user-confirmed
+redistributable AI-generated background uses a dark appearance, a main-content
+focus that remains centered as the sidebar changes, one continuous canvas
+shared with the sidebar, and a uniform `0.4` dim level.
 
 <p align="center">
-  <img src="docs/images/presets/arina-hashimoto-light.jpg" alt="Arina Hashimoto theme tested in light appearance" width="900"><br>
-  <sub>Light · real injected screenshot; unsent input hidden during capture (preview only)</sub>
+  <img src="macos/presets/preset-iron-man/background.jpg" alt="Iron Man theme background" width="900"><br>
+  <sub>Redistributable wallpaper only; the runtime layers native Codex controls above it</sub>
 </p>
 
-<p align="center">
-  <img src="docs/images/presets/arina-hashimoto-dark.jpg" alt="Arina Hashimoto theme tested in dark appearance" width="900"><br>
-  <sub>Dark · real injected screenshot; unsent input hidden during capture (preview only)</sub>
-</p>
-
-This portrait material remains in the source repository for reference and
-rights review; it is excluded from public DMG and Setup.exe assets. Public
-installers seed only the redistributable Gothic Void Crusade preset. Users can
-still choose **Change Background** to import UI-free artwork they are entitled
-to use and save it for one-click switching.
-
-> The downloadable user source is [`docs/images/presets/arina-hashimoto-source.png`](./docs/images/presets/arina-hashimoto-source.png) (`1672 × 941`); the source-only reference preset uses the normalized derived [`background.jpg`](./macos/presets/preset-arina-hashimoto/background.jpg) (`2560 × 1440`). Do not import either screenshot above: they contain real UI and are previews only. The background is a user-provided AI-generated example, not an official OpenAI/Codex visual or endorsement; do not put it in a public installer without confirmed likeness and asset rights.
+After installation, switch to it from **Saved Themes** in the macOS menu bar or
+Windows system tray.
 
 ## What it does
 
@@ -183,7 +160,7 @@ to use and save it for one-click switching.
 
 You do not need to clone the repository, install Node.js, or run `.sh` / `.ps1`
 files. Download the latest package for your platform from
-[GitHub Releases](https://github.com/Fei-Away/Codex-Dream-Skin/releases), then
+[GitHub Releases](https://github.com/YuxiangChai/Codex-Skin/releases), then
 follow the graphical first-run guide:
 
 | Platform | Download | Install guide |
