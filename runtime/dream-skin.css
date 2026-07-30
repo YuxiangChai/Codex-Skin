@@ -1206,6 +1206,7 @@ html[data-dream-skin="active"]
   __DREAM_SELECTOR_HOME_ROUTE_CSS__:has(__DREAM_SELECTOR_GAME_SOURCE__)
   div:has(> div > __DREAM_SELECTOR_HOME_UTILITY__) {
   order: 2 !important;
+  margin-top: calc(var(--spacing) * -2) !important;
 }
 
 html[data-dream-skin="active"] __DREAM_SELECTOR_HOME_ROUTE_CSS__ __DREAM_SELECTOR_GAME_SOURCE__ {
@@ -1309,6 +1310,39 @@ html[data-dream-skin="active"][data-dream-shell="dark"] body
   background-color: var(--color-token-input-background) !important;
 }
 
+/* The older split-card treatment has the same specificity as the native
+   surface reset above (and one extra root attribute for wide artwork). Give
+   standalone project homes an equally specific, later rule so their composer
+   keeps Work's complete rounded surface instead of inheriting half a card. */
+html[data-dream-skin="active"] body
+  __DREAM_SELECTOR_HOME_ROUTE_CSS__:has(__DREAM_SELECTOR_GAME_SOURCE__):has(__DREAM_SELECTOR_HOME_UTILITY__)
+  __DREAM_SELECTOR_COMPOSER_CHROME__,
+html[data-dream-skin="active"][data-dream-art-wide="true"] body
+  __DREAM_SELECTOR_HOME_ROUTE_CSS__:has(__DREAM_SELECTOR_GAME_SOURCE__):has(__DREAM_SELECTOR_HOME_UTILITY__)
+  __DREAM_SELECTOR_COMPOSER_CHROME__ {
+  --tw-backdrop-blur: blur(var(--blur-lg));
+  background-color: color-mix(in oklab, var(--color-token-input-background) 90%, transparent) !important;
+  border: 0 solid transparent !important;
+  border-radius: var(--radius-3xl) !important;
+  box-shadow: var(--elevation-prominent) !important;
+  backdrop-filter:
+    var(--tw-backdrop-blur,)
+    var(--tw-backdrop-brightness,)
+    var(--tw-backdrop-contrast,)
+    var(--tw-backdrop-grayscale,)
+    var(--tw-backdrop-hue-rotate,)
+    var(--tw-backdrop-invert,)
+    var(--tw-backdrop-opacity,)
+    var(--tw-backdrop-saturate,)
+    var(--tw-backdrop-sepia,) !important;
+}
+
+html[data-dream-skin="active"][data-dream-shell="dark"] body
+  __DREAM_SELECTOR_HOME_ROUTE_CSS__:has(__DREAM_SELECTOR_GAME_SOURCE__):has(__DREAM_SELECTOR_HOME_UTILITY__)
+  __DREAM_SELECTOR_COMPOSER_CHROME__ {
+  background-color: var(--color-token-input-background) !important;
+}
+
 html[data-dream-skin="active"] body
   __DREAM_SELECTOR_HOME_ROUTE_CSS__ __DREAM_SELECTOR_HOME_UTILITY__ {
   top: auto !important;
@@ -1326,6 +1360,40 @@ html[data-dream-skin="active"] body
 html[data-dream-skin="active"][data-dream-shell="dark"] body
   __DREAM_SELECTOR_HOME_ROUTE_CSS__ __DREAM_SELECTOR_HOME_UTILITY__ {
   background-color: var(--color-token-bg-fog) !important;
+}
+
+/* Match Work's compact attached utility strip on the standalone project
+   home. Remove the theme-only label and pill treatment; all native project,
+   environment, and branch controls remain present and clickable. */
+html[data-dream-skin="active"] body
+  __DREAM_SELECTOR_HOME_ROUTE_CSS__:has(__DREAM_SELECTOR_GAME_SOURCE__):has(__DREAM_SELECTOR_HOME_UTILITY__)
+  __DREAM_SELECTOR_HOME_UTILITY__ {
+  top: auto !important;
+  width: auto !important;
+  margin-inline: var(--home-composer-inline-inset) !important;
+  margin-block: 0 !important;
+  padding-inline: calc(var(--spacing) * 1.5) !important;
+  padding-block: calc(var(--spacing) * 1.5) !important;
+  border: 0 solid transparent !important;
+  border-radius: 0 0 var(--radius-2xl) var(--radius-2xl) !important;
+  background-color: color-mix(in oklab, var(--color-token-side-bar-background) 88%, transparent) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(var(--blur-lg)) !important;
+}
+
+html[data-dream-skin="active"] body
+  __DREAM_SELECTOR_HOME_ROUTE_CSS__:has(__DREAM_SELECTOR_GAME_SOURCE__):has(__DREAM_SELECTOR_HOME_UTILITY__)
+  __DREAM_SELECTOR_HOME_UTILITY__::before {
+  content: none !important;
+}
+
+html[data-dream-skin="active"] body
+  __DREAM_SELECTOR_HOME_ROUTE_CSS__:has(__DREAM_SELECTOR_GAME_SOURCE__):has(__DREAM_SELECTOR_HOME_UTILITY__)
+  __DREAM_SELECTOR_PROJECT_SELECTOR__ > button {
+  border-color: transparent !important;
+  background: transparent !important;
+  color: var(--ds-muted) !important;
+  box-shadow: none !important;
 }
 
 @media (max-width: 1120px) {

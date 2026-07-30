@@ -1206,6 +1206,7 @@ html[data-dream-skin="active"]
   [role="main"]:has([data-feature="game-source"])
   div:has(> div > [class*="_homeUtilityBar_"]) {
   order: 2 !important;
+  margin-top: calc(var(--spacing) * -2) !important;
 }
 
 html[data-dream-skin="active"] [role="main"] [data-feature="game-source"] {
@@ -1309,6 +1310,39 @@ html[data-dream-skin="active"][data-dream-shell="dark"] body
   background-color: var(--color-token-input-background) !important;
 }
 
+/* The older split-card treatment has the same specificity as the native
+   surface reset above (and one extra root attribute for wide artwork). Give
+   standalone project homes an equally specific, later rule so their composer
+   keeps Work's complete rounded surface instead of inheriting half a card. */
+html[data-dream-skin="active"] body
+  [role="main"]:has([data-feature="game-source"]):has([class*="_homeUtilityBar_"])
+  .composer-surface-chrome,
+html[data-dream-skin="active"][data-dream-art-wide="true"] body
+  [role="main"]:has([data-feature="game-source"]):has([class*="_homeUtilityBar_"])
+  .composer-surface-chrome {
+  --tw-backdrop-blur: blur(var(--blur-lg));
+  background-color: color-mix(in oklab, var(--color-token-input-background) 90%, transparent) !important;
+  border: 0 solid transparent !important;
+  border-radius: var(--radius-3xl) !important;
+  box-shadow: var(--elevation-prominent) !important;
+  backdrop-filter:
+    var(--tw-backdrop-blur,)
+    var(--tw-backdrop-brightness,)
+    var(--tw-backdrop-contrast,)
+    var(--tw-backdrop-grayscale,)
+    var(--tw-backdrop-hue-rotate,)
+    var(--tw-backdrop-invert,)
+    var(--tw-backdrop-opacity,)
+    var(--tw-backdrop-saturate,)
+    var(--tw-backdrop-sepia,) !important;
+}
+
+html[data-dream-skin="active"][data-dream-shell="dark"] body
+  [role="main"]:has([data-feature="game-source"]):has([class*="_homeUtilityBar_"])
+  .composer-surface-chrome {
+  background-color: var(--color-token-input-background) !important;
+}
+
 html[data-dream-skin="active"] body
   [role="main"] [class*="_homeUtilityBar_"] {
   top: auto !important;
@@ -1326,6 +1360,40 @@ html[data-dream-skin="active"] body
 html[data-dream-skin="active"][data-dream-shell="dark"] body
   [role="main"] [class*="_homeUtilityBar_"] {
   background-color: var(--color-token-bg-fog) !important;
+}
+
+/* Match Work's compact attached utility strip on the standalone project
+   home. Remove the theme-only label and pill treatment; all native project,
+   environment, and branch controls remain present and clickable. */
+html[data-dream-skin="active"] body
+  [role="main"]:has([data-feature="game-source"]):has([class*="_homeUtilityBar_"])
+  [class*="_homeUtilityBar_"] {
+  top: auto !important;
+  width: auto !important;
+  margin-inline: var(--home-composer-inline-inset) !important;
+  margin-block: 0 !important;
+  padding-inline: calc(var(--spacing) * 1.5) !important;
+  padding-block: calc(var(--spacing) * 1.5) !important;
+  border: 0 solid transparent !important;
+  border-radius: 0 0 var(--radius-2xl) var(--radius-2xl) !important;
+  background-color: color-mix(in oklab, var(--color-token-side-bar-background) 88%, transparent) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(var(--blur-lg)) !important;
+}
+
+html[data-dream-skin="active"] body
+  [role="main"]:has([data-feature="game-source"]):has([class*="_homeUtilityBar_"])
+  [class*="_homeUtilityBar_"]::before {
+  content: none !important;
+}
+
+html[data-dream-skin="active"] body
+  [role="main"]:has([data-feature="game-source"]):has([class*="_homeUtilityBar_"])
+  .group\/project-selector > button {
+  border-color: transparent !important;
+  background: transparent !important;
+  color: var(--ds-muted) !important;
+  box-shadow: none !important;
 }
 
 @media (max-width: 1120px) {

@@ -298,6 +298,11 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     customPolicy,
+    /data-dream-art-wide="true"[\s\S]{0,260}\[role="main"\]:has\(\[data-feature="game-source"\]\):has\(\[class\*="_homeUtilityBar_"\]\)\s+\.composer-surface-chrome\s*\{[\s\S]{0,420}border-radius:\s*var\(--radius-3xl\)\s*!important;[\s\S]{0,320}box-shadow:\s*var\(--elevation-prominent\)\s*!important;/,
+    "Wide standalone project homes must override the legacy split-card radius and inset outline.",
+  );
+  assert.match(
+    customPolicy,
     /data-dream-shell="dark"[\s\S]{0,220}\[role="main"\]:has\(\[class\*="_homeUtilityBar_"\]\)\s+\.composer-surface-chrome\s*\{[\s\S]{0,220}background-color:\s*var\(--color-token-input-background\)\s*!important;/,
     "The restored home composer must retain Codex's native dark appearance token.",
   );
@@ -305,6 +310,16 @@ export async function runRendererRuntimeTest(assetRoot) {
     customPolicy,
     /\[role="main"\]\s+\[class\*="_homeUtilityBar_"\]\s*\{[\s\S]{0,520}top:\s*auto\s*!important;[\s\S]{0,220}width:\s*auto\s*!important;[\s\S]{0,220}margin-inline:\s*var\(--home-composer-inline-inset\)\s*!important;[\s\S]{0,220}margin-block:\s*0\s*!important;[\s\S]{0,220}padding-inline:\s*calc\(var\(--spacing\)\s*\*\s*1\.5\)\s*!important;[\s\S]{0,220}padding-block:\s*calc\(var\(--spacing\)\s*\*\s*1\.5\)\s*!important;[\s\S]{0,220}border-radius:\s*0\s+0\s+var\(--radius-2xl\)\s+var\(--radius-2xl\)\s*!important;[\s\S]{0,220}box-shadow:\s*none\s*!important;/,
     "Personal builds must restore the native inset utility bar while keeping the outer composer width unchanged.",
+  );
+  assert.match(
+    customPolicy,
+    /\[role="main"\]:has\(\[data-feature="game-source"\]\):has\(\[class\*="_homeUtilityBar_"\]\)\s+\[class\*="_homeUtilityBar_"\]\s*\{[\s\S]{0,520}padding-block:\s*calc\(var\(--spacing\)\s*\*\s*1\.5\)\s*!important;[\s\S]{0,320}background-color:\s*color-mix\(in oklab,\s*var\(--color-token-side-bar-background\)\s*88%,\s*transparent\)\s*!important;[\s\S]{0,320}backdrop-filter:\s*blur\(var\(--blur-lg\)\)\s*!important;/,
+    "Standalone utility controls must use the compact translucent Work-style strip.",
+  );
+  assert.match(
+    customPolicy,
+    /\[role="main"\]:has\(\[data-feature="game-source"\]\):has\(\[class\*="_homeUtilityBar_"\]\)\s+\[class\*="_homeUtilityBar_"\]::before\s*\{\s*content:\s*none\s*!important;\s*\}/,
+    "Standalone project homes must not add a second Select project label above the native controls.",
   );
   assert.match(
     customPolicy,
@@ -323,8 +338,8 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     customPolicy,
-    /\[role="main"\]:has\(\[data-feature="game-source"\]\)\s+div:has\(>\s*div\s*>\s*\[class\*="_homeUtilityBar_"\]\)\s*\{\s*order:\s*2\s*!important;\s*\}/,
-    "Project-home utility controls must sit below the composer like the Work home layout.",
+    /\[role="main"\]:has\(\[data-feature="game-source"\]\)\s+div:has\(>\s*div\s*>\s*\[class\*="_homeUtilityBar_"\]\)\s*\{[\s\S]{0,160}order:\s*2\s*!important;[\s\S]{0,160}margin-top:\s*calc\(var\(--spacing\)\s*\*\s*-2\)\s*!important;/,
+    "Project-home utility controls must sit directly below the composer like the Work home layout.",
   );
   assert.match(
     customPolicy,

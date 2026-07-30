@@ -517,3 +517,39 @@ Updated: 2026-07-30 (Asia/Shanghai)
     Release workflow exited successfully without publishing.
 - Safety: the fix remains renderer CSS only; it does not modify the official
   application bundle, `app.asar`, signature, ACL, user data, or SQLite logs.
+
+## 2026-07-30 — Standalone composer visual parity with Work
+
+- Goal: make the standalone Codex home composer visually match ChatGPT Work:
+  fully rounded native surface, no visible outline, native shadow/blur, and a
+  compact utility bar tucked directly underneath.
+- Branch: `codex/custom-engine` tracking `personal/main`.
+- Screenshot differences:
+  - standalone Codex currently shows square top corners and a visible outline;
+  - its project utility remains a separate labeled panel with a larger gap;
+  - Work uses a pill-like 640px composer and a visually attached translucent
+    utility strip.
+- Current work:
+  - [x] Inspected the live computed styles and wrapper geometry. A legacy
+    split-card rule with equal/higher specificity was overriding the later
+    native reset, leaving the composer at `0 0 22px 22px`, with inset outline
+    shadows and a 28px project-label gutter.
+  - [x] Added macOS/Windows renderer regressions for the wide standalone
+    override, compact translucent utility strip, removed duplicate project
+    label, and zero-gap Work-style attachment.
+  - [x] Added a project-home-specific late override, synchronized the canonical
+    runtime CSS to both platform payloads, and retained all native project,
+    environment and branch controls.
+  - [x] Hot-loaded the source payload and verified the real 1512x949 home:
+    composer x=576/y=803/w=640/h=98, 25px radius, native prominent shadow and
+    16px blur; utility x=589/y=901/w=614/h=40, attached exactly at the
+    composer's bottom edge, with no generated label or page overflow.
+  - [x] Captured visual evidence at
+    `/tmp/codex-work-style-composer.png`.
+  - [x] Shared asset synchronization, focused macOS/Windows renderer tests,
+    all 17 Windows Node tests, `git diff --check`, and the complete macOS suite
+    pass. The macOS suite includes Swift build, 10 XCTest cases and all
+    applicable shell/Node regressions; signed installed-runtime integrations
+    are explicit environment skips.
+- Safety: renderer CSS only; native controls and project functionality remain
+  intact, and no official application files or user data are modified.
