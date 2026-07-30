@@ -48,12 +48,12 @@ Ordinary users first install and quit the official Codex / ChatGPT app once,
 then download from [GitHub Releases](https://github.com/YuxiangChai/Codex-Skin/releases):
 
 - macOS: open `CodexDreamSkin-vX.Y.Z.dmg` and drag the app to Applications.
-- Windows: run `CodexDreamSkin-Setup-vX.Y.Z.exe` and follow the wizard.
 
-No source checkout, Node.js install, `.sh`, or `.ps1` command is required. See
-the [macOS guide](./docs/install-macos.md) or
-[Windows guide](./docs/install-windows.md) for unsigned first-run approval,
-updates, and uninstall steps.
+This personal release currently publishes macOS DMGs only. The Windows source
+remains in the repository, but no public Setup.exe is built. No source
+checkout, Node.js install, or `.sh` command is required. See the
+[macOS guide](./docs/install-macos.md) for unsigned first-run approval, updates,
+and uninstall steps.
 
 ## Theme library & community
 
@@ -158,18 +158,17 @@ Windows system tray.
 
 ### For users: download an installer
 
-You do not need to clone the repository, install Node.js, or run `.sh` / `.ps1`
-files. Download the latest package for your platform from
+You do not need to clone the repository, install Node.js, or run `.sh` files.
+Download the latest macOS package from
 [GitHub Releases](https://github.com/YuxiangChai/Codex-Skin/releases), then
 follow the graphical first-run guide:
 
 | Platform | Download | Install guide |
 |------|------|----------|
 | macOS | `CodexDreamSkin-vX.Y.Z.dmg` | [`docs/install-macos.md`](./docs/install-macos.md) |
-| Windows | `CodexDreamSkin-Setup-vX.Y.Z.exe` | [`docs/install-windows.md`](./docs/install-windows.md) |
 
-After installation, use the menu bar (macOS) or system tray (Windows). Updates
-are manual: download the new package and install over the existing one; themes
+After installation, use the macOS menu bar. Updates download the new package
+and install over the existing one; themes
 and images are preserved. Because the public packages are unsigned, a new
 download may show a one-time OS security warning; the guides explain the safe
 GUI approval path.

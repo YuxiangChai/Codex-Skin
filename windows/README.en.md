@@ -17,9 +17,11 @@ Codex Dream Skin loads an external theme into the official Codex Windows desktop
 
 ## Release install (recommended for users)
 
-Download `CodexDreamSkin-Setup-vX.Y.Z.exe` from
-[GitHub Releases](https://github.com/YuxiangChai/Codex-Skin/releases) and
-follow [`docs/install-windows.md`](../docs/install-windows.md). The installer
+The `YuxiangChai/Codex-Skin` personal release currently does not build a
+Windows Setup.exe. This section applies only to a locally built installer or
+one obtained from another trusted release source. Open
+`CodexDreamSkin-Setup-vX.Y.Z.exe` and follow
+[`docs/install-windows.md`](../docs/install-windows.md). The installer
 contains the pinned Node runtime, so users do not need a source checkout or to
 run a `.ps1` file. It installs per-user and should not request administrator
 access. An unsigned download may occasionally trigger SmartScreen; use

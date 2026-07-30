@@ -48,10 +48,10 @@ Passion8 为本项目用户准备了专属福利：通过<a href="https://passio
 [GitHub Releases](https://github.com/YuxiangChai/Codex-Skin/releases) 下载：
 
 - macOS：打开 `CodexDreamSkin-vX.Y.Z.dmg`，把 App 拖进 Applications。
-- Windows：双击 `CodexDreamSkin-Setup-vX.Y.Z.exe`，按安装向导完成。
 
-不需要 clone 源码、安装 Node.js 或手动运行 `.sh` / `.ps1`。首次未签名放行、更新和卸载步骤见
-[macOS 安装说明](./docs/install-macos.md) / [Windows 安装说明](./docs/install-windows.md)。
+个人发行版目前只发布 macOS DMG；Windows 源码仍保留，但不生成公开
+Setup.exe。不需要 clone 源码、安装 Node.js 或手动运行 `.sh`。首次未签名
+放行、更新和卸载步骤见 [macOS 安装说明](./docs/install-macos.md)。
 
 ## 主题库与社区
 
@@ -140,16 +140,15 @@ macOS 菜单栏和 Windows 托盘都有「主题库 Gallery」和「在线 Studi
 
 ### 普通用户：下载安装包
 
-不需要 clone 仓库，也不需要安装 Node.js 或运行 `.sh` / `.ps1`。从
-[GitHub Releases](https://github.com/YuxiangChai/Codex-Skin/releases) 下载对应平台的最新安装包，
+不需要 clone 仓库，也不需要安装 Node.js 或运行 `.sh`。从
+[GitHub Releases](https://github.com/YuxiangChai/Codex-Skin/releases) 下载最新 macOS 安装包，
 按平台文档完成一次图形界面安装：
 
 | 平台 | 下载 | 安装说明 |
 |------|------|----------|
 | macOS | `CodexDreamSkin-vX.Y.Z.dmg` | [`docs/install-macos.md`](./docs/install-macos.md) |
-| Windows | `CodexDreamSkin-Setup-vX.Y.Z.exe` | [`docs/install-windows.md`](./docs/install-windows.md) |
 
-安装后从菜单栏（macOS）或系统托盘（Windows）使用。更新时下载新安装包覆盖安装，主题和图片会保留；
+安装后从 macOS 菜单栏使用。更新时下载新安装包覆盖安装，主题和图片会保留；
 未签名的新下载文件在个别系统上仍可能再次出现一次安全提示，文档列出了放行方法。
 
 ### 导入下载的主题

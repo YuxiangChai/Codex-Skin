@@ -757,6 +757,10 @@ Updated: 2026-07-30 (Asia/Shanghai)
 - Branch/remotes: `codex/custom-engine`; upstream is `origin/main`, personal
   release target is `personal/main`.
 - Release scope:
+  - [decision] after both Windows PowerShell CI jobs failed, the user explicitly
+    narrowed this personal release to macOS only; Windows source remains in the
+    repository, but Windows native CI and Setup.exe publication are no longer
+    release gates;
   - [x] merged upstream v1.5.9 into the custom engine without losing the
     main-content-centered wallpaper or unified home layout;
   - [x] removed retired bundled preset directories and references from public
@@ -775,14 +779,15 @@ Updated: 2026-07-30 (Asia/Shanghai)
     macOS suite passes with 10 XCTest cases; and the universal v1.5.9 DMG
     mounts read-only with a valid ad-hoc signature and exactly one complete
     Iron Man preset;
-  - [note] Windows PowerShell-native validation is CI-only because this macOS
-    host has no `pwsh`; Windows renderer, metadata, payload, package-contract,
-    and installer-source assertions run locally where portable;
+  - [note] Windows renderer, metadata, payload, package-contract, and static
+    source assertions remain portable checks, but this personal workflow does
+    not run Windows-native jobs or publish Setup.exe;
   - [ ] complete repository CI validation;
   - [x] commit the single-theme release implementation on
     `codex/custom-engine`;
-  - [ ] push `personal/main`, then verify repository CI and the public v1.5.9
-    Release plus DMG, Setup.exe, and `SHA256SUMS.txt` assets.
+  - [x] pushed the release implementation to `personal/main`;
+  - [ ] push the macOS-only workflow follow-up, then verify repository CI and
+    the public v1.5.9 Release with DMG plus `SHA256SUMS.txt`.
 - Version: all six required version sources are expected to remain at v1.5.9;
   do not create or reuse a different tag without re-running consistency checks.
 - Safety: no official Codex/ChatGPT bundle, signature, protected path, ACL,
