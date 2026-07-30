@@ -1190,23 +1190,53 @@ html[data-dream-skin="active"] [role="main"] .group\/home-suggestions {
   display: none !important;
 }
 
+/* Standalone Codex project homes inherit the wide task content token, while
+   Chat/Work home already uses a compact 672px wrapper. Normalize only the
+   game-source home variant; native px-toolbar padding then yields the same
+   640px composer surface without changing conversation-thread width. */
+html[data-dream-skin="active"]
+  [role="main"]:has([data-feature="game-source"]) {
+  --thread-content-max-width: 672px !important;
+}
+
+/* The standalone project-home DOM places the utility wrapper before the
+   composer. Work mode presents the same controls underneath it. Reorder the
+   immediate utility wrapper without moving or recreating native controls. */
+html[data-dream-skin="active"]
+  [role="main"]:has([data-feature="game-source"])
+  div:has(> div > [class*="_homeUtilityBar_"]) {
+  order: 2 !important;
+}
+
 html[data-dream-skin="active"] [role="main"] [data-feature="game-source"] {
   position: relative !important;
   color: transparent !important;
   text-shadow: none !important;
 }
 
+/* Project-scoped Codex homes render the native heading as nested controls.
+   Those controls carry their own !important accent color, so making only the
+   parent transparent leaks “What should we build in …?” behind Jarvis. Keep
+   their layout box for stable centering, but hide their pixels; the real
+   project picker remains available in the native utility bar below. */
+html[data-dream-skin="active"]
+  [role="main"] [data-feature="game-source"] > * {
+  visibility: hidden !important;
+}
+
 html[data-dream-skin="active"] [role="main"] [data-feature="game-source"]::before {
   content: "Jarvis at your service" !important;
   position: absolute;
   inset: 0;
-  display: block !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
   margin: 0 !important;
   color: var(--ds-text) !important;
-  font: inherit;
-  line-height: inherit;
-  letter-spacing: inherit;
-  text-align: inherit;
+  font: inherit !important;
+  line-height: inherit !important;
+  letter-spacing: inherit !important;
+  text-align: center !important;
   text-shadow: 0 1px 8px rgb(var(--ds-bg-rgb) / .48);
 }
 
@@ -1284,7 +1314,9 @@ html[data-dream-skin="active"] body
   top: auto !important;
   width: auto !important;
   margin-inline: var(--home-composer-inline-inset) !important;
+  margin-block: 0 !important;
   padding-inline: calc(var(--spacing) * 1.5) !important;
+  padding-block: calc(var(--spacing) * 1.5) !important;
   border-radius: 0 0 var(--radius-2xl) var(--radius-2xl) !important;
   background-color: var(--color-token-side-bar-background) !important;
   box-shadow: none !important;

@@ -303,13 +303,28 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     customPolicy,
-    /\[role="main"\]\s+\[class\*="_homeUtilityBar_"\]\s*\{[\s\S]{0,520}top:\s*auto\s*!important;[\s\S]{0,220}width:\s*auto\s*!important;[\s\S]{0,220}margin-inline:\s*var\(--home-composer-inline-inset\)\s*!important;[\s\S]{0,220}padding-inline:\s*calc\(var\(--spacing\)\s*\*\s*1\.5\)\s*!important;[\s\S]{0,220}border-radius:\s*0\s+0\s+var\(--radius-2xl\)\s+var\(--radius-2xl\)\s*!important;[\s\S]{0,220}box-shadow:\s*none\s*!important;/,
+    /\[role="main"\]\s+\[class\*="_homeUtilityBar_"\]\s*\{[\s\S]{0,520}top:\s*auto\s*!important;[\s\S]{0,220}width:\s*auto\s*!important;[\s\S]{0,220}margin-inline:\s*var\(--home-composer-inline-inset\)\s*!important;[\s\S]{0,220}margin-block:\s*0\s*!important;[\s\S]{0,220}padding-inline:\s*calc\(var\(--spacing\)\s*\*\s*1\.5\)\s*!important;[\s\S]{0,220}padding-block:\s*calc\(var\(--spacing\)\s*\*\s*1\.5\)\s*!important;[\s\S]{0,220}border-radius:\s*0\s+0\s+var\(--radius-2xl\)\s+var\(--radius-2xl\)\s*!important;[\s\S]{0,220}box-shadow:\s*none\s*!important;/,
     "Personal builds must restore the native inset utility bar while keeping the outer composer width unchanged.",
   );
   assert.match(
     customPolicy,
     /\[role="main"\]\s+\[data-feature="game-source"\]::before\s*\{[\s\S]{0,220}content:\s*"Jarvis at your service"\s*!important;/,
     "Personal builds must replace the native home heading without restoring engine brand text.",
+  );
+  assert.match(
+    customPolicy,
+    /\[role="main"\]\s+\[data-feature="game-source"\]\s*>\s*\*\s*\{\s*visibility:\s*hidden\s*!important;\s*\}/,
+    "The Jarvis replacement must hide nested native project-title controls that override the parent text color.",
+  );
+  assert.match(
+    customPolicy,
+    /\[role="main"\]:has\(\[data-feature="game-source"\]\)\s*\{\s*--thread-content-max-width:\s*672px\s*!important;\s*\}/,
+    "Standalone project homes must retain the same 640px composer surface as Work after native toolbar padding.",
+  );
+  assert.match(
+    customPolicy,
+    /\[role="main"\]:has\(\[data-feature="game-source"\]\)\s+div:has\(>\s*div\s*>\s*\[class\*="_homeUtilityBar_"\]\)\s*\{\s*order:\s*2\s*!important;\s*\}/,
+    "Project-home utility controls must sit below the composer like the Work home layout.",
   );
   assert.match(
     customPolicy,

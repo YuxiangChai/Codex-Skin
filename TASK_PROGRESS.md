@@ -1,6 +1,6 @@
 # Task Progress
 
-Updated: 2026-07-28 (Asia/Shanghai)
+Updated: 2026-07-30 (Asia/Shanghai)
 
 ## Personal Release Download Link Fix (2026-07-28)
 
@@ -476,3 +476,40 @@ Updated: 2026-07-28 (Asia/Shanghai)
     this task would terminate the active conversation.
 - Safety: no official app bundle, `app.asar`, signature, ACL, user data or
   `~/.codex/logs_2.sqlite` is modified.
+
+## 2026-07-30 — Standalone Codex project-home parity
+
+- Goal: make the standalone Codex project home use the same restrained
+  Work-style hierarchy: one centered `Jarvis at your service` heading, the
+  native compact composer, and the native project utility bar at the bottom.
+- Branch: `codex/custom-engine` tracking `personal/main`.
+- Screenshot diagnosis:
+  - the project-scoped home renders a native child button inside
+    `[data-feature="game-source"]`;
+  - the personal heading rule only made the parent text transparent, while an
+    earlier accent rule kept the child button visible with `!important`;
+  - this leaked the large native “What should we build in …?” title underneath
+    the much smaller Jarvis replacement.
+- Current work:
+  - [x] Reproduced and inspected the current standalone Codex home DOM through
+    its local debug endpoint.
+  - [x] Added regressions for nested native heading content, the 640px composer,
+    utility ordering, and bounded bottom-bar spacing.
+  - [x] Hid only the native heading children while preserving their layout
+    box and the bottom project selector.
+  - [x] Normalized the project home to the 672px native content wrapper
+    (640px composer), reordered the project utility underneath the composer,
+    and removed its obsolete overhang spacing.
+  - [x] Synced macOS/Windows renderer assets and passed the complete macOS
+    suite (including 10 Swift tests) plus all 17 Windows Node tests. Windows
+    PowerShell tests remain CI-only on this macOS host.
+  - [x] Hot-loaded and verified source revision `bee7493d9a2dc5bebb5d` on the
+    real 1512x949 standalone Codex home: one centered Jarvis heading, no
+    visible cards, composer x=576/y=772/w=640/h=98, and visible project button
+    x=596/y=907/w=156/h=28 with no page overflow.
+  - [x] Captured final visual evidence at
+    `/tmp/codex-project-home-work-style-final.png`.
+  - [ ] Commit and push the verified CSS-only change; no version or public
+    Release is required for this source-development iteration.
+- Safety: the fix remains renderer CSS only; it does not modify the official
+  application bundle, `app.asar`, signature, ACL, user data, or SQLite logs.
