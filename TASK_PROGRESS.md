@@ -782,12 +782,20 @@ Updated: 2026-07-30 (Asia/Shanghai)
   - [note] Windows renderer, metadata, payload, package-contract, and static
     source assertions remain portable checks, but this personal workflow does
     not run Windows-native jobs or publish Setup.exe;
-  - [ ] complete repository CI validation;
+  - [x] repository CI passed after the macOS-only workflow change: static
+    checks and macOS repository regressions both completed successfully in run
+    `30551535997`;
   - [x] commit the single-theme release implementation on
     `codex/custom-engine`;
   - [x] pushed the release implementation to `personal/main`;
-  - [ ] push the macOS-only workflow follow-up, then verify repository CI and
-    the public v1.5.9 Release with DMG plus `SHA256SUMS.txt`.
+  - [x] pushed the macOS-only workflow follow-up as `16e767c`;
+  - [x] release run `30551539137` completed successfully and published public
+    v1.5.9 from tag commit `52e9677`;
+  - [x] public assets verified by the release job and GitHub metadata:
+    `CodexDreamSkin-v1.5.9.dmg` (2,965,758 bytes,
+    SHA-256 `89534b5587cdf70c615925c12a769c8cd8885b7928512870df5b13455aa433cc`)
+    and `SHA256SUMS.txt` (92 bytes). The Release is non-draft,
+    non-prerelease, and available to the personal updater.
 - Version: all six required version sources are expected to remain at v1.5.9;
   do not create or reuse a different tag without re-running consistency checks.
 - Safety: no official Codex/ChatGPT bundle, signature, protected path, ACL,
