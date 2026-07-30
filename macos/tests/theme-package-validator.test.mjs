@@ -259,6 +259,7 @@ try {
     mutateTheme: (theme) => {
       theme.name = longName;
       theme.brandSubtitle = longCopy;
+      theme.homeTitle = longCopy;
       theme.tagline = longCopy;
       theme.projectPrefix = longCopy;
       theme.projectLabel = longCopy;
@@ -278,7 +279,9 @@ try {
   ]);
   for (const loaded of [loadedMac, loadedWindows]) {
     assert.equal(loaded.theme.name, longName);
-    for (const key of ["brandSubtitle", "tagline", "projectPrefix", "projectLabel", "statusText", "quote"]) {
+    for (const key of [
+      "brandSubtitle", "homeTitle", "tagline", "projectPrefix", "projectLabel", "statusText", "quote",
+    ]) {
       assert.equal(loaded.theme[key], longCopy, `${key} must retain 120 Unicode code points`);
     }
     assert.deepEqual(loaded.theme.colors, boundaryColors);

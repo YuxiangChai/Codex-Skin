@@ -118,6 +118,12 @@ if (!imageStat.isFile() || imageStat.size < 1 || imageStat.size > 10 * 1024 * 10
 }
 
 const name = validateText(valueFor("name", "我的 Codex Dream Skin"), "name", 80, "我的 Codex Dream Skin");
+const homeTitle = validateText(
+  valueFor("home-title", "Jarvis at your service"),
+  "home-title",
+  120,
+  "Jarvis at your service",
+);
 const tagline = validateText(
   valueFor("tagline", "把喜欢的画面变成可交互的 Codex 工作台。"),
   "tagline",
@@ -153,6 +159,7 @@ const custom = {
   id: `custom-${Date.now()}`,
   name: name || "我的 Codex Dream Skin",
   brandSubtitle: "CODEX DREAM SKIN",
+  homeTitle: homeTitle || "Jarvis at your service",
   tagline: tagline || "把喜欢的画面变成可交互的 Codex 工作台。",
   projectPrefix: "选择项目 · ",
   projectLabel: "◉  选择项目",

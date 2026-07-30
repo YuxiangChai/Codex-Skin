@@ -566,6 +566,7 @@ export async function loadTheme(themeDir) {
     id: normalizeThemeText(raw.id, "custom", 80, "id", themePath),
     name: normalizeThemeText(raw.name, "Codex Dream Skin", 80, "name", themePath),
     brandSubtitle: normalizeThemeText(raw.brandSubtitle, "CODEX DREAM SKIN", 120, "brandSubtitle", themePath),
+    homeTitle: normalizeThemeText(raw.homeTitle, "Jarvis at your service", 120, "homeTitle", themePath),
     tagline: normalizeThemeText(raw.tagline, "Make something wonderful.", 120, "tagline", themePath),
     projectPrefix: normalizeThemeText(raw.projectPrefix, "选择项目 · ", 120, "projectPrefix", themePath),
     projectLabel: normalizeThemeText(raw.projectLabel, "◉  选择项目", 120, "projectLabel", themePath),

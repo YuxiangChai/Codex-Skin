@@ -1417,67 +1417,56 @@ html[data-dream-skin="active"]
   margin-top: calc(var(--spacing) * -2) !important;
 }
 
-html[data-dream-skin="active"] __DREAM_SELECTOR_HOME_ROUTE_CSS__ __DREAM_SELECTOR_GAME_SOURCE__ {
-  position: relative !important;
-  color: transparent !important;
-  text-shadow: none !important;
-}
-
-/* Project-scoped Codex homes render the native heading as nested controls.
-   Those controls carry their own !important accent color, so making only the
-   parent transparent leaks “What should we build in …?” behind Jarvis. Keep
-   their layout box for stable centering, but hide their pixels; the real
-   project picker remains available in the native utility bar below. */
-html[data-dream-skin="active"]
-  __DREAM_SELECTOR_HOME_ROUTE_CSS__ __DREAM_SELECTOR_GAME_SOURCE__ > * {
-  visibility: hidden !important;
-}
-
-html[data-dream-skin="active"] __DREAM_SELECTOR_HOME_ROUTE_CSS__ __DREAM_SELECTOR_GAME_SOURCE__::before {
-  content: "Jarvis at your service" !important;
-  position: absolute;
-  inset: 0;
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  margin: 0 !important;
-  color: var(--ds-text) !important;
-  font: inherit !important;
-  line-height: inherit !important;
-  letter-spacing: inherit !important;
-  text-align: center !important;
-  text-shadow: 0 1px 8px rgb(var(--ds-bg-rgb) / .48);
-}
-
-html[data-dream-skin="active"] __DREAM_SELECTOR_HOME_ROUTE_CSS__ __DREAM_SELECTOR_GAME_SOURCE__::after {
-  content: none !important;
-}
-
-/* Chat mode uses a visible h1 plus an invisible sizing/accessibility twin
-   instead of Work mode's game-source heading. Replace only the visible h1 so
-   both home modes share one greeting without disturbing native semantics. */
-html[data-dream-skin="active"]
-  __DREAM_SELECTOR_HOME_ROUTE_CSS__:not(:has(__DREAM_SELECTOR_GAME_SOURCE__))
-  h1.heading-xl:not(.invisible) {
-  position: relative !important;
-  color: transparent !important;
-  text-shadow: none !important;
-}
-
-html[data-dream-skin="active"]
-  __DREAM_SELECTOR_HOME_ROUTE_CSS__:not(:has(__DREAM_SELECTOR_GAME_SOURCE__))
-  h1.heading-xl:not(.invisible)::before {
-  content: "Jarvis at your service" !important;
-  position: absolute;
-  inset: 0;
+/* Chat, Work and standalone Codex expose different native title nodes with
+   different inherited font metrics and layout centers. Keep those nodes in
+   the DOM for native structure/accessibility, but paint one theme-owned title
+   directly on the stable home root. Its vertical center is the full window's
+   50vh line, compensated for the home root's app-header offset. */
+html[data-dream-skin="active"] __DREAM_SELECTOR_HOME_ROUTE_CSS__::before {
+  content: var(--dream-skin-home-title, "Jarvis at your service") !important;
+  position: absolute !important;
+  inset-inline: clamp(24px, 6vw, 96px) !important;
+  top: calc(50vh - var(--app-shell-main-content-frame-top-offset, 0px)) !important;
+  transform: translateY(-50%) !important;
+  z-index: 2 !important;
   display: block !important;
   margin: 0 !important;
   color: var(--ds-text) !important;
-  font: inherit;
-  line-height: inherit;
-  letter-spacing: inherit;
-  text-align: inherit;
+  font-family: inherit !important;
+  font-size: clamp(1.75rem, 2.25vw, 2.25rem) !important;
+  font-weight: 600 !important;
+  line-height: 1.15 !important;
+  letter-spacing: -.025em !important;
+  text-align: center !important;
+  text-wrap: balance;
+  white-space: pre-wrap;
   text-shadow: 0 1px 8px rgb(var(--ds-bg-rgb) / .48);
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+/* Preserve both native title boxes so their host layouts do not reflow. The
+   single root title above supplies all visible text and typography. */
+html[data-dream-skin="active"]
+  __DREAM_SELECTOR_HOME_ROUTE_CSS__:has(__DREAM_SELECTOR_GAME_SOURCE__)
+  __DREAM_SELECTOR_GAME_SOURCE__,
+html[data-dream-skin="active"]
+  __DREAM_SELECTOR_HOME_ROUTE_CSS__:not(:has(__DREAM_SELECTOR_GAME_SOURCE__))
+  h1.heading-xl:not(.invisible) {
+  opacity: 0 !important;
+}
+
+html[data-dream-skin="active"]
+  __DREAM_SELECTOR_HOME_ROUTE_CSS__ __DREAM_SELECTOR_GAME_SOURCE__::before,
+html[data-dream-skin="active"]
+  __DREAM_SELECTOR_HOME_ROUTE_CSS__ __DREAM_SELECTOR_GAME_SOURCE__::after,
+html[data-dream-skin="active"]
+  __DREAM_SELECTOR_HOME_ROUTE_CSS__:not(:has(__DREAM_SELECTOR_GAME_SOURCE__))
+  h1.heading-xl:not(.invisible)::before,
+html[data-dream-skin="active"]
+  __DREAM_SELECTOR_HOME_ROUTE_CSS__:not(:has(__DREAM_SELECTOR_GAME_SOURCE__))
+  h1.heading-xl:not(.invisible)::after {
+  content: none !important;
 }
 
 /* Codex 26.721+ keeps the native composer in the second row of the home

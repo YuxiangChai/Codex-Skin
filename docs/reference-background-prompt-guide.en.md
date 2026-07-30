@@ -44,12 +44,12 @@ Save new generations outside the repository while drafting and run the acceptanc
 | Top brand title | `桥本有菜专属定制皮肤` | Use only after likeness and redistribution rights are confirmed; the current runtime does not show this brand layer, so keep it as a future UI field |
 | Top subtitle | `Codex App 限定版` | Not visible in the current runtime; do not bake it into `background.jpg` |
 | Script signature | `Arina Hashimoto♡` | Independent signature layer; the base runtime has no generic signature field yet |
-| Home title | `我们该构建什么？` | Keep the native Codex title; the current theme does not replace project, task, message, or primary-title data |
+| Home title | `我们该构建什么？` | Put it in `homeTitle`; Chat, Work, and Codex render it with the same typography at the full-window vertical center |
 | Home subtitle | `与有菜一起，用灵感创造无限可能` | macOS can currently show it through `tagline`; Windows does not yet render theme copy |
 | Composer placeholder | `随心输入，让灵感陪你一起写代码吧～` | Use only where product configuration explicitly permits a custom placeholder; never overwrite user input |
 | Bottom-right polaroid copy | `一直陪伴，是最温暖的慰藉 ♥` | Caption for an independent sticker; the concept glyphs are low-resolution, so confirm the final copy before release |
 
-This table does **not** claim that every field is implemented. Theme names are currently visible in the macOS menu-bar and Windows tray switchers; macOS shows `tagline` on the home route, while Windows does not yet render theme copy. Brand, subtitle, status, quote, signature, polaroid, and independently positioned decoration are outside the current visible runtime contract. Until corresponding schema and renderer support exists, omit those elements instead of flattening them into the background. If stickers are implemented later, keep each image as an independent `sticker-*.jpg` in the theme directory, render it through a pointer-events-free decoration layer, and hide or reposition it at homepage/task/narrow-window breakpoints. Do not treat it as a second background or let it cover the composer.
+This table does **not** claim that every field is implemented. `homeTitle` is now a visible contract shared by macOS, Windows, Chat, Work, and Codex; theme names also appear in both platform switchers. Brand, subtitle, status, quote, signature, polaroid, and independently positioned decoration remain outside this title feature. Until corresponding schema and renderer support exists, omit those elements instead of flattening them into the background. If stickers are implemented later, keep each image as an independent `sticker-*.jpg` in the theme directory, render it through a pointer-events-free decoration layer, and hide or reposition it at homepage/task/narrow-window breakpoints. Do not treat it as a second background or let it cover the composer.
 
 Names, likenesses, and this copy belong to a specific preset and should not be copied into the generic templates. Without the required rights, use an original fictional adult and remove names, work titles, and identifying terms.
 
@@ -195,7 +195,7 @@ Output contract: Return only the new opaque edge-to-edge wallpaper. Not a cleane
 
 ## Keep Copy And Small Photos Out Of The Bitmap Until Overlay Support Exists
 
-Do not bake names, signatures, titles, or copy such as “Create without limits with `[subject name]`” into the bitmap. Today, only the macOS home `tagline` is a visible copy field; theme names appear in both platforms' switching controls, and the remaining copy fields do not yet have a cross-platform visible contract. Implement the relevant schema and real UI layer before relying on those fields; merely adding them to `theme.json` does not make them visible.
+Do not bake names, signatures, titles, or copy such as “Create without limits with `[subject name]`” into the bitmap. Put the home greeting in the cross-platform `homeTitle` field; theme names appear in both platforms' switching controls. Other copy still needs an implemented schema and real UI layer before it can be relied on; merely adding unknown keys to `theme.json` does not make them visible.
 
 Do not bake a polaroid or small photo into `background.jpg` either. Only after the corresponding schema and renderer capability is implemented should it become a separate theme asset and, after confirming the necessary photo and likeness rights, be positioned by a `theme.json` sticker/decoration layer. The current runtime has no such visible field, so omit the photo today: do not add an unrecognized field to `theme.json`, and do not merge the photo into the wallpaper. Once implemented, the independent layer can be hidden around native cards, the composer, and narrow layouts.
 

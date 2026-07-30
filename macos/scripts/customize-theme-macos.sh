@@ -5,6 +5,7 @@ set -euo pipefail
 
 IMAGE=""
 THEME_NAME=""
+HOME_TITLE=""
 TAGLINE=""
 QUOTE=""
 ACCENT="#7cff46"
@@ -17,6 +18,7 @@ while [ "$#" -gt 0 ]; do
   case "$1" in
     --image) IMAGE="${2:-}"; shift 2 ;;
     --name) THEME_NAME="${2:-}"; shift 2 ;;
+    --home-title) HOME_TITLE="${2:-}"; shift 2 ;;
     --tagline) TAGLINE="${2:-}"; shift 2 ;;
     --quote) QUOTE="${2:-}"; shift 2 ;;
     --accent) ACCENT="${2:-}"; shift 2 ;;
@@ -48,6 +50,7 @@ else
       || fail "Theme setup was cancelled."
   fi
   if [ -z "$TAGLINE" ]; then TAGLINE="把喜欢的画面变成可交互的 Codex 工作台。"; fi
+  if [ -z "$HOME_TITLE" ]; then HOME_TITLE="Jarvis at your service"; fi
   if [ -z "$QUOTE" ]; then QUOTE="MAKE SOMETHING WONDERFUL"; fi
 
   /bin/mkdir -p "$THEME_DIR"
@@ -67,7 +70,8 @@ else
 
   "$NODE" "$SCRIPT_DIR/write-theme.mjs" custom \
     --output-dir "$THEME_DIR" --image "$image_name" \
-    --name "$THEME_NAME" --tagline "$TAGLINE" --quote "$QUOTE" \
+    --name "$THEME_NAME" --home-title "$HOME_TITLE" \
+    --tagline "$TAGLINE" --quote "$QUOTE" \
     --accent "$ACCENT" --secondary "$SECONDARY" --highlight "$HIGHLIGHT"
   /usr/bin/find "$THEME_DIR" -maxdepth 1 -type f -name 'background-*' ! -name "$image_name" -delete
   trap - EXIT

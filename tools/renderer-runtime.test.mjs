@@ -367,13 +367,18 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     customPolicy,
-    /\[role="main"\]\s+\[data-feature="game-source"\]::before\s*\{[\s\S]{0,220}content:\s*"Jarvis at your service"\s*!important;/,
-    "Personal builds must replace the native home heading without restoring engine brand text.",
+    /\[role="main"\]::before\s*\{[\s\S]{0,220}content:\s*var\(--dream-skin-home-title,\s*"Jarvis at your service"\)\s*!important;[\s\S]{0,420}top:\s*calc\(50vh\s*-\s*var\(--app-shell-main-content-frame-top-offset,\s*0px\)\)\s*!important;[\s\S]{0,300}transform:\s*translateY\(-50%\)\s*!important;/,
+    "Every home mode must render one theme-owned title layer at the full-window vertical center.",
   );
   assert.match(
     customPolicy,
-    /\[role="main"\]\s+\[data-feature="game-source"\]\s*>\s*\*\s*\{\s*visibility:\s*hidden\s*!important;\s*\}/,
-    "The Jarvis replacement must hide nested native project-title controls that override the parent text color.",
+    /\[role="main"\]::before\s*\{[\s\S]{0,720}font-family:\s*inherit\s*!important;[\s\S]{0,220}font-size:\s*clamp\([\s\S]{0,120}\)\s*!important;[\s\S]{0,160}font-weight:\s*600\s*!important;[\s\S]{0,160}line-height:\s*1\.15\s*!important;/,
+    "Chat, Work and Codex must share one explicit title typography contract.",
+  );
+  assert.match(
+    customPolicy,
+    /\[role="main"\]:has\(\[data-feature="game-source"\]\)\s+\[data-feature="game-source"\]\s*,[\s\S]{0,260}\[role="main"\]:not\(:has\(\[data-feature="game-source"\]\)\)\s+h1\.heading-xl:not\(\.invisible\)\s*\{[\s\S]{0,160}opacity:\s*0\s*!important;/,
+    "The shared title layer must hide both native title variants without removing their semantic nodes.",
   );
   assert.match(
     customPolicy,
@@ -392,13 +397,8 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     customPolicy,
-    /\[role="main"\]:not\(:has\(\[data-feature="game-source"\]\)\)\s+h1\.heading-xl:not\(\.invisible\)\s*\{[\s\S]{0,220}position:\s*relative\s*!important;[\s\S]{0,220}color:\s*transparent\s*!important;/,
-    "Personal builds must target the visible Chat home heading without hiding its accessible duplicate.",
-  );
-  assert.match(
-    customPolicy,
-    /\[role="main"\]:not\(:has\(\[data-feature="game-source"\]\)\)\s+h1\.heading-xl:not\(\.invisible\)::before\s*\{[\s\S]{0,220}content:\s*"Jarvis at your service"\s*!important;/,
-    "Personal builds must give Chat and Work the same visible Jarvis heading.",
+    /pointer-events:\s*none\s*!important;/,
+    "The decorative title layer must never block native home controls.",
   );
   assert.match(css, /--ds-task-full-veil/);
   assert.match(css, /data-dream-task-mode="full"/);
@@ -432,6 +432,11 @@ export async function runRendererRuntimeTest(assetRoot) {
   assert.equal(state.scope.level, "L1");
   assert.equal(home.rootStyle.values.get("--dream-skin-brand-subtitle"), '"CODEX DREAM SKIN"');
   assert.equal(home.rootStyle.values.get("--dream-skin-status"), '"DREAM SKIN ONLINE"');
+  assert.equal(
+    home.rootStyle.values.get("--dream-skin-home-title"),
+    '"Jarvis at your service"',
+    "Legacy themes must keep the current personal-engine greeting.",
+  );
   assert.equal(home.rootStyle.values.get("--ds-theme-surface-radius"), "12px");
   assert.equal(home.rootStyle.values.get("--ds-theme-surface-opacity"), "1");
   assert.equal(home.rootStyle.values.get("--ds-theme-surface-blur"), "0px");
@@ -448,6 +453,16 @@ export async function runRendererRuntimeTest(assetRoot) {
   for (const [variable, expected] of Object.entries(publicDefaults)) {
     assert.equal(home.rootStyle.values.get(variable), expected);
   }
+  const customTitle = makeFixture({ nativeAppearance: "dark" });
+  vm.runInNewContext(
+    customTitle.payloadFor({ homeTitle: "说吧，想干啥" }),
+    customTitle.context,
+  );
+  assert.equal(
+    customTitle.rootStyle.values.get("--dream-skin-home-title"),
+    '"说吧，想干啥"',
+    "Themes must be able to replace the shared Chat, Work and Codex home title.",
+  );
   assert.equal(home.rootStyle.values.get("--ds-theme-image-focus-x"), "0.72");
   assert.equal(home.rootStyle.values.get("--ds-theme-image-focus-y"), "0.5");
   assert.equal(home.rootStyle.values.get("--dream-skin-sidebar-width"), "280px");

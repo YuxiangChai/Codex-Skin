@@ -353,6 +353,25 @@ fi
   [ "$seeded" -eq 2 ] || exit 1
 ' _ "$ROOT"
 
+# A user-owned marker can keep an existing custom-only library free of bundled
+# presets across engine upgrades. It must preserve custom themes and remove
+# only preset ids that are shipped by the current engine.
+/usr/bin/env HOME="$TMP/seed-disabled-home" /bin/bash -c '
+  . "$1/scripts/common-macos.sh"
+  ensure_state_root
+  themes="$STATE_ROOT/themes"
+  /bin/mkdir -p "$themes/custom-keepme" \
+    "$themes/preset-gothic-void-crusade" "$themes/preset-arina-hashimoto"
+  : > "$themes/custom-keepme/theme.json"
+  : > "$themes/.disable-bundled-presets"
+  seed_bundled_presets
+  [ -f "$themes/custom-keepme/theme.json" ] || exit 1
+  [ ! -e "$themes/preset-gothic-void-crusade" ] || exit 1
+  [ ! -e "$themes/preset-arina-hashimoto" ] || exit 1
+  seeded="$(/usr/bin/find "$themes" -maxdepth 1 -type d -name "preset-*" | /usr/bin/wc -l | /usr/bin/tr -d " ")"
+  [ "$seeded" -eq 0 ] || exit 1
+' _ "$ROOT"
+
 run_signed_runtime_switch_test() {
   local switch_home="$TMP/switch-home"
   local switch_state="$switch_home/Library/Application Support/CodexDreamSkinStudio"
@@ -764,12 +783,14 @@ fi
 /bin/mkdir -p "$TMP/theme"
 /bin/cp "$ROOT/assets/portal-hero.png" "$TMP/theme/background.png"
 "$NODE" "$ROOT/scripts/write-theme.mjs" custom --output-dir "$TMP/theme" \
-  --image background.png --name '测试主题' --tagline '测试口号' --quote 'TEST' \
+  --image background.png --name '测试主题' --home-title '说吧，想干啥' \
+  --tagline '测试口号' --quote 'TEST' \
   --accent '#11aa55' --secondary '#22bbcc' --highlight '#663399' >/dev/null
 PAYLOAD_JSON="$("$NODE" "$ROOT/scripts/injector.mjs" --check-payload --theme-dir "$TMP/theme")"
 "$NODE" -e '
   const theme = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
   if (theme.appearance !== "auto") process.exit(1);
+  if (theme.homeTitle !== "说吧，想干啥") process.exit(1);
   if (
     theme.art?.safeArea !== "auto"
     || theme.art?.taskMode !== "auto"
@@ -830,6 +851,7 @@ assert_write_theme_rejected art-dim --art-dim 1.01
 assert_write_theme_rejected focus-x --focus-x -0.01
 assert_write_theme_rejected focus-y --focus-y 1.01
 assert_write_theme_rejected name-control --name $'unsafe\nname'
+assert_write_theme_rejected home-title-control --home-title $'unsafe\nhome'
 assert_write_theme_rejected tagline-control --tagline $'unsafe\rtagline'
 assert_write_theme_rejected quote-control --quote $'unsafe\033quote'
 CONTROL_IMAGE=$'unsafe\nimage.jpg'

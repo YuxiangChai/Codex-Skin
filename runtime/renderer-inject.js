@@ -32,7 +32,8 @@
     "--dream-skin-focus-x", "--dream-skin-focus-y", "--dream-skin-art-position",
     "--dream-skin-sidebar-width", "--dream-skin-sidebar-offset",
     "--dream-skin-art-cover-width",
-    "--dream-skin-name", "--dream-skin-tagline", "--dream-skin-project-prefix",
+    "--dream-skin-name", "--dream-skin-home-title", "--dream-skin-tagline",
+    "--dream-skin-project-prefix",
     "--dream-skin-project-label", "--dream-skin-brand-subtitle", "--dream-skin-status",
     "--dream-skin-quote", "--dream-skin-art",
     "--ds-theme-color-background", "--ds-theme-color-panel",
@@ -317,6 +318,9 @@
       if (rgb) setStyleProperty(root, name, rgb);
     }
     setStyleProperty(root, "--dream-skin-name", cssString(THEME.name || "Codex Dream Skin"));
+    setStyleProperty(root, "--dream-skin-home-title", cssString(
+      THEME.homeTitle || "Jarvis at your service",
+    ));
     setStyleProperty(root, "--dream-skin-tagline", cssString(THEME.tagline || "Make something wonderful."));
     setStyleProperty(root, "--dream-skin-quote", cssString(THEME.quote || "MAKE SOMETHING WONDERFUL"));
     setStyleProperty(root, "--dream-skin-brand-subtitle", cssString(

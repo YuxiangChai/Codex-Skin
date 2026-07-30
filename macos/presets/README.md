@@ -51,11 +51,17 @@ preset-<slug>/
 | 字段 | 显示位置 |
 | --- | --- |
 | `name` | 首页标题上方的主题名眉标（强调色小字） |
+| `homeTitle` | Chat、Work 与 Codex 共用的首页主标题；三种模式使用同一字号、字重和整窗垂直中心 |
 | `tagline` | 首页标题下方一行副标语 |
 | `quote` | 首页右下角手写体口号（斜排，随强调色） |
 | `brandSubtitle` / `statusText` | 皮肤 chrome 的品牌角标与状态文案（部分布局下隐藏） |
 | `projectPrefix` / `projectLabel` | 「选择项目」按钮的前缀与占位文案 |
 | `promoTitle` / `promoSub` / `promoUrl` | 分享/宣传场景使用，可选 |
+
+`homeTitle` 是可选的单行文本，最多 120 个 Unicode 字符。例如可以写
+`"说吧，想干啥"`。未填写时，个人引擎保持兼容并显示
+`"Jarvis at your service"`；主题只能改标题内容，三种首页的字体、字号、
+字重与定位由引擎统一，避免不同宿主模式再次出现视觉漂移。
 
 ### colors 调色板（键 → 界面用途）
 

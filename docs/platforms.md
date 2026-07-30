@@ -88,6 +88,7 @@ Windows 普通启动、失败回滚与恢复重开均从已注册的 `OpenAI.Cod
 ### 主题 ZIP 与手动目录
 
 - 两端只接受普通 `.zip`，明确不兼容 `.dreamskin` 后缀。新的正式 Studio 包必须包含 `manifest.json`、非空 `theme.json`、非空 `theme.css`、恰好一张 `background.webp|jpg|png`，并可选带 `LICENSE.txt`、`manifest.sig`；文件位于 ZIP 根目录或唯一一层顶级主题目录。仅供本机可信工作流使用的简化格式也必须恰好包含 `theme.json`、`theme.css` 与其引用图片。
+- `theme.json` 可选 `homeTitle` 单行字段（最多 120 个 Unicode 字符）。同一标题会在 Chat、Work 与 Codex 首页以统一字体、字号、字重和整窗垂直中心显示；缺省时个人引擎兼容显示 `Jarvis at your service`。
 - 导入前限制为 32 MiB 压缩文件、32 个条目和 64 MiB 解压总量，并拒绝路径穿越、链接/reparse、嵌套压缩包、未注册负载以及未通过主题/图片校验的内容。正式包还会核对平台、最低客户端版本及清单中每个负载文件的大小与 SHA-256。
 - `theme.css` 必须通过同一份 Safe CSS allowlist，本机在导入和每次应用时都会复验；通过后只作用于 12 个注册 `data-ds-part` 部件。升级前已经保存且没有 CSS 的 legacy 主题仍可使用，但不会注入额外 CSS。`manifest.sig` 是预留文件，当前不验证签名也不写入主题库；`LICENSE.txt` 随主题保留。
 - 导入目标始终是 saved themes；不会自动覆盖或应用 active / last-known-good。完全相同的内容返回重复结果，同 ID 的不同主题自动保存到新的安全目录。

@@ -137,6 +137,7 @@ test("$ patterns in every user-visible theme string survive the build", async ()
   const fields = {
     name: "name $`",
     brandSubtitle: "brand $&",
+    homeTitle: "home title $<home>",
     tagline: "tagline $$",
     projectPrefix: "prefix $'",
     projectLabel: "label $1",

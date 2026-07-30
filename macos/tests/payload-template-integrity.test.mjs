@@ -113,7 +113,12 @@ const dollarConstructs = {
 
 test("payload substitution preserves $ constructs in theme display text", async () => {
   for (const [label, name] of Object.entries(dollarConstructs)) {
-    const { directory, theme } = await makeThemeDir({ name, statusText: name, quote: name });
+    const { directory, theme } = await makeThemeDir({
+      name,
+      homeTitle: name,
+      statusText: name,
+      quote: name,
+    });
     const loaded = await loadPayload(directory);
 
     assert.equal(
@@ -136,6 +141,7 @@ test("payload substitution preserves $ constructs in theme display text", async 
       name,
       `${label}: the renderer must observe the exact theme name`,
     );
+    assert.equal(captured.themeConfig.homeTitle, name, `${label}: homeTitle must be verbatim`);
     assert.equal(captured.themeConfig.statusText, name, `${label}: statusText must be verbatim`);
     assert.equal(captured.themeConfig.quote, name, `${label}: quote must be verbatim`);
     assert.equal(captured.themeConfig.id, theme.id, `${label}: theme id must be verbatim`);

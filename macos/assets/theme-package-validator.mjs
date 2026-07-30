@@ -51,6 +51,7 @@ const MANIFEST_REQUIRED = [
 const THEME_REQUIRED = ["schemaVersion", "id", "name", "image"];
 const THEME_COPY_KEYS = [
   "brandSubtitle",
+  "homeTitle",
   "tagline",
   "projectPrefix",
   "projectLabel",

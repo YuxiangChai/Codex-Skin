@@ -122,6 +122,7 @@ theme_args=(
   --output-dir "$THEME_DIR"
   --image "$image_name"
   --name "$THEME_NAME"
+  --home-title "Jarvis at your service"
   --tagline "Make something wonderful."
   --quote "MAKE SOMETHING WONDERFUL"
   --appearance "$APPEARANCE"

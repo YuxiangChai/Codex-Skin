@@ -2,6 +2,29 @@
 
 Updated: 2026-07-30 (Asia/Shanghai)
 
+## Personal v1.5.9 Update (2026-07-30)
+
+- [complete] Reduced the current macOS saved-theme library to the user's
+  `custom-iron-man` theme only; removed the saved Gothic Void Crusade and Arina
+  Hashimoto copies without changing the redistributable upstream preset assets.
+- [complete] Added and regression-covered the local
+  `themes/.disable-bundled-presets` preference. The current profile has the
+  marker enabled, so later engine upgrades remove only presets shipped by that
+  engine instead of silently re-adding them; custom themes remain untouched.
+- [complete] Raised both the saved and active Iron Man theme-owned
+  `art.dim` value from `0.28` to `0.4`, reapplied it through the validated
+  theme switch path, and confirmed the renderer verification passed.
+- [complete] Confirmed the personal repository already has public tags through
+  `v1.5.8`, while `origin/main` has advanced to `v1.5.9`; the next personal
+  updater-visible release must therefore be `v1.5.9`, not a reused `v1.5.8`.
+- [in_progress] Commit the unified `homeTitle` implementation, merge the
+  upstream v1.5.9 Windows one-click handoff fix, re-run release-level tests,
+  and push the verified result to `YuxiangChai/Codex-Skin` main.
+- [note] The downloaded Marvel/Iron Man artwork remains local and is not added
+  to the public repository or release assets because redistribution rights
+  were not established. Engine updates preserve the user's managed theme
+  state and background image.
+
 ## Main-Surface Artwork Scope (2026-07-30)
 
 - [complete] Added an opt-in `art.scope: "main"` theme setting so artwork is
@@ -664,3 +687,65 @@ Updated: 2026-07-30 (Asia/Shanghai)
     to persist these engine changes across an ordinary restart/login.
 - Safety: no official app bundle, `app.asar`, signature, ACL, user data, or
   SQLite log is modified.
+
+## 2026-07-30 — Theme-owned unified home title
+
+- Goal: let every theme define the home greeting while Chat, Work, and
+  standalone Codex use one visual contract: identical text, font metrics and
+  a title center aligned to the full available main window.
+- Branch: `codex/custom-engine` tracking `personal/main`; upstream v1.5.8 is
+  already merged and the worktree was clean at task start.
+- Scope:
+  - add a bounded, single-line `homeTitle` theme field to the official and
+    local theme contracts on both platforms;
+  - expose one renderer variable for that title and keep legacy themes
+    compatible;
+  - replace the two mode-specific inherited heading treatments with shared
+    typography and one vertical-centering contract;
+  - set the user's saved/active Iron Man theme to
+    `Jarvis at your service`;
+  - synchronize generated macOS/Windows payload assets and run focused,
+    platform and real-UI regressions.
+- Current work:
+  - [x] Confirmed the present mismatch: standalone Codex renders through
+    `[data-feature="game-source"]::before`, while Chat/Work renders through
+    `h1.heading-xl::before`; both inherit different native font/layout metrics
+    and both hard-code the Jarvis string.
+  - [x] Added failing renderer, payload and package-contract regressions;
+    confirmed the old engine rejected/dropped `homeTitle` and still depended on
+    separate hard-coded native title nodes.
+  - [x] Implemented the bounded `homeTitle` contract, renderer variable and one
+    root-level title layer. Legacy themes retain `Jarvis at your service`;
+    explicit themes can supply any safe single-line value up to 120 code points.
+  - [x] Unified the title metrics (`inherit` font family, responsive
+    28px–36px size, weight 600, line-height 1.15) and anchored its center to
+    `50vh` after compensating for the native app-header offset.
+  - [x] Synchronized canonical runtime assets; focused macOS/Windows renderer,
+    package and payload-integrity tests pass.
+  - [x] Updated the saved and active local Iron Man theme with explicit
+    `homeTitle: "Jarvis at your service"` and documented the cross-platform
+    field, limit, fallback and unified typography behavior.
+  - [x] Real-UI verification on the 1512x949 app:
+    - Chat: native `Ready when you are.` heading opacity 0; shared title
+      `Jarvis at your service`, top 428.5px, 34.02px/600/39.123px.
+    - Work: same shared title, top and font metrics; native game-source title
+      absent from the visible screenshot.
+    - Codex: same shared title, top and font metrics; native project heading
+      opacity 0; 640px bottom composer and project controls remain intact.
+    - Expanded and collapsed sidebars retain the same title top/font metrics;
+      horizontal centering follows the responsive home root. The app was
+      returned to Codex mode with its sidebar expanded after verification.
+  - [x] Verified a transient custom value `说吧，想干啥` renders with exactly
+    the same typography/position and restored Iron Man immediately afterward.
+  - [x] Evidence:
+    `/private/tmp/iron-man-chat-unified-title.png`,
+    `/private/tmp/iron-man-work-unified-title.png`, and
+    `/private/tmp/iron-man-unified-home-title.png`.
+  - [x] All 75 cross-platform Node tests pass. The complete macOS suite passes
+    outside the restricted SwiftPM sandbox, including Swift build, 10 XCTest
+    cases, shell/static/runtime/package/import/security regressions. Canonical
+    asset sync, Node/shell syntax and `git diff --check` also pass.
+  - [note] Windows PowerShell-native tests remain CI-only on this macOS host;
+    both Windows renderer/payload/package Node paths passed locally.
+- Safety: this remains external renderer/theme data. Do not modify the
+  official app bundle, `app.asar`, signing state, ACL, user data or logs.
