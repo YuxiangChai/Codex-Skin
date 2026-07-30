@@ -551,5 +551,11 @@ Updated: 2026-07-30 (Asia/Shanghai)
     pass. The macOS suite includes Swift build, 10 XCTest cases and all
     applicable shell/Node regressions; signed installed-runtime integrations
     are explicit environment skips.
+  - [x] Committed the verified implementation as `3e28ef0` and pushed it to
+    `personal/main`. No version source changed and no client Release was
+    requested for this source-development iteration.
+  - [note] GitHub CLI is not installed on this host, so the remote workflow
+    status could not be queried locally; this does not change the completed
+    local macOS/Windows verification evidence above.
 - Safety: renderer CSS only; native controls and project functionality remain
   intact, and no official application files or user data are modified.
