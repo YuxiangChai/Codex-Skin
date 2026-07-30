@@ -1085,6 +1085,9 @@ async function verifySession(session, expectedThemeId = null, expectedRevision =
         visible: r.width > 0 && r.height > 0 && style.display !== 'none' && style.visibility !== 'hidden',
       };
     };
+    // Current Codex builds keep [role="main"] as the stable home root even
+    // when the legacy home-icon is absent or late. The selector contract
+    // intentionally registers that root as home-route-css.
     const home = document.querySelector(${selectorLiteral("home-route-css")});
     const homeRoute = home;
     const suggestions = home?.querySelector(${selectorLiteral("home-suggestions")}) ?? null;

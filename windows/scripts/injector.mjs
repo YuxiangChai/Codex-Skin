@@ -1150,6 +1150,9 @@ export async function verifySession(
         visible: Boolean(node.isConnected !== false && cssVisible && intersectsViewport),
       };
     };
+    // Current Codex builds keep [role="main"] as the stable home root even
+    // when the legacy home-icon is absent or late. The selector contract
+    // intentionally registers that root as home-route-css.
     const home = document.querySelector(${selectorLiteral("home-route-css")});
     const settingsAnchor = document.querySelector(${selectorLiteral("appearance-radio")}) ||
       document.querySelector(${stableTestidLiteral("theme-preview")});

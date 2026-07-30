@@ -24,6 +24,31 @@ Updated: 2026-07-30 (Asia/Shanghai)
   theme-owned dimming, applied the live payload, and verified expanded,
   collapsed, and restored sidebar states against the real app.
 
+## Upstream v1.5.8 Merge (2026-07-30)
+
+- [complete] Committed the pre-merge custom-engine snapshot as `2bdeb12`.
+- [complete] Fetched `origin/main@0cb4e29` (v1.5.8), two upstream commits
+  beyond the shared v1.5.6 base.
+- [complete] Retained the verified `home-route-css` (`[role="main"]`) path,
+  personal Jarvis/no-card/Work-style home policy, main-centered shared artwork,
+  theme-owned dim, and transparent session-footer fix.
+- [complete] Integrated upstream's light/full-mode text contrast, registered
+  Safe CSS blur-variable parsing, Windows PowerShell security-module loading,
+  and multiline TOML array preservation.
+- [complete] Shared runtime sync, focused renderer/Safe CSS/readiness checks,
+  all 17 Windows Node tests, the complete applicable macOS suite, Swift build,
+  and all 10 XCTest cases pass. Signed installed-runtime integrations and
+  Doctor remain explicit skips while Codex is running; PowerShell is not
+  installed on this Mac, so Windows-native tests remain CI/Windows-host work.
+- [complete] Hot-loaded the merged source and verified the real 1512x949 app:
+  home retains one Jarvis heading, no four-card recommendations, the 640px
+  bottom composer, and its attached project utility; session expanded /
+  collapsed / restored sidebar states report offsets `120px / 0px / 120px`,
+  keep the wallpaper centered on the main surface, retain Iron Man's uniform
+  `0.28` dim, and expose no native footer gradient below the composer.
+  Evidence: `/private/tmp/iron-man-home-utility-transparent.png` and
+  `/private/tmp/iron-man-v158-merged-session.png`.
+
 ## Personal Release Download Link Fix (2026-07-28)
 
 - [complete] The installed App and managed engine were both confirmed to
