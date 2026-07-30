@@ -512,5 +512,8 @@ Updated: 2026-07-30 (Asia/Shanghai)
   - [x] Committed the verified CSS-only change as `53ebe7a` and pushed it to
     `personal/main`; no version or public Release was created for this
     source-development iteration.
+  - [x] GitHub CI run `30515511444` passed the macOS, static, Windows
+    PowerShell 7, and Windows PowerShell 5.1 matrix; the unchanged-version
+    Release workflow exited successfully without publishing.
 - Safety: the fix remains renderer CSS only; it does not modify the official
   application bundle, `app.asar`, signature, ACL, user data, or SQLite logs.
