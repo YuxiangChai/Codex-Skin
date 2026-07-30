@@ -14,6 +14,7 @@ const selectors = {
   sidebar: "aside.app-shell-left-panel",
   composer: ".composer-surface-chrome",
   home: '[role="main"]',
+  suggestions: ".group\\/home-suggestions",
   settings: 'input[name="appearance-theme"]',
   themePreview: '[data-testid="theme-preview"]',
 };
@@ -22,19 +23,49 @@ function makeRect(width = 800, height = 600, x = 0, y = 0) {
   return { x, y, width, height, right: x + width, bottom: y + height };
 }
 
-function makeElement({ rect = makeRect(), style = {}, visible = true } = {}) {
-  return {
+function makeElement({
+  rect = makeRect(),
+  style = {},
+  visible = true,
+  text = "",
+  children = [],
+} = {}) {
+  const element = {
     isConnected: true,
+    textContent: text,
     _style: {
       display: "block",
       visibility: "visible",
       contentVisibility: "visible",
       opacity: "1",
+      color: "rgb(240, 240, 240)",
       ...style,
     },
+    childNodes: text ? [{ nodeType: 3, textContent: text }] : [],
+    children,
     getBoundingClientRect: () => rect,
     checkVisibility: () => visible,
     querySelector: () => null,
+    querySelectorAll: () => [],
+  };
+  return element;
+}
+
+function makeSuggestionButton({
+  rect = makeRect(220, 80, 40, 300),
+  color = "rgb(210, 210, 210)",
+  labelColor = color,
+  text = "Suggestion",
+} = {}) {
+  const label = makeElement({
+    rect: makeRect(180, 24, rect.x + 12, rect.y + 12),
+    style: { color: labelColor },
+    text,
+  });
+  return {
+    ...makeElement({ rect, style: { color } }),
+    getBoundingClientRect: () => rect,
+    querySelectorAll: () => [label],
   };
 }
 
@@ -42,6 +73,8 @@ function makeHome(options = {}) {
   const home = makeElement(options);
   const hero = makeElement(options.hero ?? {});
   home.firstElementChild = { firstElementChild: { firstElementChild: hero } };
+  const suggestions = options.suggestions ?? null;
+  home.querySelector = (selector) => selector === selectors.suggestions ? suggestions : null;
   return home;
 }
 
@@ -83,7 +116,7 @@ function makeDomFixture({
   };
   const window = {
     __CODEX_DREAM_SKIN_STATE__: {
-      version: "1.5.8",
+      version: "1.5.9",
       themeId: "fixture-theme",
       revision: "fixture-revision",
       styleMode: "style",
@@ -187,6 +220,47 @@ test("visible settings and home anchors are the only L0 structure exceptions", a
   });
   assert.equal(noAnchor.result.pass, false);
   assert.equal(noAnchor.result.readiness.structurePass, false);
+});
+
+test("home verification matches macOS and does not require a fixed suggestion-card count", async () => {
+  const oneSuggestion = {
+    querySelectorAll: (selector) => selector === "button"
+      ? [makeSuggestionButton({ text: "One real card" })]
+      : [],
+  };
+  const homeWithOneSuggestion = await verify({
+    dom: makeDomFixture({
+      home: makeHome({
+        rect: makeRect(900, 650, 20, 20),
+        hero: { rect: makeRect(800, 260, 40, 60) },
+        suggestions: oneSuggestion,
+      }),
+    }),
+  });
+  assert.equal(homeWithOneSuggestion.result.homePresent, true);
+  assert.equal(homeWithOneSuggestion.result.visibleCardCount, 1);
+  assert.equal(homeWithOneSuggestion.result.pass, true);
+
+  const mismatchedSuggestion = {
+    querySelectorAll: (selector) => selector === "button"
+      ? [makeSuggestionButton({
+        text: "Hidden by mismatched text color",
+        color: "rgb(210, 210, 210)",
+        labelColor: "rgb(10, 10, 10)",
+      })]
+      : [],
+  };
+  const badHome = await verify({
+    dom: makeDomFixture({
+      home: makeHome({
+        rect: makeRect(900, 650, 20, 20),
+        hero: { rect: makeRect(800, 260, 40, 60) },
+        suggestions: mismatchedSuggestion,
+      }),
+    }),
+  });
+  assert.equal(badHome.result.suggestionLabelColorsMatch, false);
+  assert.equal(badHome.result.pass, false);
 });
 
 // Regression for #256. The previous version of this test asserted that a
