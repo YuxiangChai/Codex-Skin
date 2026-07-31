@@ -130,7 +130,14 @@ fi
 /usr/bin/grep -F -q 'xcrun notarytool submit' "$ROOT/scripts/build-dmg.sh"
 /usr/bin/grep -F -q 'xcrun stapler staple' "$ROOT/scripts/build-dmg.sh"
 /usr/bin/grep -F -q 'MACOS_CERTIFICATE_P12_BASE64' "$ROOT/../.github/workflows/release.yml"
-/usr/bin/grep -F -q 'Build signed and notarized DMG' "$ROOT/../.github/workflows/release.yml"
+/usr/bin/grep -F -q 'Developer ID secrets are absent; building an explicit ad-hoc package.' \
+  "$ROOT/../.github/workflows/release.yml"
+/usr/bin/grep -F -q -- '--allow-ad-hoc-assisted' "$ROOT/scripts/install-update-macos.sh"
+/usr/bin/grep -F -q 'xattr -w com.apple.quarantine' "$ROOT/scripts/install-update-macos.sh"
+if /usr/bin/grep -E -q 'xattr[[:space:]]+-(d|c)' "$ROOT/scripts/install-update-macos.sh"; then
+  printf 'Assisted update must preserve quarantine, never delete or clear it.\n' >&2
+  exit 1
+fi
 for retired_preset in preset-gothic-void-crusade preset-arina-hashimoto; do
   [ ! -e "$ROOT/presets/$retired_preset" ] \
     || { printf 'Retired preset remains in the macOS source: %s\n' "$retired_preset" >&2; exit 1; }

@@ -305,6 +305,8 @@ jobs:
     needs: [guard, create-tag]
     if: needs.guard.outputs.should_release == 'true'
     runs-on: macos-latest
+    outputs:
+      signed: ${{ steps.signing.outputs.signed }}
     steps:
       - name: Check out source
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -318,6 +320,7 @@ jobs:
           node-version: '22'
 
       - name: Import Developer ID certificate and configure notarization
+        id: signing
         shell: bash
         env:
           MACOS_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
@@ -328,14 +331,22 @@ jobs:
           MACOS_NOTARY_TEAM_ID: ${{ secrets.MACOS_NOTARY_TEAM_ID }}
         run: |
           set -euo pipefail
+          present=0
           for name in MACOS_CERTIFICATE_P12_BASE64 MACOS_CERTIFICATE_PASSWORD \
             MACOS_CODESIGN_IDENTITY MACOS_NOTARY_APPLE_ID MACOS_NOTARY_PASSWORD \
             MACOS_NOTARY_TEAM_ID; do
-            test -n "${!name}" || {
-              echo "Required macOS release secret is missing: $name" >&2
-              exit 1
-            }
+            [[ -z "${!name}" ]] || present=$((present + 1))
           done
+          if [[ "$present" -eq 0 ]]; then
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+            echo "DREAMSKIN_RELEASE_SIGNED=false" >> "$GITHUB_ENV"
+            echo "Developer ID secrets are absent; building an explicit ad-hoc package."
+            exit 0
+          fi
+          [[ "$present" -eq 6 ]] || {
+            echo "Developer ID secrets are partially configured; refusing an ambiguous release." >&2
+            exit 1
+          }
           keychain="$RUNNER_TEMP/dreamskin-signing.keychain-db"
           password="$(openssl rand -hex 24)"
           security create-keychain -p "$password" "$keychain"
@@ -364,9 +375,11 @@ jobs:
             echo "DREAMSKIN_NOTARY_PROFILE=dreamskin-ci"
             echo "DREAMSKIN_NOTARY_KEYCHAIN=$keychain"
             echo "DREAMSKIN_BUILD_KEYCHAIN=$keychain"
+            echo "DREAMSKIN_RELEASE_SIGNED=true"
           } >> "$GITHUB_ENV"
+          echo "signed=true" >> "$GITHUB_OUTPUT"
 
-      - name: Build signed and notarized DMG
+      - name: Build macOS DMG
         shell: bash
         env:
           VERSION: ${{ needs.guard.outputs.version }}
@@ -382,8 +395,10 @@ jobs:
           artifact="macos/release/CodexDreamSkin-v${VERSION}.dmg"
           test -s "$artifact"
           hdiutil imageinfo "$artifact" >/dev/null
-          xcrun stapler validate "$artifact"
-          spctl --assess --type open --context context:primary-signature "$artifact"
+          if [[ "${DREAMSKIN_RELEASE_SIGNED:-false}" == "true" ]]; then
+            xcrun stapler validate "$artifact"
+            spctl --assess --type open --context context:primary-signature "$artifact"
+          fi
 
       - name: Remove temporary signing keychain
         if: always()
@@ -428,6 +443,7 @@ jobs:
         env:
           VERSION: ${{ needs.guard.outputs.version }}
           RELEASE_SHA: ${{ needs.guard.outputs.release_sha }}
+          MACOS_SIGNED: ${{ needs.build-macos.outputs.signed }}
         run: |
           set -euo pipefail
           test -s "dist/CodexDreamSkin-v${VERSION}.dmg"
@@ -435,6 +451,11 @@ jobs:
             cd dist
             sha256sum "CodexDreamSkin-v${VERSION}.dmg" > SHA256SUMS.txt
           )
+          if [[ "$MACOS_SIGNED" == "true" ]]; then
+            trust_note="The package is signed with Apple Developer ID and notarized. Future updates can complete automatically."
+          else
+            trust_note="The package uses ad-hoc signing. Assisted updates install automatically, then open Privacy & Security so you can approve the new App once."
+          fi
           cat > release-notes.md <<EOF
           ## Codex Dream Skin v${VERSION}
 
@@ -443,8 +464,8 @@ jobs:
           - **macOS:** [CodexDreamSkin-v${VERSION}.dmg](https://github.com/${GITHUB_REPOSITORY}/releases/download/v${VERSION}/CodexDreamSkin-v${VERSION}.dmg)
           - [SHA256SUMS.txt](https://github.com/${GITHUB_REPOSITORY}/releases/download/v${VERSION}/SHA256SUMS.txt)
 
-          This personal release currently publishes macOS only. The package is
-          signed with Apple Developer ID and notarized; follow
+          This personal release currently publishes macOS only. ${trust_note}
+          Follow
           [macOS installation](https://github.com/${GITHUB_REPOSITORY}/blob/v${VERSION}/docs/install-macos.md).
           No terminal trust command is required for ordinary users.
 

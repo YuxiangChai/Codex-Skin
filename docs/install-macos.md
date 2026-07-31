@@ -72,8 +72,10 @@ SHA-256，再校验 App 的 Bundle ID、版本、内置引擎、Apple Team ID �
 退出自身、在 Applications 同目录保留回滚副本、原子替换并重新启动；新 App 未确认启动时会恢复旧版。
 主题、图片和状态均位于 Application Support，不随 App 覆盖。
 
-ad-hoc 或未公证的开发构建不会被自动更新器当作可信起点。第一次迁移到正式签名版仍需手动覆盖一次；
-同一个 Apple Developer Team 后续发布的签名、公证更新才可一键完成。
+Developer ID 签名版会在验证同一个 Apple Team 与 Gatekeeper 后自动重启。ad-hoc 版本则使用辅助
+更新：校验、备份和替换仍自动完成，但客户端会把原 App 的 quarantine 来源记录保留到新版，主动触发
+macOS 审查并打开“隐私与安全性”。用户点击一次“仍要打开”后，新 App 启动并清理旧版备份；更新器
+不会删除 quarantine、关闭 Gatekeeper 或跳过系统确认。
 
 ### 手动备用方式
 
@@ -84,9 +86,9 @@ ad-hoc 或未公证的开发构建不会被自动更新器当作可信起点。�
 3. 打开新 DMG，把新应用拖入 Applications，并选择替换。
 4. 再次打开应用；现有主题、图片和状态会保留。
 
-Developer ID 签名并公证的正式包通常不需要每个版本重复“仍要打开”。未签名开发包仍可能每次触发
-Gatekeeper；不要通过 `xattr` 或关闭 Gatekeeper 绕过。菜单栏只在用户点击“检查更新”后访问 GitHub，
-不会后台轮询，也不会在未确认时下载或替换。
+Developer ID 签名并公证的正式包通常不需要每个版本重复“仍要打开”。ad-hoc 包每次更新仍需要
+一次系统确认，但下载、校验、替换和打开系统设置都由客户端完成。不要手动运行 `xattr` 或关闭
+Gatekeeper。菜单栏只在用户点击“检查更新”后访问 GitHub，不会后台轮询，也不会在未确认时下载。
 
 ## 卸载
 

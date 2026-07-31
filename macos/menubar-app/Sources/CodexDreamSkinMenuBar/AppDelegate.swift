@@ -1056,7 +1056,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let alert = NSAlert()
         alert.messageText = "发现新版本 \(latest)"
         alert.informativeText =
-          "当前版本为 \(current)。Dream Skin 将自动下载、校验并安装更新，失败时恢复当前 App；图片和已保存主题不会被覆盖。"
+          "当前版本为 \(current)。Dream Skin 将自动下载、校验并安装更新，失败时恢复当前 App；图片和已保存主题不会被覆盖。未签名版本安装后会打开“隐私与安全性”，你只需允许新 App 打开一次。"
         alert.addButton(withTitle: "自动更新")
         alert.addButton(withTitle: "稍后")
         self.activateForUserInteraction()

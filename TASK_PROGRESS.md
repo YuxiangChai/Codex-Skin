@@ -35,18 +35,24 @@ Updated: 2026-07-31 (Asia/Shanghai)
 - [complete] Added a confirmation-driven self-updater. It keeps the fixed
   personal GitHub channel and existing size/SHA checks, mounts the DMG
   read-only, validates the app/engine version, Bundle ID, strict code
-  signature, matching Apple Team ID and Gatekeeper result, then uses a detached
-  acknowledged helper to rename the current App to a rollback copy, install
-  the staged App, reopen it and restore the previous copy if startup is not
+  signature and signing mode, then uses a detached acknowledged helper to
+  rename the current App to a rollback copy and install the staged App. Signed
+  updates additionally require a matching Apple Team ID and successful
+  Gatekeeper assessment, reopen automatically, and roll back if startup is not
   acknowledged. It never requests privilege, strips quarantine, disables
   Gatekeeper, or touches theme/image state.
-- [complete] Automatic update intentionally rejects ad-hoc current Apps. Added
-  Developer ID + hardened-runtime signing and App/DMG notarization/stapling
-  support, and changed the personal Release workflow to require certificate
-  and notary secrets rather than silently publishing another unsigned DMG.
-  This Mac currently reports zero valid code-signing identities, so a real
-  trusted release remains blocked until the user provisions an Apple Developer
-  Program Developer ID certificate and CI secrets.
+- [complete] Added an explicit ad-hoc assisted-update path for the personal
+  no-certificate release channel. It accepts only two strictly valid ad-hoc
+  bundles after the fixed GitHub size/SHA/package checks, requires a reusable
+  quarantine record on the current App, copies that record onto the replacement
+  instead of deleting it, triggers the macOS block once, and opens Privacy &
+  Security. The user only clicks “仍要打开”; successful startup acknowledges the
+  transaction and removes the old hidden backup.
+- [complete] Developer ID + hardened-runtime signing and App/DMG
+  notarization/stapling remain supported but optional. The personal Release
+  workflow builds an explicitly ad-hoc package when all signing secrets are
+  absent, rejects partially configured secrets, and switches to the signed
+  path only when all six values exist. This Mac still has zero identities.
 - [complete] Made selected sidebar chrome consume the theme `line` token rather
   than a hard-coded accent border. Iron Man now sets `line: transparent` and
   uses registered Safe CSS parts to clear sidebar, main, header, composer and
@@ -55,10 +61,10 @@ Updated: 2026-07-31 (Asia/Shanghai)
   Swift build, all 10 XCTest cases, shell/static safety checks, renderer/CSS
   sync, Safe CSS, payload, package/import and installer rollback tests. Built
   an arm64 App and DMG, mounted and statically validated the DMG, confirmed
-  both new helpers are packaged/executable, and confirmed an ad-hoc fixture is
-  rejected as an automatic-update trust root. Signed-runtime integrations are
-  explicit skips; actual Developer ID/notary submission cannot be exercised
-  without credentials.
+  both new helpers are packaged/executable, and regression-covered the rule
+  that assisted updates may write but never remove/clear quarantine.
+  Signed-runtime integrations are explicit skips; actual Developer ID/notary
+  submission cannot be exercised without credentials.
 - [decision] No upstream merge was needed, no installed App was replaced, and
   no push, tag or Release was created. Publication remains forbidden until the
   user explicitly requests it.

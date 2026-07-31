@@ -143,6 +143,7 @@ if [ -n "$INSTALL_APP" ]; then
     || fail_update "Could not publish the staged update."
   /bin/chmod -R u=rwX,go= "$STAGED_APP_ROOT"
   "$SCRIPT_DIR/install-update-macos.sh" \
+    --allow-ad-hoc-assisted \
     --current-app "$INSTALL_APP" \
     --staged-app "$STAGED_APP" \
     --parent-pid "$PARENT_PID" \
@@ -151,6 +152,7 @@ if [ -n "$INSTALL_APP" ]; then
   /bin/rm -f "$READY_FILE"
   /usr/bin/nohup "$SCRIPT_DIR/install-update-macos.sh" \
     --execute \
+    --allow-ad-hoc-assisted \
     --current-app "$INSTALL_APP" \
     --staged-app "$STAGED_APP" \
     --parent-pid "$PARENT_PID" \

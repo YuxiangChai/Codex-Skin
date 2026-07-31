@@ -16,6 +16,7 @@ PARENT_PID=""
 TARGET_VERSION=""
 EXECUTE="false"
 READY_FILE=""
+ALLOW_ADHOC_ASSISTED="false"
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -25,6 +26,7 @@ while [ "$#" -gt 0 ]; do
     --parent-pid) PARENT_PID="${2:-}"; shift 2 ;;
     --target-version) TARGET_VERSION="${2:-}"; shift 2 ;;
     --ready-file) READY_FILE="${2:-}"; shift 2 ;;
+    --allow-ad-hoc-assisted) ALLOW_ADHOC_ASSISTED="true"; shift ;;
     *) printf 'Unknown self-update argument: %s\n' "$1" >&2; exit 2 ;;
   esac
 done
@@ -96,12 +98,29 @@ validate_app "$CURRENT_APP" ""
 validate_app "$STAGED_APP" "$TARGET_VERSION"
 CURRENT_TEAM_ID="$(signing_team_id "$CURRENT_APP")"
 STAGED_TEAM_ID="$(signing_team_id "$STAGED_APP")"
-[ -n "$CURRENT_TEAM_ID" ] \
-  || fail_update "Automatic updates require a Developer ID-signed current app. Install the first signed release manually."
-[ "$STAGED_TEAM_ID" = "$CURRENT_TEAM_ID" ] \
-  || fail_update "The update was not signed by the same Apple Developer team."
-/usr/sbin/spctl --assess --type execute "$STAGED_APP" \
-  || fail_update "Gatekeeper did not accept the staged update."
+UPDATE_MODE=""
+QUARANTINE_VALUE=""
+if [ -n "$CURRENT_TEAM_ID" ]; then
+  [ "$STAGED_TEAM_ID" = "$CURRENT_TEAM_ID" ] \
+    || fail_update "The update was not signed by the same Apple Developer team."
+  /usr/sbin/spctl --assess --type execute "$STAGED_APP" \
+    || fail_update "Gatekeeper did not accept the staged update."
+  UPDATE_MODE="signed"
+else
+  [ "$ALLOW_ADHOC_ASSISTED" = "true" ] \
+    || fail_update "This ad-hoc app requires an assisted update with Gatekeeper approval."
+  [ -z "$STAGED_TEAM_ID" ] \
+    || fail_update "An ad-hoc current app cannot automatically trust a differently signed update."
+  /usr/bin/codesign -dvv "$CURRENT_APP" 2>&1 | /usr/bin/grep -F -q 'Signature=adhoc' \
+    || fail_update "The current app has an unsupported signing state."
+  /usr/bin/codesign -dvv "$STAGED_APP" 2>&1 | /usr/bin/grep -F -q 'Signature=adhoc' \
+    || fail_update "The staged app has an unsupported signing state."
+  QUARANTINE_VALUE="$(/usr/bin/xattr -p com.apple.quarantine "$CURRENT_APP" 2>/dev/null || true)"
+  printf '%s' "$QUARANTINE_VALUE" \
+    | /usr/bin/grep -Eq '^[0-9A-Fa-f]{4};[0-9A-Fa-f]+;[^;\r\n]{1,64};[0-9A-Fa-f-]{0,64}$' \
+    || fail_update "The current app has no reusable Gatekeeper quarantine record; use the DMG once for this update."
+  UPDATE_MODE="ad-hoc-assisted"
+fi
 
 CURRENT_VERSION="$(bundle_field "$CURRENT_APP" CFBundleShortVersionString)"
 [ "$CURRENT_VERSION" != "$TARGET_VERSION" ] \
@@ -191,6 +210,27 @@ if ! /bin/mv "$DESTINATION_STAGE" "$CURRENT_APP"; then
   fail_update "Could not install the staged app; the previous app was restored."
 fi
 /bin/rmdir "$DESTINATION_STAGE_ROOT" 2>/dev/null || true
+
+if [ "$UPDATE_MODE" = "ad-hoc-assisted" ]; then
+  # Preserve the existing download provenance on the replacement. This does
+  # not remove or bypass quarantine: it deliberately forces macOS to assess
+  # the new ad-hoc bundle and expose “仍要打开” in Privacy & Security.
+  /usr/bin/xattr -w com.apple.quarantine "$QUARANTINE_VALUE" "$CURRENT_APP" \
+    || rollback "The Gatekeeper quarantine record could not be preserved"
+  /usr/bin/open "$CURRENT_APP" >/dev/null 2>&1 || true
+  /bin/sleep 1
+  if [ -e "$PENDING_PATH" ]; then
+    /usr/bin/open \
+      'x-apple.systempreferences:com.apple.preference.security?General' \
+      >/dev/null 2>&1 || true
+    printf 'Codex Dream Skin v%s is installed and waiting for Gatekeeper approval.\n' \
+      "$TARGET_VERSION"
+  else
+    printf 'Codex Dream Skin v%s launched without an additional approval step.\n' \
+      "$TARGET_VERSION"
+  fi
+  exit 0
+fi
 
 /usr/bin/open "$CURRENT_APP" >/dev/null 2>&1 \
   || rollback "The updated app could not be opened"
