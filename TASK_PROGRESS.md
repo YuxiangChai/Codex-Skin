@@ -2,6 +2,28 @@
 
 Updated: 2026-07-31 (Asia/Shanghai)
 
+## Personal README Rewrite (2026-07-31)
+
+- [goal] Replace the inherited upstream-facing README with a concise personal
+  product page for `YuxiangChai/Codex-Skin`.
+- [complete] Removed the inherited sponsorship, DreamSkin.cc community,
+  upstream marketing, cross-platform walkthrough and extended theme-package
+  documentation from the root README.
+- [complete] Documented the personal behavior: theme-owned home copy across
+  Chat/Work/Codex, vertically centered greeting, main-surface image focus,
+  continuous shared-sidebar artwork, theme-owned dimming, compact Work-style
+  composer, hidden recommendation cards, transparent chrome, guarded theme CSS,
+  engine repair and assisted ad-hoc updates.
+- [complete] Kept one upstream acknowledgement at the end of the README and
+  linked installation, release and Iron Man source files maintained by this
+  repository.
+- [verified] All relative README targets exist, both external repository links
+  respond, Markdown fences are balanced, `git diff --check` passes, and the
+  inherited sponsor/community/Windows/English-README terms are absent. The
+  upstream project name and repository appear only once, in Credit.
+- [in_progress] Commit the documentation change with CI skipped and push it to
+  personal `main`.
+
 ## Personal v1.5.9.1 Release (2026-07-31)
 
 - [goal] Publish the explicitly requested personal macOS release `v1.5.9.1`
