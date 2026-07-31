@@ -2,6 +2,160 @@
 
 Updated: 2026-07-31 (Asia/Shanghai)
 
+## Theme-Owned User Message Surface and v1.5.9.2 (2026-07-31)
+
+- [goal] Give only user-authored chat messages a subtle translucent
+  theme-owned surface, retain native assistant-message rendering, then prepare
+  and commit the complete current macOS work as personal version `1.5.9.2`.
+- [finding] The renderer already exposes the stable
+  `[data-message-author-role]` boundary, but all roles currently receive the
+  same public `message` part. Safe CSS cannot distinguish user messages without
+  a dedicated registered part.
+- [design] Expose `data-message-author-role="user"` as the bounded public part
+  `message-user`; keep all other roles on `message`. Add `message-user` to the
+  shared Safe CSS contract and add optional `colors.userMessage` to the theme
+  color contract. Legacy themes derive a 12%-alpha surface from their own
+  accent, so saved themes do not need to be recreated.
+- [finding] GitHub currently reports personal release `v1.5.9.1` and upstream
+  release `v1.5.9`. The previously displayed `1.5.10` was an unpublished local
+  development-engine version, not a downloadable update. The four-component
+  comparator intentionally orders `1.5.9.2 < 1.5.10`.
+- [complete] Renderer and Safe CSS regressions were added before implementation.
+  The shared runtime now labels user messages, applies the theme-owned
+  `colors.userMessage` token, derives the exact Iron Man cyan fallback
+  `rgba(100, 230, 255, 0.12)` for the existing custom theme, and keeps optional
+  color-schema validation backward compatible.
+- [complete] All six version-bound runtime files and their current-version
+  assertions now use `1.5.9.2`; the updater continues to order the future
+  upstream `1.5.10` after this personal revision.
+- [verified] Focused Safe CSS, package import, macOS/Windows renderer, selector
+  sync, shell/Node syntax, `git diff --check`, and all portable Windows Node
+  tests pass. The complete macOS suite passes with Swift build, all 11 XCTest
+  cases, signed theme switching, runtime-state integration and package/security
+  regressions when only the live Doctor is skipped.
+- [finding] The live Doctor correctly rejects the currently running older
+  injected session when checked against the new `1.5.9.2` workspace payload.
+  This is an expected local deployment mismatch, not a source regression; a
+  traced fully enabled suite reaches only that final live verification before
+  returning `2`.
+- [constraint] The running ChatGPT instance blocks the atomic installer, so no
+  live engine replacement or restart was forced. Preserve unsent content and
+  commit the reviewed source without pushing, tagging or publishing.
+
+## Pinned Summary Default-Closed Policy (2026-07-31)
+
+- [goal] Keep the native `Toggle pinned summary` panel closed by default while
+  preserving the user's ability to open and close it normally on demand.
+- [finding] ChatGPT 26.727 exposes a stable native button with
+  `aria-label="Toggle pinned summary"` and `aria-pressed="false|true"`; its
+  wrapper reports `data-state="closed|delayed-open"`. The control is currently
+  closed and lives in the native header above the thread surface.
+- [design] Add a narrow registered selector and observer. Automatically close
+  only an open state that was not preceded by a trusted user click. A trusted
+  click that opens the panel grants permission for the current thread surface;
+  replacing the thread surface resets the policy to default-closed. Never hide
+  or remove the native control.
+- [complete] Registered the native control as `pinned-summary-toggle` and added
+  a bounded observer for its `aria-pressed` state. An automatic/untrusted open
+  is closed once; a trusted user click may open it normally, a trusted close
+  revokes that permission, and replacing the thread surface restores the
+  default-closed policy. The button remains visible and usable.
+- [verified] Renderer regressions cover initial auto-open, trusted manual open
+  and thread replacement. Runtime assets are synchronized for macOS and
+  Windows, selector diagnostics and `git diff --check` pass, and the complete
+  macOS suite passes including Swift build and all 11 XCTest cases.
+- [verified] The managed live engine was hot-updated without restarting the
+  App. A simulated automatic open returned to `aria-pressed="false"`; a real
+  user click remained open, and a second real click closed it. The panel was
+  left closed.
+- [decision] The fix is active locally. No commit, push, tag, Release, App
+  replacement or ChatGPT restart was performed.
+- [constraint] Preserve the current uncommitted Settings/theme work. Do not
+  commit, push, publish, replace the App, or restart ChatGPT.
+
+## Settings First-Frame Flash (2026-07-31)
+
+- [goal] Remove the brief opaque flash when entering Settings without adding a
+  second wallpaper, restarting ChatGPT, or changing native Settings layout.
+- [root_cause] Live MutationObserver evidence captured the first Settings DOM
+  frame while the renderer route attribute still read `thread`: the settings
+  navigation computed to `color(srgb 0.164706 0.168627 0.235294 / 0.7)` and
+  the main settings surface to opaque `rgb(30, 30, 46)`. About one coalesced
+  route pass later, `data-dream-base-state` became `settings` and both surfaces
+  became transparent. The background image and `240px` sidebar geometry never
+  changed; the flash is the delayed CSS gate itself.
+- [complete] The two Settings transparency rules now gate directly on their
+  verified Settings DOM selectors, so Chromium applies them in the same style
+  calculation that creates the native route surfaces. The route attribute is
+  retained for diagnostics and non-first-frame policies.
+- [verified] After hot-deploying only the synchronized CSS, the real first DOM
+  frame was sampled again while `data-dream-base-state` still read `thread`:
+  both navigation and main Settings surfaces already computed
+  `rgba(0, 0, 0, 0)`. Width `240px`, offset `120px`, and dim `0.5` stayed
+  unchanged. Closing Settings returned to a verified `thread` route.
+- [verified] Focused macOS/Windows renderer tests, runtime asset sync,
+  `git diff --check`, and the complete macOS suite pass, including Swift build
+  and all 11 XCTest cases plus package/import/security regressions.
+- [decision] The fix is active in the managed local engine. No App restart,
+  commit, push, tag or Release was performed.
+- [constraint] Preserve the current uncommitted work. Do not commit, push,
+  publish, replace the App, or restart ChatGPT.
+
+## Iron Man Dim, Retired Theme, and Settings Continuity (2026-07-31)
+
+- [goal] Raise the Iron Man theme-owned image dim to `0.5`, prevent a stale
+  retired Gothic Void preset from reappearing after App replacement, and let
+  Settings use the same continuous wallpaper without changing its geometry
+  when the native sidebar is temporarily absent.
+- [finding] The installed v1.5.9.1 App bundles only Iron Man. Gothic Void was
+  created in the saved-theme library before the current App replacement and
+  survived because reinstall/upgrade intentionally preserves user theme data.
+  The existing seed cleanup removes it when the managed engine installer runs,
+  but an older App does not overwrite or rerun installation for the newer
+  locally deployed v1.5.10 engine.
+- [finding] Shared main-centered artwork is already painted once on the
+  persistent `body`. During a Settings route transition the native sidebar
+  disappears, so the renderer currently changes the saved sidebar width from
+  its last valid value to zero; that changes both wallpaper scale and focal
+  offset until Settings closes.
+- [complete] Added regression coverage and preserved the last valid
+  shared-sidebar geometry through Settings. The renderer now refreshes route
+  scope before parts, exposes `data-dream-base-state`, and keeps one stable
+  body canvas instead of resetting its width/offset to zero.
+- [complete] Added verified macOS 26.727 Settings selectors and made only its
+  opaque navigation/content route surfaces transparent in shared main-art
+  mode. Native cards and controls retain their own readable surfaces.
+- [complete] The native saved-theme menu now filters exact retired bundled
+  preset IDs while preserving all custom IDs. Both platform Iron Man preset
+  manifests now use theme-owned `art.dim: 0.5`; synchronized runtime assets
+  and focused macOS/Windows renderer plus selector-doctor tests pass.
+- [complete] Updated the current saved and active `custom-iron-man` theme to
+  `art.dim: 0.5`, removed the exact stale
+  `preset-gothic-void-crusade` directory through the existing bounded preset
+  cleanup, and hot-deployed the synchronized renderer/CSS/selectors into the
+  managed local v1.5.10 engine without restarting ChatGPT.
+- [finding] Live Settings verification initially exposed one additional
+  26.727 compatibility gap: target discovery and early injection still
+  recognized only the retired appearance-radio/theme-preview anchors. Added
+  `settings-sidebar` to macOS and Windows probe, bootstrap and visible L0
+  verification paths, then restarted only the recorded injector watcher.
+- [verified] Real 1512x949 Settings transition holds the exact same shared
+  canvas geometry before, during and after the route:
+  sidebar width `240px`, focal offset `120px`, dim `0.5`, background position
+  `calc(50% + 120px) 42%`, and unchanged cover size. Both Settings route
+  surfaces compute transparent; Settings verifies as visible L0 and returning
+  to the thread verifies as L1 with no overflow. Screenshot:
+  `/private/tmp/iron-man-settings-continuity.png`.
+- [verified] The complete macOS suite passes, including Swift build and all 11
+  XCTest cases, shell/static/security/package/import/renderer tests. All
+  portable Windows Node tests, shared runtime sync and `git diff --check`
+  pass. The live saved-theme library now contains only `custom-iron-man`, and
+  managed renderer/CSS/selectors are byte-identical to the source outputs.
+- [decision] No App was replaced or restarted, and no commit, push, tag or
+  Release was created.
+- [constraint] Do not publish, tag, push, replace the installed App, or restart
+  ChatGPT/Codex without a new explicit user request.
+
 ## Personal README Rewrite (2026-07-31)
 
 - [goal] Replace the inherited upstream-facing README with a concise personal

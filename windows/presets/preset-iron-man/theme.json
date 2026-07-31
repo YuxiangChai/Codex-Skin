@@ -18,7 +18,7 @@
     "taskMode": "ambient",
     "scope": "main",
     "sidebar": "shared",
-    "dim": 0.4
+    "dim": 0.5
   },
   "colors": {
     "background": "#03070f",
@@ -30,6 +30,7 @@
     "highlight": "#f0b13f",
     "text": "#edfaff",
     "muted": "#9bb6c5",
-    "line": "rgba(100, 230, 255, .28)"
+    "line": "rgba(100, 230, 255, .28)",
+    "userMessage": "rgba(100, 230, 255, 0.12)"
   }
 }

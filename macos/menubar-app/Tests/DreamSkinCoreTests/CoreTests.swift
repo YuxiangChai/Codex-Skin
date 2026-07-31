@@ -7,8 +7,8 @@ final class CoreTests: XCTestCase {
     XCTAssertEqual(SemanticVersion(" 2.0.1\n")?.description, "2.0.1")
     XCTAssertTrue(try XCTUnwrap(SemanticVersion("1.3.1")) > SemanticVersion("1.3.0")!)
     XCTAssertTrue(try XCTUnwrap(SemanticVersion("2.0.0")) > SemanticVersion("1.99.99")!)
-    XCTAssertEqual(SemanticVersion("1.5.9.1")?.description, "1.5.9.1")
-    XCTAssertTrue(try XCTUnwrap(SemanticVersion("1.5.9.1")) > SemanticVersion("1.5.9")!)
+    XCTAssertEqual(SemanticVersion("1.5.9.2")?.description, "1.5.9.2")
+    XCTAssertTrue(try XCTUnwrap(SemanticVersion("1.5.9.2")) > SemanticVersion("1.5.9.1")!)
     XCTAssertTrue(try XCTUnwrap(SemanticVersion("1.5.10")) > SemanticVersion("1.5.9.99")!)
     XCTAssertNil(SemanticVersion("1.3.0-beta"))
     XCTAssertNil(SemanticVersion("1..3"))
@@ -42,6 +42,20 @@ final class CoreTests: XCTestCase {
     XCTAssertEqual(
       Set(deduplicatedSavedThemes(themes, currentThemeID: "custom-iron-man").map(\.id)),
       Set(["custom-iron-man", "forest", "preset-forest"])
+    )
+  }
+
+  func testSavedThemesHideRetiredBundledPresetsButKeepCustomThemes() {
+    let themes = [
+      SavedThemeOption(id: "preset-gothic-void-crusade", name: "Gothic Void Crusade"),
+      SavedThemeOption(id: "preset-arina-hashimoto", name: "Arina Hashimoto"),
+      SavedThemeOption(id: "custom-gothic", name: "My Gothic Theme"),
+      SavedThemeOption(id: "custom-iron-man", name: "Iron Man"),
+    ]
+
+    XCTAssertEqual(
+      Set(deduplicatedSavedThemes(themes, currentThemeID: "").map(\.id)),
+      Set(["custom-gothic", "custom-iron-man"])
     )
   }
 

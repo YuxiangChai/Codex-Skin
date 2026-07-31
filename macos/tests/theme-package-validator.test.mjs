@@ -170,28 +170,28 @@ try {
     base.source,
     "macos",
     "official-personal-client",
-    "1.5.9.1",
+    "1.5.9.2",
   );
   assert.equal(personalRevision.output.format, "official");
   const personalMinimum = await makeOfficial("official-personal-minimum", {
-    minClientVersion: "1.5.9.1",
+    minClientVersion: "1.5.9.2",
   });
   const personalMinimumResult = await validate(
     personalMinimum.source,
     "macos",
     "official-personal-minimum",
-    "1.5.9.1",
+    "1.5.9.2",
   );
   assert.equal(personalMinimumResult.output.format, "official");
   const futurePersonalMinimum = await makeOfficial("official-future-personal-minimum", {
-    minClientVersion: "1.5.9.2",
+    minClientVersion: "1.5.9.3",
   });
   await expectRejected(
     futurePersonalMinimum.source,
     "macos",
-    /requires Dream Skin 1\.5\.9\.2/,
+    /requires Dream Skin 1\.5\.9\.3/,
     "future-personal-minimum",
-    "1.5.9.1",
+    "1.5.9.2",
   );
   const fourPartThemeVersion = await makeOfficial("official-four-part-theme-version", {
     mutateManifest: (manifest) => { manifest.version = "1.2.3.1"; },
@@ -201,7 +201,7 @@ try {
     "macos",
     /manifest\.version has an invalid format/,
     "four-part-theme-version",
-    "1.5.9.1",
+    "1.5.9.2",
   );
   assert.deepEqual(macos.output, {
     format: "official",
@@ -289,6 +289,7 @@ try {
     text: "#fff",
     muted: "#ffff",
     line: "rgba(124, 255, 70, .28)",
+    userMessage: "rgba(18, 52, 86, .12)",
   };
   const longName = "😀".repeat(80);
   const longCopy = "✨".repeat(120);

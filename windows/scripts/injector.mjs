@@ -39,7 +39,7 @@ const stableTestidLiteral = (testid) => {
   }
   return JSON.stringify(`[data-testid="${testid}"]`);
 };
-const SKIN_VERSION = "1.5.9.1";
+const SKIN_VERSION = "1.5.9.2";
 const MAX_ART_BYTES = 10 * 1024 * 1024;
 const MAX_SAFE_CSS_BYTES = 256 * 1024;
 const STRONG_THEME_AUDIT_MS = 30000;
@@ -541,7 +541,7 @@ export async function loadTheme(themeDir) {
     ? raw.colors : null;
   const colorKeys = [
     "background", "panel", "panelAlt", "accent", "accentAlt", "secondary",
-    "highlight", "text", "muted", "line",
+    "highlight", "text", "muted", "line", "userMessage",
   ];
   const colors = {
     background: normalizeThemeColor(rawColors?.background, "#071116"),
@@ -554,6 +554,7 @@ export async function loadTheme(themeDir) {
     text: normalizeThemeColor(rawColors?.text, "#e9fff1"),
     muted: normalizeThemeColor(rawColors?.muted, "#9ebdb3"),
     line: normalizeThemeColor(rawColors?.line, "rgba(124, 255, 70, .28)"),
+    userMessage: normalizeThemeColor(rawColors?.userMessage, "rgba(124, 255, 70, .12)"),
   };
   const theme = {
     id: normalizeThemeText(raw.id, "custom", 80, "id", themePath),
@@ -702,7 +703,8 @@ async function probeSession(session) {
       composer: Boolean(document.querySelector(${selectorLiteral("composer-chrome")})),
       main: Boolean(document.querySelector(${selectorLiteral("home-route")})),
     };
-    const settings = Boolean(document.querySelector(${selectorLiteral("appearance-radio")})) ||
+    const settings = Boolean(document.querySelector(${selectorLiteral("settings-sidebar")})) ||
+      Boolean(document.querySelector(${selectorLiteral("appearance-radio")})) ||
       Boolean(document.querySelector(${stableTestidLiteral("theme-preview")}));
     return {
       markers,
@@ -853,7 +855,8 @@ export function earlyPayloadFor(payload, revision) {
       const shell = document.querySelector(${selectorLiteral("shell-main")});
       const sidebar = document.querySelector(${selectorLiteral("left-panel")});
       const main = document.querySelector(${selectorLiteral("home-route")});
-      const settings = document.querySelector(${selectorLiteral("appearance-radio")}) ||
+      const settings = document.querySelector(${selectorLiteral("settings-sidebar")}) ||
+        document.querySelector(${selectorLiteral("appearance-radio")}) ||
         document.querySelector(${stableTestidLiteral("theme-preview")});
       return Boolean((shell && sidebar) || settings || main);
     };
@@ -1163,7 +1166,8 @@ export async function verifySession(
     const visibleSuggestionLabels = suggestionLabels.filter((item) => item?.visible);
     const suggestionLabelColorsMatch = visibleSuggestionLabels.every((item) =>
       item.color === item.expectedColor);
-    const settingsAnchor = document.querySelector(${selectorLiteral("appearance-radio")}) ||
+    const settingsAnchor = document.querySelector(${selectorLiteral("settings-sidebar")}) ||
+      document.querySelector(${selectorLiteral("appearance-radio")}) ||
       document.querySelector(${stableTestidLiteral("theme-preview")});
     const runtime = window.__CODEX_DREAM_SKIN_STATE__;
     const adopted = runtime?.styleMode === 'adopted' &&

@@ -1,6 +1,6 @@
 // Canonical cross-platform renderer. Run tools/sync-runtime-assets.mjs after editing.
 ((cssText, artDataUrl, themeConfig) => {
-  const SELECTOR_CONTRACT = {"schema":"codex-dream-skin-selectors/1","selectors":[{"key":"shell-main","selector":"main:is(.main-surface, [class*=\"_MainContentSurface_\"])","tier":"L1","scope":"all","required":true},{"key":"left-panel","selector":"aside.app-shell-left-panel","tier":"L1","scope":"all","required":true},{"key":"header-tint","selector":"header:is(.app-header-tint, [class*=\"_Header_\"])","tier":"L1","scope":"all","required":true},{"key":"home-icon","selector":"[data-testid=\"home-icon\"]","tier":"L2","scope":"home","required":false},{"key":"home-route","selector":"[role=\"main\"]:has([data-testid=\"home-icon\"])","tier":"L2","scope":"home","required":false},{"key":"home-route-css","selector":"[role=\"main\"]","tier":"L1","scope":"home","required":true},{"key":"home-banners","selector":".home-banners","tier":"L2","scope":"home","required":false},{"key":"composer-chrome","selector":".composer-surface-chrome","tier":"L2","scope":"home+thread","required":false},{"key":"composer-toolbar","selector":".composer-surface-chrome [class*=\"_footer_\"]","tier":"L2","scope":"home+thread","required":false},{"key":"home-utility","selector":"[class*=\"_homeUtilityBar_\"]","tier":"L2","scope":"home","required":false},{"key":"game-source","selector":"[data-feature=\"game-source\"]","tier":"L2","scope":"home","required":false},{"key":"home-suggestions","selector":".group\\/home-suggestions","tier":"L2","scope":"home","required":false},{"key":"project-selector","selector":".group\\/project-selector","tier":"L2","scope":"home config","required":false},{"key":"markdown","selector":"[class*=\"_markdown\"]","tier":"L2","scope":"thread","required":false},{"key":"thread-surface","selector":".thread-scroll-container","tier":"L2","scope":"thread","required":false},{"key":"message","selector":"[data-message-author-role]","tier":"L2","scope":"thread","required":false},{"key":"appearance-radio","selector":"input[name=\"appearance-theme\"]","tier":"L2","scope":"settings","required":false},{"key":"overlay-menu","selector":"[role=\"menu\"]","tier":"L2","scope":"overlay","required":false},{"key":"overlay-dialog","selector":"[role=\"dialog\"]","tier":"L2","scope":"overlay","required":false},{"key":"overlay-popper","selector":"[data-radix-popper-content-wrapper]","tier":"L2","scope":"overlay","required":false}],"stableTestids":["app-shell-header-context-menu-surface","theme-preview"]};
+  const SELECTOR_CONTRACT = {"schema":"codex-dream-skin-selectors/1","selectors":[{"key":"shell-main","selector":"main:is(.main-surface, [class*=\"_MainContentSurface_\"])","tier":"L1","scope":"all","required":true},{"key":"left-panel","selector":"aside.app-shell-left-panel","tier":"L1","scope":"all","required":true},{"key":"header-tint","selector":"header:is(.app-header-tint, [class*=\"_Header_\"])","tier":"L1","scope":"all","required":true},{"key":"home-icon","selector":"[data-testid=\"home-icon\"]","tier":"L2","scope":"home","required":false},{"key":"home-route","selector":"[role=\"main\"]:has([data-testid=\"home-icon\"])","tier":"L2","scope":"home","required":false},{"key":"home-route-css","selector":"[role=\"main\"]","tier":"L1","scope":"home","required":true},{"key":"home-banners","selector":".home-banners","tier":"L2","scope":"home","required":false},{"key":"composer-chrome","selector":".composer-surface-chrome","tier":"L2","scope":"home+thread","required":false},{"key":"composer-toolbar","selector":".composer-surface-chrome [class*=\"_footer_\"]","tier":"L2","scope":"home+thread","required":false},{"key":"home-utility","selector":"[class*=\"_homeUtilityBar_\"]","tier":"L2","scope":"home","required":false},{"key":"game-source","selector":"[data-feature=\"game-source\"]","tier":"L2","scope":"home","required":false},{"key":"home-suggestions","selector":".group\\/home-suggestions","tier":"L2","scope":"home","required":false},{"key":"project-selector","selector":".group\\/project-selector","tier":"L2","scope":"home config","required":false},{"key":"markdown","selector":"[class*=\"_markdown\"]","tier":"L2","scope":"thread","required":false},{"key":"thread-surface","selector":".thread-scroll-container","tier":"L2","scope":"thread","required":false},{"key":"message","selector":"[data-message-author-role]","tier":"L2","scope":"thread","required":false},{"key":"pinned-summary-toggle","selector":"button[aria-label=\"Toggle pinned summary\"]","tier":"L2","scope":"thread","required":false},{"key":"appearance-radio","selector":"input[name=\"appearance-theme\"]","tier":"L2","scope":"settings","required":false},{"key":"settings-sidebar","selector":".app-shell-left-panel:has([data-settings-panel-slug])","tier":"L2","scope":"settings","required":false},{"key":"settings-surface","selector":".app-shell-left-panel:has([data-settings-panel-slug]) + div > .electron\\:bg-token-main-surface-primary","tier":"L2","scope":"settings","required":false},{"key":"overlay-menu","selector":"[role=\"menu\"]","tier":"L2","scope":"overlay","required":false},{"key":"overlay-dialog","selector":"[role=\"dialog\"]","tier":"L2","scope":"overlay","required":false},{"key":"overlay-popper","selector":"[data-radix-popper-content-wrapper]","tier":"L2","scope":"overlay","required":false}],"stableTestids":["app-shell-header-context-menu-surface","theme-preview"]};
   const STATE_KEY = "__CODEX_DREAM_SKIN_STATE__";
   const DISABLED_KEY = "__CODEX_DREAM_SKIN_DISABLED__";
   const STYLE_REGISTRY_KEY = "__CODEX_DREAM_SKIN_STYLE_SHEETS__";
@@ -12,7 +12,7 @@
     "data-dream-art-wide", "data-dream-art-safe", "data-dream-task-mode",
     "data-dream-art-safe-area", "data-dream-art-task-mode", "data-dream-art-scope",
     "data-dream-art-sidebar", "data-dream-art-aspect",
-    "data-dream-art-ready",
+    "data-dream-art-ready", "data-dream-base-state",
   ];
   const VERSION = __DREAM_SKIN_VERSION_JSON__;
   const STYLE_REVISION = __DREAM_SKIN_STYLE_REVISION_JSON__;
@@ -41,6 +41,7 @@
     "--ds-theme-color-accent-alt", "--ds-theme-color-secondary",
     "--ds-theme-color-highlight", "--ds-theme-color-text",
     "--ds-theme-color-muted", "--ds-theme-color-line",
+    "--ds-theme-color-message-user",
     "--ds-theme-font-family", "--ds-theme-font-scale",
     "--ds-theme-surface-radius", "--ds-theme-surface-opacity",
     "--ds-theme-surface-blur", "--ds-theme-surface-border-alpha",
@@ -62,7 +63,14 @@
   let rootObserver = null;
   let partObserver = null;
   let sidebarObserver = null;
+  let pinnedSummaryObserver = null;
   let observedSidebar = null;
+  let observedPinnedSummaryToggle = null;
+  let observedPinnedThreadSurface = null;
+  let pinnedSummaryUserAllowed = false;
+  let pinnedSummaryAutoClosing = false;
+  let pinnedSummaryCloseTimer = null;
+  let lastSharedSidebarWidth = 0;
   let bodyReadyHandler = null;
   let styleMode = null;
   let styleNode = null;
@@ -80,6 +88,8 @@
     partPasses: 0,
     partWrites: 0,
     navigationEvents: 0,
+    pinnedSummaryAutoCloses: 0,
+    pinnedSummaryUserOpens: 0,
     safetyPasses: 0,
     analysisRuns: 0,
     analysisCacheHits: artAnalysis ? 1 : 0,
@@ -256,6 +266,12 @@
     };
     const accent = pick("accent");
     const accentAlt = explicit.has("accentAlt") ? pick("accentAlt") : (explicit.has("accent") ? accent : adaptive.accentAlt);
+    const accentRgb = parseRgb(accent);
+    const derivedUserMessage = accentRgb
+      ? `rgba(${Math.round(accentRgb.r)}, ${Math.round(accentRgb.g)}, ${Math.round(accentRgb.b)}, 0.12)`
+      : "rgba(124, 255, 70, 0.12)";
+    const userMessage = explicit.has("userMessage") && typeof colors.userMessage === "string"
+      ? colors.userMessage : derivedUserMessage;
     const variables = {
       "--ds-bg": pick("background"),
       "--ds-panel": pick("panel"),
@@ -283,6 +299,7 @@
       "--ds-theme-color-text": variables["--ds-text"],
       "--ds-theme-color-muted": variables["--ds-muted"],
       "--ds-theme-color-line": variables["--ds-line"],
+      "--ds-theme-color-message-user": userMessage,
     };
     for (const [name, value] of Object.entries(publicColors)) {
       if (typeof value === "string" && value) setStyleProperty(root, name, value);
@@ -593,6 +610,7 @@
     try { return [...document.querySelectorAll(selector)]; } catch { return []; }
   };
   const selectorNodes = (key) => queryAll(selectorByKey.get(key)?.selector);
+  const pinnedSummarySelector = selectorByKey.get("pinned-summary-toggle")?.selector ?? "";
   const inlineSidebarWidth = (node) => {
     const inlineWidth = typeof node?.style?.width === "string" ? node.style.width : "";
     const source = inlineWidth || node?.getAttribute?.("style") || "";
@@ -614,7 +632,18 @@
         sidebarObserver.observe(sidebar, { attributes: true, attributeFilter: ["style"] });
       }
     }
-    const width = shared ? inlineSidebarWidth(sidebar) : 0;
+    let width = 0;
+    if (shared && sidebar) {
+      width = inlineSidebarWidth(sidebar);
+      lastSharedSidebarWidth = width;
+    } else if (shared && window[STATE_KEY]?.scope?.baseState === "settings") {
+      // The macOS Settings route replaces the native app shell, including the
+      // sidebar. Preserve the last real width so the persistent body artwork
+      // keeps the same scale and focal center until the shell returns.
+      width = lastSharedSidebarWidth;
+    } else {
+      lastSharedSidebarWidth = 0;
+    }
     setStyleProperty(root, "--dream-skin-sidebar-width", `${width}px`);
     setStyleProperty(root, "--dream-skin-sidebar-offset", `${width / 2}px`);
   };
@@ -624,6 +653,57 @@
         desired.set(node, part);
       }
     }
+  };
+  const reconcilePinnedSummary = () => {
+    const threadSurface = selectorNodes("thread-surface")[0] ?? null;
+    if (threadSurface !== observedPinnedThreadSurface) {
+      observedPinnedThreadSurface = threadSurface;
+      pinnedSummaryUserAllowed = false;
+    }
+
+    const toggle = selectorNodes("pinned-summary-toggle")[0] ?? null;
+    if (toggle !== observedPinnedSummaryToggle) {
+      pinnedSummaryObserver?.disconnect();
+      observedPinnedSummaryToggle = toggle;
+      if (pinnedSummaryObserver && toggle) {
+        pinnedSummaryObserver.observe(toggle, {
+          attributes: true,
+          attributeFilter: ["aria-pressed"],
+        });
+      }
+    }
+    if (!toggle || toggle.getAttribute?.("aria-pressed") !== "true" ||
+      pinnedSummaryUserAllowed || pinnedSummaryAutoClosing) return;
+
+    pinnedSummaryAutoClosing = true;
+    metrics.pinnedSummaryAutoCloses += 1;
+    try {
+      toggle.click?.();
+    } catch {
+      pinnedSummaryAutoClosing = false;
+      return;
+    }
+    if (pinnedSummaryCloseTimer) clearTimeout(pinnedSummaryCloseTimer);
+    pinnedSummaryCloseTimer = setTimeout(() => {
+      pinnedSummaryCloseTimer = null;
+      pinnedSummaryAutoClosing = false;
+      if (observedPinnedSummaryToggle?.getAttribute?.("aria-pressed") === "true" &&
+        !pinnedSummaryUserAllowed) {
+        scheduleEnsure({ parts: true }, 0);
+      }
+    }, 160);
+  };
+  const pinnedSummaryClickHandler = (event) => {
+    if (!event?.isTrusted || pinnedSummaryAutoClosing || !observedPinnedSummaryToggle) return;
+    let toggle = null;
+    if (event.target === observedPinnedSummaryToggle) toggle = observedPinnedSummaryToggle;
+    else {
+      try { toggle = event.target?.closest?.(pinnedSummarySelector) ?? null; } catch {}
+    }
+    if (toggle !== observedPinnedSummaryToggle) return;
+    const opening = toggle.getAttribute?.("aria-pressed") !== "true";
+    pinnedSummaryUserAllowed = opening;
+    if (opening) metrics.pinnedSummaryUserOpens += 1;
   };
   const refreshParts = () => {
     metrics.partPasses += 1;
@@ -635,7 +715,17 @@
     addPart(desired, "home", selectorNodes("home-route-css"));
     addPart(desired, "project-list", selectorNodes("project-selector"));
     addPart(desired, "thread", selectorNodes("thread-surface"));
-    addPart(desired, "message", selectorNodes("message"));
+    const messages = selectorNodes("message");
+    addPart(
+      desired,
+      "message",
+      messages.filter((node) => node.getAttribute?.("data-message-author-role") !== "user"),
+    );
+    addPart(
+      desired,
+      "message-user",
+      messages.filter((node) => node.getAttribute?.("data-message-author-role") === "user"),
+    );
     addPart(desired, "composer", selectorNodes("composer-chrome"));
     addPart(desired, "composer-toolbar", selectorNodes("composer-toolbar"));
     addPart(desired, "dialog", selectorNodes("overlay-dialog"));
@@ -658,6 +748,7 @@
       partNodes.add(node);
     }
     refreshSidebarGeometry();
+    reconcilePinnedSummary();
   };
 
   const removeParts = () => {
@@ -678,7 +769,8 @@
     const overlay = selectorHit("overlay-menu") || selectorHit("overlay-dialog") ||
       selectorHit("overlay-popper");
     let baseState = "thread";
-    if (selectorHit("appearance-radio") || stableTestidHit("theme-preview")) baseState = "settings";
+    if (selectorHit("settings-sidebar") || selectorHit("appearance-radio") ||
+      stableTestidHit("theme-preview")) baseState = "settings";
     else if (selectorHit("home-route-css")) baseState = "home";
     else if (!selectorHit("shell-main")) baseState = "settings";
     const missingL1 = SELECTOR_CONTRACT.selectors
@@ -702,6 +794,7 @@
     const scope = detectScope();
     const state = window[STATE_KEY];
     if (state?.installToken === installToken) state.scope = scope;
+    setAttribute(document.documentElement, "data-dream-base-state", scope.baseState);
     return scope;
   };
 
@@ -711,8 +804,8 @@
     if (!root) return;
     metrics.ensureCalls += 1;
     if (rootPass) applyRootState(root);
-    if (partPass) refreshParts();
     if (scopePass) refreshScope();
+    if (partPass) refreshParts();
   };
 
   const cleanup = () => {
@@ -734,6 +827,11 @@
     state?.rootObserver?.disconnect();
     state?.partObserver?.disconnect();
     state?.sidebarObserver?.disconnect();
+    state?.pinnedSummaryObserver?.disconnect();
+    if (pinnedSummaryCloseTimer) clearTimeout(pinnedSummaryCloseTimer);
+    if (typeof document.removeEventListener === "function") {
+      document.removeEventListener("click", pinnedSummaryClickHandler, true);
+    }
     if (bodyReadyHandler && typeof document.removeEventListener === "function") {
       document.removeEventListener("DOMContentLoaded", bodyReadyHandler);
     }
@@ -785,6 +883,7 @@
     // part-tree mutation is the reliable route boundary on current builds.
     partObserver = new MutationObserver(() => scheduleEnsure({ scope: true, parts: true }, 80));
     sidebarObserver = new MutationObserver(() => refreshSidebarGeometry());
+    pinnedSummaryObserver = new MutationObserver(() => reconcilePinnedSummary());
   }
 
   let mediaQuery = null;
@@ -807,6 +906,7 @@
     rootObserver,
     partObserver,
     sidebarObserver,
+    pinnedSummaryObserver,
     timer: null,
     scheduler,
     mediaQuery,
@@ -829,9 +929,12 @@
     revision: PAYLOAD_REVISION,
     detectShellAppearance,
   };
+  if (typeof document.addEventListener === "function") {
+    document.addEventListener("click", pinnedSummaryClickHandler, true);
+  }
   const firstEnsureStartedAt = now();
-  ensure({ root: true, parts: true });
-  const initialScope = refreshScope();
+  ensure({ root: true, scope: true, parts: true });
+  const initialScope = window[STATE_KEY].scope;
   metrics.firstEnsureMs = Number((now() - firstEnsureStartedAt).toFixed(3));
 
   const observeAttributes = (node) => {

@@ -14,6 +14,7 @@
     "project-list",
     "thread",
     "message",
+    "message-user",
     "composer",
     "composer-toolbar",
     "dialog"
@@ -33,6 +34,7 @@
     "--ds-theme-color-text",
     "--ds-theme-color-muted",
     "--ds-theme-color-line",
+    "--ds-theme-color-message-user",
     "--ds-theme-font-family",
     "--ds-theme-font-scale",
     "--ds-theme-surface-opacity",

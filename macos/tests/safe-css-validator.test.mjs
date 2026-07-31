@@ -56,14 +56,17 @@ test("accepts only the bounded public part/property/value contract", () => {
 }
 [data-ds-part="dialog"]:focus-visible {
   border-color: var(--ds-theme-color-accent);
+}
+[data-ds-part="message-user"] {
+  background-color: var(--ds-theme-color-message-user);
 }`;
   for (const validator of validators) {
     assert.deepEqual(validator.validateSafeCss(source), {
       contract: "dreamskin-safe-css/1",
       status: "validated",
       bytes: new TextEncoder().encode(source).length,
-      ruleCount: 2,
-      declarationCount: 10,
+      ruleCount: 3,
+      declarationCount: 11,
     });
   }
 });

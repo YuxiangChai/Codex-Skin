@@ -72,6 +72,7 @@ const COLOR_KEYS = [
   "muted",
   "line",
 ];
+const OPTIONAL_COLOR_KEYS = ["userMessage"];
 const SEMVER_PATTERN =
   /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/;
 const CLIENT_VERSION_PATTERN =
@@ -322,9 +323,17 @@ function validateOfficialTheme(value) {
   }
   if (theme.colors !== undefined) {
     const colors = assertObject(theme.colors, "theme.json.colors");
-    assertExactKeys(colors, COLOR_KEYS, [], "theme.json.colors");
+    assertExactKeys(colors, COLOR_KEYS, OPTIONAL_COLOR_KEYS, "theme.json.colors");
     for (const key of COLOR_KEYS) {
       assertString(colors[key], `theme.json.colors.${key}`, {
+        min: 1,
+        max: 64,
+        pattern: COLOR_PATTERN,
+        controls: null,
+      });
+    }
+    if (colors.userMessage !== undefined) {
+      assertString(colors.userMessage, "theme.json.colors.userMessage", {
         min: 1,
         max: 64,
         pattern: COLOR_PATTERN,

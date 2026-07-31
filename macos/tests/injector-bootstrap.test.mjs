@@ -29,7 +29,7 @@ function createFixture() {
         }
         if (selector === "aside.app-shell-left-panel") return markers.sidebar ? {} : null;
         if (selector === "[role=\"main\"]") return markers.main ? {} : null;
-        if (selector.includes("appearance-theme") || selector.includes("theme-preview")) {
+        if (selector.includes("data-settings-panel-slug")) {
           return markers.settings ? {} : null;
         }
         return null;
@@ -82,6 +82,19 @@ assert.deepEqual(
   modernGuarded.context.window.installs,
   ["modern"],
   "ChatGPT 26.727's CSS-module main surface must bind to the visible renderer.",
+);
+
+const settingsGuarded = createFixture();
+vm.runInNewContext(
+  earlyPayloadFor('window.installs.push("settings")', "settings"),
+  settingsGuarded.context,
+);
+settingsGuarded.markers.settings = true;
+settingsGuarded.tick();
+assert.deepEqual(
+  settingsGuarded.context.window.installs,
+  ["settings"],
+  "ChatGPT 26.727 Settings must bind through its settings navigation shell.",
 );
 
 const generations = createFixture();

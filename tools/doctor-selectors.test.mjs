@@ -27,7 +27,10 @@ assert.equal(brokenHome.exitCode, 1);
 const settings = resultFor("settings", ["appearance-radio"]);
 assert.equal(settings.pass, true);
 assert.equal(settings.tiers.L1.length, 0, "Settings must not inherit home/all L1 requirements");
-assert.deepEqual(settings.tiers.L2.map(({ key }) => key), ["appearance-radio"]);
+assert.deepEqual(
+  settings.tiers.L2.map(({ key }) => key),
+  ["appearance-radio", "settings-sidebar", "settings-surface"],
+);
 
 assert.equal(selectorMatchesScope("home+thread", { baseState: "thread", overlay: false }), true);
 assert.equal(selectorMatchesScope("home config", { baseState: "home", overlay: false }), true);

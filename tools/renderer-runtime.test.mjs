@@ -32,7 +32,9 @@ function makeFixture({
   settings = false,
   adopted = true,
   modernHome = false,
+  pinnedSummaryOpen = null,
 } = {}) {
+  let settingsActive = settings;
   const attrs = new Map();
   const rootStyle = styleDeclaration();
   const rootClasses = classList([nativeAppearance === "dark" ? "electron-dark" : "electron-light"]);
@@ -80,7 +82,7 @@ function makeFixture({
     selectorNodes.set(selector, current);
   };
   const partFixtures = {};
-  if (!settings) {
+  if (!settingsActive) {
     partFixtures.sidebar = makeDomNode(
       "sidebar",
       body,
@@ -94,9 +96,39 @@ function makeFixture({
     partFixtures.gameSource = makeDomNode("game-source", partFixtures.homeHero);
     partFixtures.projectList = makeDomNode("project-list", partFixtures.home);
     partFixtures.thread = makeDomNode("thread", partFixtures.main);
-    partFixtures.message = makeDomNode("message", partFixtures.thread);
+    partFixtures.message = makeDomNode(
+      "message",
+      partFixtures.thread,
+      new Map([["data-message-author-role", "assistant"]]),
+    );
+    partFixtures.messageUser = makeDomNode(
+      "message-user",
+      partFixtures.thread,
+      new Map([["data-message-author-role", "user"]]),
+    );
     partFixtures.composer = makeDomNode("composer", partFixtures.main);
     partFixtures.composerToolbar = makeDomNode("composer-toolbar", partFixtures.composer);
+    if (typeof pinnedSummaryOpen === "boolean") {
+      partFixtures.pinnedSummaryWrapper = makeDomNode(
+        "pinned-summary-wrapper",
+        partFixtures.header,
+        new Map([["data-state", pinnedSummaryOpen ? "delayed-open" : "closed"]]),
+      );
+      partFixtures.pinnedSummaryToggle = makeDomNode(
+        "pinned-summary-toggle",
+        partFixtures.pinnedSummaryWrapper,
+        new Map([
+          ["aria-label", "Toggle pinned summary"],
+          ["aria-pressed", pinnedSummaryOpen ? "true" : "false"],
+        ]),
+      );
+      partFixtures.pinnedSummaryToggle.clickCount = 0;
+      partFixtures.pinnedSummaryToggle.click = () => {
+        partFixtures.pinnedSummaryToggle.clickCount += 1;
+        partFixtures.pinnedSummaryToggle.setAttribute("aria-pressed", "false");
+        partFixtures.pinnedSummaryWrapper.setAttribute("data-state", "closed");
+      };
+    }
     register("aside.app-shell-left-panel", partFixtures.sidebar);
     register('main:is(.main-surface, [class*="_MainContentSurface_"])', partFixtures.main);
     register('header:is(.app-header-tint, [class*="_Header_"])', partFixtures.header);
@@ -109,6 +141,10 @@ function makeFixture({
     register(".group\\/project-selector", partFixtures.projectList);
     register(".thread-scroll-container", partFixtures.thread);
     register('[data-message-author-role]', partFixtures.message);
+    register('[data-message-author-role]', partFixtures.messageUser);
+    if (partFixtures.pinnedSummaryToggle) {
+      register('button[aria-label="Toggle pinned summary"]', partFixtures.pinnedSummaryToggle);
+    }
     register(".composer-surface-chrome", partFixtures.composer);
     register('.composer-surface-chrome [class*="_footer_"]', partFixtures.composerToolbar);
   }
@@ -130,7 +166,7 @@ function makeFixture({
     createElement(tag) { return tag === "style" ? makeStyleNode() : { tagName: tag }; },
     getElementById(id) { return nodes.get(id) || null; },
     querySelector(selector) {
-      if (settings && (selector.includes("appearance-theme") || selector.includes("theme-preview"))) {
+      if (settingsActive && (selector.includes("appearance-theme") || selector.includes("theme-preview"))) {
         return makeDomNode(`settings:${selector}`, body);
       }
       return (selectorNodes.get(selector) || [])[0] || null;
@@ -140,6 +176,10 @@ function makeFixture({
         return [...domNodes].filter((node) => node.getAttribute?.("data-ds-part") !== null);
       }
       return [...(selectorNodes.get(selector) || [])];
+    },
+    addEventListener(type, callback) { listeners.set(`document:${type}`, callback); },
+    removeEventListener(type, callback) {
+      if (listeners.get(`document:${type}`) === callback) listeners.delete(`document:${type}`);
     },
   };
   const navigation = {
@@ -200,15 +240,30 @@ function makeFixture({
       if (timer.delay <= maximumDelay) { timers.delete(id); timer.callback(); }
     }
   };
-  const addDynamicMessage = () => {
-    const node = makeDomNode(`message-${(selectorNodes.get('[data-message-author-role]') || []).length + 1}`, partFixtures.thread || body);
+  const addDynamicMessage = (role = "assistant") => {
+    const node = makeDomNode(
+      `message-${(selectorNodes.get('[data-message-author-role]') || []).length + 1}`,
+      partFixtures.thread || body,
+      new Map([["data-message-author-role", role]]),
+    );
     register('[data-message-author-role]', node);
     return node;
+  };
+  const setSettingsMode = (active) => {
+    settingsActive = active;
+    if (!active) return;
+    selectorNodes.clear();
+  };
+  const replaceThreadSurface = () => {
+    const replacement = makeDomNode("thread-replacement", partFixtures.main || body);
+    selectorNodes.set(".thread-scroll-container", [replacement]);
+    partFixtures.thread = replacement;
+    return replacement;
   };
   return {
     addDynamicMessage, attrs, context, document, domNodes, flushTimers, intervals, listeners,
     nodes, observers, partFixtures, payloadFor, revoked, root, rootClasses, rootStyle,
-    selectorNodes, timers, window,
+    replaceThreadSurface, selectorNodes, setSettingsMode, timers, window,
   };
 }
 
@@ -306,6 +361,16 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     css,
+    /html\[data-dream-skin="active"\]\[data-dream-art-scope="main"\]\[data-dream-art-sidebar="shared"\]\s+\.app-shell-left-panel:has\(\[data-settings-panel-slug\]\)\s*\{[\s\S]{0,180}background:\s*transparent\s*!important;/,
+    "Settings navigation must reveal the body artwork in its first native style calculation.",
+  );
+  assert.match(
+    css,
+    /html\[data-dream-skin="active"\]\[data-dream-art-scope="main"\]\[data-dream-art-sidebar="shared"\]\s+\.app-shell-left-panel:has\(\[data-settings-panel-slug\]\)\s*\+\s*div\s*>\s*\.electron\\:bg-token-main-surface-primary\s*\{[\s\S]{0,180}background:\s*transparent\s*!important;/,
+    "Settings content must not flash an opaque route surface before route detection catches up.",
+  );
+  assert.match(
+    css,
     new RegExp(`data-dream-art-sidebar="shared"[\\s\\S]{0,520}${shellPattern}:not\\(:has\\(\\[role="main"\\]\\)\\)::before\\s*\\{[\\s\\S]{0,120}content:\\s*none\\s*!important;`),
     "Shared canvases must not apply a second route-specific dim layer over only the main surface.",
   );
@@ -399,6 +464,11 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     customPolicy,
+    /\[data-ds-part="message-user"\]\s*\{[\s\S]{0,180}background-color:\s*var\(--ds-theme-color-message-user\)\s*!important;/,
+    "User-authored messages must use the theme-owned translucent surface token.",
+  );
+  assert.match(
+    customPolicy,
     /pointer-events:\s*none\s*!important;/,
     "The decorative title layer must never block native home controls.",
   );
@@ -475,6 +545,27 @@ export async function runRendererRuntimeTest(assetRoot) {
   assert.equal(state.metrics.partPasses, 1);
   assert.equal(state.metrics.layoutReads, 0, "Runtime must not perform layout reads");
   assert.equal(home.rootClasses.writes.length, 0, "Runtime must not write classes");
+  const messageColor = makeFixture({ nativeAppearance: "dark" });
+  vm.runInNewContext(messageColor.payloadFor({
+    colors: {
+      accent: "#64e6ff",
+      userMessage: "rgba(213, 30, 69, 0.14)",
+    },
+  }), messageColor.context);
+  assert.equal(
+    messageColor.rootStyle.values.get("--ds-theme-color-message-user"),
+    "rgba(213, 30, 69, 0.14)",
+    "Themes must be able to declare the user-message surface color.",
+  );
+  const derivedMessageColor = makeFixture({ nativeAppearance: "dark" });
+  vm.runInNewContext(derivedMessageColor.payloadFor({
+    colors: { accent: "#64e6ff" },
+  }), derivedMessageColor.context);
+  assert.equal(
+    derivedMessageColor.rootStyle.values.get("--ds-theme-color-message-user"),
+    "rgba(100, 230, 255, 0.12)",
+    "Legacy themes must derive a translucent user-message surface from their accent.",
+  );
   const partObserver = home.observers.find((observer) => observer.options?.childList);
   const rootObserver = home.observers.find((observer) => observer.options?.attributes);
   assert.ok(partObserver?.options?.subtree, "Dynamic parts require one subtree child-list observer");
@@ -496,6 +587,7 @@ export async function runRendererRuntimeTest(assetRoot) {
     projectList: "project-list",
     thread: "thread",
     message: "message",
+    messageUser: "message-user",
     composer: "composer",
     composerToolbar: "composer-toolbar",
   };
@@ -503,7 +595,16 @@ export async function runRendererRuntimeTest(assetRoot) {
     assert.equal(home.partFixtures[fixtureKey].getAttribute("data-ds-part"), part,
       `${part} must be exposed through the public Safe CSS bridge`);
   }
-
+  home.setSettingsMode(true);
+  partObserver.callback([{ type: "childList" }]);
+  home.flushTimers(80);
+  assert.equal(state.scope.baseState, "settings");
+  assert.equal(home.attrs.get("data-dream-base-state"), "settings",
+    "The active route must be exposed to route-specific CSS without adding DOM markers.");
+  assert.equal(home.rootStyle.values.get("--dream-skin-sidebar-width"), "312.5px",
+    "Settings must preserve the last valid shared-sidebar width so the wallpaper does not resize.");
+  assert.equal(home.rootStyle.values.get("--dream-skin-sidebar-offset"), "156.25px",
+    "Settings must preserve the main-surface focal offset while its native shell is replaced.");
   const modernHome = makeFixture({ nativeAppearance: "dark", modernHome: true });
   vm.runInNewContext(modernHome.payloadFor(), modernHome.context);
   const modernState = modernHome.window.__CODEX_DREAM_SKIN_STATE__;
@@ -527,6 +628,52 @@ export async function runRendererRuntimeTest(assetRoot) {
   partObserver.callback([{ type: "childList" }]);
   home.flushTimers(80);
   assert.equal(dynamicMessage.getAttribute("data-ds-part"), "message");
+  const dynamicUserMessage = home.addDynamicMessage("user");
+  partObserver.callback([{ type: "childList" }]);
+  home.flushTimers(80);
+  assert.equal(dynamicUserMessage.getAttribute("data-ds-part"), "message-user",
+    "User-authored messages must expose a dedicated bounded theme surface.");
+
+  const automaticPinned = makeFixture({
+    nativeAppearance: "dark",
+    pinnedSummaryOpen: true,
+  });
+  vm.runInNewContext(automaticPinned.payloadFor(), automaticPinned.context);
+  assert.equal(automaticPinned.partFixtures.pinnedSummaryToggle.getAttribute("aria-pressed"), "false");
+  assert.equal(automaticPinned.partFixtures.pinnedSummaryToggle.clickCount, 1,
+    "An initially open pinned summary must be closed exactly once.");
+  assert.equal(
+    automaticPinned.window.__CODEX_DREAM_SKIN_STATE__.metrics.pinnedSummaryAutoCloses,
+    1,
+  );
+
+  const manualPinned = makeFixture({
+    nativeAppearance: "dark",
+    pinnedSummaryOpen: false,
+  });
+  vm.runInNewContext(manualPinned.payloadFor(), manualPinned.context);
+  const pinnedClickHandler = manualPinned.listeners.get("document:click");
+  assert.equal(typeof pinnedClickHandler, "function");
+  pinnedClickHandler({
+    isTrusted: true,
+    target: manualPinned.partFixtures.pinnedSummaryToggle,
+  });
+  manualPinned.partFixtures.pinnedSummaryToggle.setAttribute("aria-pressed", "true");
+  manualPinned.partFixtures.pinnedSummaryWrapper.setAttribute("data-state", "delayed-open");
+  const pinnedObserver = manualPinned.observers.find((observer) =>
+    observer.options?.attributeFilter?.includes("aria-pressed"));
+  assert.equal(pinnedObserver?.target, manualPinned.partFixtures.pinnedSummaryToggle);
+  pinnedObserver.callback([{ type: "attributes", attributeName: "aria-pressed" }]);
+  assert.equal(manualPinned.partFixtures.pinnedSummaryToggle.getAttribute("aria-pressed"), "true",
+    "A trusted user open must remain open in the current thread.");
+  assert.equal(manualPinned.partFixtures.pinnedSummaryToggle.clickCount, 0);
+  manualPinned.replaceThreadSurface();
+  const manualPartObserver = manualPinned.observers.find((observer) => observer.options?.childList);
+  manualPartObserver.callback([{ type: "childList" }]);
+  manualPinned.flushTimers(80);
+  assert.equal(manualPinned.partFixtures.pinnedSummaryToggle.getAttribute("aria-pressed"), "false",
+    "A replacement thread surface must restore the default-closed policy.");
+  assert.equal(manualPinned.partFixtures.pinnedSummaryToggle.clickCount, 1);
 
   const full = makeFixture({ nativeAppearance: "dark" });
   vm.runInNewContext(full.payloadFor({ art: { taskMode: "full" } }), full.context);
@@ -621,6 +768,7 @@ export async function runRendererRuntimeTest(assetRoot) {
   vm.runInNewContext(settings.payloadFor(), settings.context);
   assert.equal(settings.window.__CODEX_DREAM_SKIN_STATE__.scope.baseState, "settings");
   assert.equal(settings.window.__CODEX_DREAM_SKIN_STATE__.scope.level, "L0");
+  assert.equal(settings.attrs.get("data-dream-base-state"), "settings");
   assert.equal(settings.attrs.get("data-dream-skin"), "active");
   assert.equal(settings.document.adoptedStyleSheets.length, 1);
 

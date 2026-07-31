@@ -43,7 +43,7 @@ const stableTestidLiteral = (testid) => {
   }
   return JSON.stringify(`[data-testid="${testid}"]`);
 };
-const SKIN_VERSION = "1.5.9.1";
+const SKIN_VERSION = "1.5.9.2";
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]"]);
 const CDP_ID_PATTERN = /^[A-Za-z0-9._-]{1,200}$/;
 const MAX_ART_BYTES = 10 * 1024 * 1024;
@@ -503,7 +503,8 @@ async function probeSession(session) {
       composer: Boolean(document.querySelector(${selectorLiteral("composer-chrome")})),
       main: Boolean(document.querySelector(${selectorLiteral("home-route")})),
     };
-    const settings = Boolean(document.querySelector(${selectorLiteral("appearance-radio")})) ||
+    const settings = Boolean(document.querySelector(${selectorLiteral("settings-sidebar")})) ||
+      Boolean(document.querySelector(${selectorLiteral("appearance-radio")})) ||
       Boolean(document.querySelector(${stableTestidLiteral("theme-preview")}));
     return {
       markers,
@@ -654,7 +655,7 @@ export async function loadTheme(themeDir) {
     ? raw.colors : null;
   const colorKeys = [
     "background", "panel", "panelAlt", "accent", "accentAlt", "secondary",
-    "highlight", "text", "muted", "line",
+    "highlight", "text", "muted", "line", "userMessage",
   ];
   const appearance = choice(raw.appearance, "appearance", ["auto", "light", "dark"]);
   if (raw.art !== undefined && (!raw.art || typeof raw.art !== "object" || Array.isArray(raw.art))) {
@@ -695,6 +696,7 @@ export async function loadTheme(themeDir) {
       text: normalizeThemeColor(rawColors?.text, "#e9fff1"),
       muted: normalizeThemeColor(rawColors?.muted, "#9ebdb3"),
       line: normalizeThemeColor(rawColors?.line, "rgba(124, 255, 70, .28)"),
+      userMessage: normalizeThemeColor(rawColors?.userMessage, "rgba(124, 255, 70, .12)"),
     },
   };
   if (appearance !== undefined) theme.appearance = appearance;
@@ -1133,6 +1135,7 @@ async function verifySession(session, expectedThemeId = null, expectedRevision =
     const composer = box(document.querySelector(${selectorLiteral("composer-chrome")}));
     const sidebar = box(document.querySelector(${selectorLiteral("left-panel")}));
     const settingsBoxes = [
+      box(document.querySelector(${selectorLiteral("settings-sidebar")})),
       box(document.querySelector(${selectorLiteral("appearance-radio")})),
       box(document.querySelector(${stableTestidLiteral("theme-preview")})),
     ];
@@ -1383,7 +1386,8 @@ export function earlyPayloadFor(payload, revision) {
       const shell = document.querySelector(${selectorLiteral("shell-main")});
       const sidebar = document.querySelector(${selectorLiteral("left-panel")});
       const main = document.querySelector(${selectorLiteral("home-route")});
-      const settings = document.querySelector(${selectorLiteral("appearance-radio")}) ||
+      const settings = document.querySelector(${selectorLiteral("settings-sidebar")}) ||
+        document.querySelector(${selectorLiteral("appearance-radio")}) ||
         document.querySelector(${stableTestidLiteral("theme-preview")});
       return Boolean((shell && sidebar) || settings || main);
     };

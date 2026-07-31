@@ -1302,6 +1302,23 @@ html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sideb
   background: transparent !important;
 }
 
+/* Settings replaces the normal shell on current macOS builds. Gate directly
+   on its verified DOM surfaces—not the asynchronously refreshed route
+   attribute—so their very first native style calculation reveals the same
+   persistent body canvas. The renderer still preserves the last real sidebar
+   geometry; native cards and controls keep their own readable surfaces. */
+html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"]
+  __DREAM_SELECTOR_SETTINGS_SIDEBAR__ {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"]
+  __DREAM_SELECTOR_SETTINGS_SURFACE__ {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
 html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"][data-dream-art-wide="true"]:has(
   __DREAM_SELECTOR_SHELL_MAIN__ __DREAM_SELECTOR_HOME_ROUTE_CSS__) body,
 html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"]:is(
@@ -1602,6 +1619,12 @@ html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sideb
   __DREAM_SELECTOR_THREAD_SURFACE__ .sticky.bottom-0
   [class~="bg-gradient-to-t"][class~="from-token-main-surface-primary"] {
   background-image: none !important;
+}
+
+/* User-authored messages keep the native geometry and controls, but use one
+   theme-owned translucent surface instead of the host's neutral gray. */
+html[data-dream-skin="active"] [data-ds-part="message-user"] {
+  background-color: var(--ds-theme-color-message-user) !important;
 }
 
 @media (max-width: 1120px) {
