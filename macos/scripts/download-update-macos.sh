@@ -65,7 +65,7 @@ ASSET_SHA256="$(/usr/bin/plutil -extract assetSha256 raw -o - "$UPDATE_RESPONSE"
 [ "$UPDATE_AVAILABLE" = "true" ] \
   || fail_update "The installed version ${CURRENT_VERSION:-unknown} is already current."
 LATEST_NORMALIZED="${LATEST_VERSION#v}"
-printf '%s' "$LATEST_NORMALIZED" | /usr/bin/grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' \
+printf '%s' "$LATEST_NORMALIZED" | /usr/bin/grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?$' \
   || fail_update "Update metadata contains an invalid version."
 EXPECTED_NAME="CodexDreamSkin-v${LATEST_NORMALIZED}.dmg"
 EXPECTED_URL="https://github.com/YuxiangChai/Codex-Skin/releases/download/v${LATEST_NORMALIZED}/${EXPECTED_NAME}"

@@ -25,7 +25,7 @@ normalize_version() {
   local value="$1"
   value="${value#v}"
   value="${value#V}"
-  printf '%s' "$value" | /usr/bin/grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' \
+  printf '%s' "$value" | /usr/bin/grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?$' \
     || return 1
   printf '%s\n' "$value"
 }
@@ -33,16 +33,20 @@ normalize_version() {
 version_is_newer() {
   local latest="$1"
   local current="$2"
-  local latest_major latest_minor latest_patch
-  local current_major current_minor current_patch
-  IFS=. read -r latest_major latest_minor latest_patch <<< "$latest"
-  IFS=. read -r current_major current_minor current_patch <<< "$current"
+  local latest_major latest_minor latest_patch latest_revision
+  local current_major current_minor current_patch current_revision
+  IFS=. read -r latest_major latest_minor latest_patch latest_revision <<< "$latest"
+  IFS=. read -r current_major current_minor current_patch current_revision <<< "$current"
+  latest_revision="${latest_revision:-0}"
+  current_revision="${current_revision:-0}"
   if [ "$latest_major" -ne "$current_major" ]; then
     [ "$latest_major" -gt "$current_major" ]
   elif [ "$latest_minor" -ne "$current_minor" ]; then
     [ "$latest_minor" -gt "$current_minor" ]
-  else
+  elif [ "$latest_patch" -ne "$current_patch" ]; then
     [ "$latest_patch" -gt "$current_patch" ]
+  else
+    [ "$latest_revision" -gt "$current_revision" ]
   fi
 }
 

@@ -19,7 +19,7 @@ function ConvertTo-DreamSkinVersion {
   if ($normalized.StartsWith('v', [System.StringComparison]::OrdinalIgnoreCase)) {
     $normalized = $normalized.Substring(1)
   }
-  if ($normalized -cnotmatch '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$') {
+  if ($normalized -cnotmatch '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\.(0|[1-9][0-9]*))?$') {
     throw "Invalid release version: $Value"
   }
   $parsed = $null

@@ -37,7 +37,7 @@ fail_update() {
 }
 
 version_is_valid() {
-  printf '%s' "$1" | /usr/bin/grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'
+  printf '%s' "$1" | /usr/bin/grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?$'
 }
 
 bundle_field() {

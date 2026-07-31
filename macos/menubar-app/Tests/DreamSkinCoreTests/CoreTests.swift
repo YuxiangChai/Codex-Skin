@@ -7,9 +7,12 @@ final class CoreTests: XCTestCase {
     XCTAssertEqual(SemanticVersion(" 2.0.1\n")?.description, "2.0.1")
     XCTAssertTrue(try XCTUnwrap(SemanticVersion("1.3.1")) > SemanticVersion("1.3.0")!)
     XCTAssertTrue(try XCTUnwrap(SemanticVersion("2.0.0")) > SemanticVersion("1.99.99")!)
+    XCTAssertEqual(SemanticVersion("1.5.9.1")?.description, "1.5.9.1")
+    XCTAssertTrue(try XCTUnwrap(SemanticVersion("1.5.9.1")) > SemanticVersion("1.5.9")!)
+    XCTAssertTrue(try XCTUnwrap(SemanticVersion("1.5.10")) > SemanticVersion("1.5.9.99")!)
     XCTAssertNil(SemanticVersion("1.3.0-beta"))
     XCTAssertNil(SemanticVersion("1..3"))
-    XCTAssertNil(SemanticVersion("1.2.3.4"))
+    XCTAssertNil(SemanticVersion("1.2.3.4.5"))
   }
 
   func testStatusSnapshotParsesChineseTheme() throws {

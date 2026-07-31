@@ -263,8 +263,8 @@ function Write-DreamSkinIcon {
 }
 
 $version = (Read-ReleaseTextFile -Path $versionPath).Trim()
-if ($version -cnotmatch '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$') {
-  throw "windows/VERSION must contain a three-part semantic version: $version"
+if ($version -cnotmatch '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\.(0|[1-9][0-9]*))?$') {
+  throw "windows/VERSION must contain a three-part version with an optional personal revision: $version"
 }
 $macosVersion = (Read-ReleaseTextFile -Path $macosVersionPath).Trim()
 $macosPackage = (Read-ReleaseTextFile -Path $macosPackagePath) | ConvertFrom-Json

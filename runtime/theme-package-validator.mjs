@@ -72,7 +72,10 @@ const COLOR_KEYS = [
   "muted",
   "line",
 ];
-const SEMVER_PATTERN = /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/;
+const SEMVER_PATTERN =
+  /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/;
+const CLIENT_VERSION_PATTERN =
+  /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:\.(0|[1-9][0-9]*))?$/;
 const THEME_ID_PATTERN = /^[a-z0-9]+(?:[.-][a-z0-9]+)*$/;
 const PUBLISHER_ID_PATTERN = /^[A-Za-z0-9_-]+$/;
 const LICENSE_PATTERN = /^[A-Za-z0-9][A-Za-z0-9 .+()-]*$/;
@@ -160,13 +163,15 @@ function assertString(value, label, { min = 0, max, pattern, controls = CONTROL_
   return value;
 }
 
-function parseSemver(value, label) {
-  assertString(value, label, { min: 1, max: 32, pattern: SEMVER_PATTERN, controls: null });
-  return value.split(".").map((part) => BigInt(part));
+function parseSemver(value, label, pattern = SEMVER_PATTERN) {
+  assertString(value, label, { min: 1, max: 32, pattern, controls: null });
+  const parts = value.split(".").map((part) => BigInt(part));
+  while (parts.length < 4) parts.push(0n);
+  return parts;
 }
 
 function compareSemver(left, right) {
-  for (let index = 0; index < 3; index += 1) {
+  for (let index = 0; index < 4; index += 1) {
     if (left[index] > right[index]) return 1;
     if (left[index] < right[index]) return -1;
   }
@@ -342,8 +347,12 @@ function validateManifest(value, platform, clientVersion) {
     controls: null,
   });
   parseSemver(manifest.version, "manifest.version");
-  const requiredClient = parseSemver(manifest.minClientVersion, "manifest.minClientVersion");
-  const installedClient = parseSemver(clientVersion, "client version");
+  const requiredClient = parseSemver(
+    manifest.minClientVersion,
+    "manifest.minClientVersion",
+    CLIENT_VERSION_PATTERN,
+  );
+  const installedClient = parseSemver(clientVersion, "client version", CLIENT_VERSION_PATTERN);
   if (compareSemver(requiredClient, installedClient) > 0) {
     fail(`Theme requires Dream Skin ${manifest.minClientVersion} or newer; installed version is ${clientVersion}`);
   }

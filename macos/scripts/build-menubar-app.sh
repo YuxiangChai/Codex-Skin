@@ -15,7 +15,7 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
-printf '%s' "$VERSION" | /usr/bin/grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' \
+printf '%s' "$VERSION" | /usr/bin/grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?$' \
   || { printf 'Invalid VERSION: %s\n' "$VERSION" >&2; exit 1; }
 [ -n "$OUTPUT_APP" ] || { printf 'Output app path cannot be empty.\n' >&2; exit 1; }
 case "$(/usr/bin/basename "$OUTPUT_APP")" in

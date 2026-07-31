@@ -26,7 +26,9 @@ function createFixture() {
       get body() { return body; },
       addEventListener(type, callback) { if (type === "DOMContentLoaded") domReady.push(callback); },
       querySelector(selector) {
-        if (selector === "main.main-surface") return markers.shell ? {} : null;
+        if (selector === 'main:is(.main-surface, [class*="_MainContentSurface_"])') {
+          return markers.shell ? {} : null;
+        }
         if (selector === "aside.app-shell-left-panel") return markers.sidebar ? {} : null;
         if (selector === "[role=\"main\"]") return markers.main ? {} : null;
         if (selector.includes("appearance-theme") || selector.includes("theme-preview")) {
@@ -69,6 +71,20 @@ assert.deepEqual(guarded.context.window.installs, [], "A shell without its sideb
 guarded.markers.sidebar = true;
 guarded.tick();
 assert.deepEqual(guarded.context.window.installs, ["guarded"]);
+
+const modernGuarded = createFixture();
+vm.runInNewContext(
+  earlyPayloadFor('window.installs.push("modern")', "modern"),
+  modernGuarded.context,
+);
+modernGuarded.markers.shell = true;
+modernGuarded.markers.sidebar = true;
+modernGuarded.tick();
+assert.deepEqual(
+  modernGuarded.context.window.installs,
+  ["modern"],
+  "ChatGPT 26.727's CSS-module main surface must bind to the visible renderer.",
+);
 
 const generations = createFixture();
 generations.makeNotReady();

@@ -10,7 +10,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const startPath = path.resolve(here, "../scripts/start-dream-skin.ps1");
 
 const selectors = {
-  shell: "main.main-surface",
+  shell: 'main:is(.main-surface, [class*="_MainContentSurface_"])',
   sidebar: "aside.app-shell-left-panel",
   composer: ".composer-surface-chrome",
   home: '[role="main"]',
@@ -116,7 +116,7 @@ function makeDomFixture({
   };
   const window = {
     __CODEX_DREAM_SKIN_STATE__: {
-      version: "1.5.10",
+      version: "1.5.9.1",
       themeId: "fixture-theme",
       revision: "fixture-revision",
       styleMode: "style",

@@ -133,7 +133,7 @@ async function makeOfficial(name, options = {}) {
   return { source, manifest, theme };
 }
 
-async function validate(source, platform, label) {
+async function validate(source, platform, label, clientVersion = "1.3.3") {
   const stage = path.join(tempRoot, `stage-${label}`);
   await fs.mkdir(stage);
   const result = await run(process.execPath, [
@@ -141,12 +141,12 @@ async function validate(source, platform, label) {
     "--source", source,
     "--stage", stage,
     "--platform", platform,
-    "--client-version", "1.3.3",
+    "--client-version", clientVersion,
   ]);
   return { stage, output: JSON.parse(result.stdout) };
 }
 
-async function expectRejected(source, platform, pattern, label) {
+async function expectRejected(source, platform, pattern, label, clientVersion = "1.3.3") {
   const stage = path.join(tempRoot, `rejected-${label}`);
   await fs.mkdir(stage);
   await assert.rejects(
@@ -155,7 +155,7 @@ async function expectRejected(source, platform, pattern, label) {
       "--source", source,
       "--stage", stage,
       "--platform", platform,
-      "--client-version", "1.3.3",
+      "--client-version", clientVersion,
     ]),
     pattern,
   );
@@ -166,6 +166,43 @@ try {
   const base = await makeOfficial("official-base");
   const macos = await validate(base.source, "macos", "official-macos");
   const windows = await validate(base.source, "windows", "official-windows");
+  const personalRevision = await validate(
+    base.source,
+    "macos",
+    "official-personal-client",
+    "1.5.9.1",
+  );
+  assert.equal(personalRevision.output.format, "official");
+  const personalMinimum = await makeOfficial("official-personal-minimum", {
+    minClientVersion: "1.5.9.1",
+  });
+  const personalMinimumResult = await validate(
+    personalMinimum.source,
+    "macos",
+    "official-personal-minimum",
+    "1.5.9.1",
+  );
+  assert.equal(personalMinimumResult.output.format, "official");
+  const futurePersonalMinimum = await makeOfficial("official-future-personal-minimum", {
+    minClientVersion: "1.5.9.2",
+  });
+  await expectRejected(
+    futurePersonalMinimum.source,
+    "macos",
+    /requires Dream Skin 1\.5\.9\.2/,
+    "future-personal-minimum",
+    "1.5.9.1",
+  );
+  const fourPartThemeVersion = await makeOfficial("official-four-part-theme-version", {
+    mutateManifest: (manifest) => { manifest.version = "1.2.3.1"; },
+  });
+  await expectRejected(
+    fourPartThemeVersion.source,
+    "macos",
+    /manifest\.version has an invalid format/,
+    "four-part-theme-version",
+    "1.5.9.1",
+  );
   assert.deepEqual(macos.output, {
     format: "official",
     image: "background.png",

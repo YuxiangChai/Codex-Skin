@@ -61,8 +61,8 @@ jobs:
           macos_injector_version="$(sed -n 's/^const SKIN_VERSION = \"\([^\"]*\)\";$/\1/p' macos/scripts/injector.mjs)"
           windows_injector_version="$(sed -n 's/^const SKIN_VERSION = \"\([^\"]*\)\";$/\1/p' windows/scripts/injector.mjs)"
           for value in "$version" "$windows_version" "$package_version" "$common_version" "$macos_injector_version" "$windows_injector_version"; do
-            [[ "$value" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
-              echo "A platform version is not semantic: $value" >&2
+            [[ "$value" =~ ^[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?$ ]] || {
+              echo "A platform version is not a supported Dream Skin version: $value" >&2
               exit 1
             }
           done
@@ -86,14 +86,22 @@ jobs:
             if [[ "$previous_version" == "$version" ]]; then
               version_unchanged="true"
             else
-              [[ "$previous_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+              [[ "$previous_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?$ ]] || {
                 echo "Previous main version is invalid: $previous_version" >&2
                 exit 1
               }
               CURRENT_VERSION="$version" PREVIOUS_VERSION="$previous_version" node <<'NODE'
-          const current = process.env.CURRENT_VERSION.split(".").map(Number);
-          const previous = process.env.PREVIOUS_VERSION.split(".").map(Number);
-          const comparison = current[0] - previous[0] || current[1] - previous[1] || current[2] - previous[2];
+          const parse = (value) => {
+            const parts = value.split(".").map(Number);
+            while (parts.length < 4) parts.push(0);
+            return parts;
+          };
+          const current = parse(process.env.CURRENT_VERSION);
+          const previous = parse(process.env.PREVIOUS_VERSION);
+          const comparison = current[0] - previous[0]
+            || current[1] - previous[1]
+            || current[2] - previous[2]
+            || current[3] - previous[3];
           if (comparison <= 0) {
             console.error("Release version must increase.");
             process.exit(1);
@@ -156,9 +164,17 @@ jobs:
             if [[ -n "$previous_tag" ]]; then
               previous_version="${previous_tag#v}"
               CURRENT_VERSION="$version" PREVIOUS_VERSION="$previous_version" node <<'NODE'
-          const current = process.env.CURRENT_VERSION.split(".").map(Number);
-          const previous = process.env.PREVIOUS_VERSION.split(".").map(Number);
-          const comparison = current[0] - previous[0] || current[1] - previous[1] || current[2] - previous[2];
+          const parse = (value) => {
+            const parts = value.split(".").map(Number);
+            while (parts.length < 4) parts.push(0);
+            return parts;
+          };
+          const current = parse(process.env.CURRENT_VERSION);
+          const previous = parse(process.env.PREVIOUS_VERSION);
+          const comparison = current[0] - previous[0]
+            || current[1] - previous[1]
+            || current[2] - previous[2]
+            || current[3] - previous[3];
           if (comparison <= 0) {
             console.error("Release version is not newer than the latest tag.");
             process.exit(1);

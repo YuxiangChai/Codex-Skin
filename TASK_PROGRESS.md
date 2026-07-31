@@ -2,6 +2,38 @@
 
 Updated: 2026-07-31 (Asia/Shanghai)
 
+## Personal v1.5.9.1 Release (2026-07-31)
+
+- [goal] Publish the explicitly requested personal macOS release `v1.5.9.1`
+  from `YuxiangChai/Codex-Skin`, containing the unreleased local compatibility,
+  repair, self-update, Gatekeeper-assistance and Iron Man UI work.
+- [decision] Personal releases use
+  `upstream-major.upstream-minor.upstream-patch.personal-revision`. Three-part
+  upstream versions compare as revision zero, so
+  `1.5.9 < 1.5.9.1 < 1.5.10`. Theme package versions remain three-part; only
+  Dream Skin client/minimum-client comparisons accept the optional revision.
+- [remote] `origin/main` is still `cd71dfd` (`v1.5.9`) and contains no commits
+  missing from the current branch. `personal/main` is `5b3fb24` and is an
+  ancestor of the current branch, so the release can be a fast-forward without
+  rewriting history.
+- [complete] Six release version sources are synchronized to `1.5.9.1`.
+  Swift, shell, PowerShell, runtime theme compatibility and the personal
+  Release workflow now accept and compare the optional fourth numeric part.
+- [verified] Complete macOS regression suite passes outside the SwiftPM
+  sandbox, including Swift build and all 10 XCTest cases. All 60 macOS and 18
+  Windows portable Node regressions pass; payload checks and shell syntax pass.
+  Windows-native PowerShell tests remain CI work because `pwsh` is unavailable
+  on this Mac.
+- [verified] Built and independently mounted the arm64 smoke-test
+  `CodexDreamSkin-v1.5.9.1.dmg`. Bundle short/build version and bundled engine
+  are all `1.5.9.1`; the executable is arm64, Bundle ID is
+  `cc.dreamskin.menubar`, strict ad-hoc code-signature verification passes, and
+  the reviewed Iron Man preset is present. Local DMG SHA-256 is
+  `dff3e511555830994413bbcd0c2a9e25cfb61b0efbc4b71cf57acd41b739d793`.
+- [in_progress] Commit and fast-forward personal `main`, then verify the public GitHub
+  Release, tag, DMG, checksum file and downloaded digest.
+- [state] No push, tag or GitHub Release has occurred yet.
+
 ## Engine Repair, Self-Update, and Border Cleanup (2026-07-31)
 
 - [goal] Make the bundled-engine repair action understandable and complete,
