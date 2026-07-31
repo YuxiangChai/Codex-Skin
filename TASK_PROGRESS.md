@@ -21,8 +21,8 @@ Updated: 2026-07-31 (Asia/Shanghai)
   respond, Markdown fences are balanced, `git diff --check` passes, and the
   inherited sponsor/community/Windows/English-README terms are absent. The
   upstream project name and repository appear only once, in Credit.
-- [in_progress] Commit the documentation change with CI skipped and push it to
-  personal `main`.
+- [complete] Committed the rewrite as `cd0d4e1` with CI skipped and pushed it
+  to personal `main`; no version, tag or Release asset changed.
 
 ## Personal v1.5.9.1 Release (2026-07-31)
 
