@@ -4,6 +4,7 @@
 
 ### 修复
 
+- 同步 macOS 的 ChatGPT Desktop 26.727.40816 renderer 选择器兼容合同：保留旧语义类，同时接受稳定 CSS Modules 模块名前缀且不匹配随机 hash。Windows 本机 26.727 DOM 尚待 CI/实机复核，辅助 renderer 的严格拒绝条件不变。
 - 修复 Windows 上从 Chrome/Edge 点击 DreamSkin.cc「一键换肤」无法稳定唤起或完成的问题（#307）。安装器持久注册项不再把 64 位浏览器不可访问的 `{sysnative}` 写入 HKCU `dreamskin://` handler；handler 同时接受网页规范链接和 Windows/浏览器归一化后的 `dreamskin://apply/?version=...` 形式；应用阶段与 macOS 对齐为 `colors` 合同、可见首页验证和首次失败后的激活 + `--once` 重试，并加固 watcher 进程关闭与成功提示。
 - 修复安装器遇到 Codex `config.toml` 中合法多行数组时直接拒绝写入的问题（#313）。配置编辑器现在按 TOML 结构扫描 table header，安全跨过普通多行数组并保持原字节风格；未闭合数组、括号不匹配，以及 Dream Skin 需要改写的目标 key 自身为多行值时仍会在写入前 fail-closed。
 - 修复 v1.5.6 安装器在部分 Windows 10/11 环境中校验自带 Node.js 签名时，PowerShell 自动加载 `Microsoft.PowerShell.Security` / `Get-AuthenticodeSignature` 失败而中止安装的问题（#313、#314）。签名校验现在会在执行 `node.exe` 前显式加载安全模块，并在模块名加载失败时回退到 `$PSHOME` 下的系统模块清单路径；签名状态和发行者校验仍保持 fail-closed。

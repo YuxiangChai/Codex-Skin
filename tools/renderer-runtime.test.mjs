@@ -98,8 +98,8 @@ function makeFixture({
     partFixtures.composer = makeDomNode("composer", partFixtures.main);
     partFixtures.composerToolbar = makeDomNode("composer-toolbar", partFixtures.composer);
     register("aside.app-shell-left-panel", partFixtures.sidebar);
-    register("main.main-surface", partFixtures.main);
-    register("header.app-header-tint", partFixtures.header);
+    register('main:is(.main-surface, [class*="_MainContentSurface_"])', partFixtures.main);
+    register('header:is(.app-header-tint, [class*="_Header_"])', partFixtures.header);
     if (!modernHome) {
       register('[data-testid="home-icon"]', partFixtures.homeIcon);
       register('[role="main"]:has([data-testid="home-icon"])', partFixtures.home);
@@ -249,6 +249,8 @@ function unscopedCssRules(css) {
 export async function runRendererRuntimeTest(assetRoot) {
   const template = await fs.readFile(path.join(assetRoot, "renderer-inject.js"), "utf8");
   const css = await fs.readFile(path.join(assetRoot, "dream-skin.css"), "utf8");
+  const shellPattern = String.raw`main:is\(\.main-surface, \[class\*="_MainContentSurface_"\]\)`;
+  const headerPattern = String.raw`header:is\(\.app-header-tint, \[class\*="_Header_"\]\)`;
   fixture.template = template;
 
   assert.match(template, /adoptedStyleSheets/);
@@ -269,8 +271,8 @@ export async function runRendererRuntimeTest(assetRoot) {
   // Home gating must stay single-level: CSS forbids :has() inside :has(),
   // and Chromium drops any rule that nests it (the v1.3.1 regression).  The
   // canonical CSS therefore gates on the :has()-free home-route-css alias.
-  assert.match(css, /main\.main-surface:has\(\[role="main"\]\)/);
-  assert.match(css, /main\.main-surface:not\(:has\(\[role="main"\]\)\)/);
+  assert.match(css, new RegExp(`${shellPattern}:has\\(\\[role="main"\\]\\)`));
+  assert.match(css, new RegExp(`${shellPattern}:not\\(:has\\(\\[role="main"\\]\\)\\)`));
   assert.doesNotMatch(css, /:has\([^()]*:has\(/);
   assert.match(
     css,
@@ -284,7 +286,7 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     css,
-    /data-dream-art-scope="main"[\s\S]{0,320}main\.main-surface:has\(\[role="main"\]\)\s*\{[\s\S]{0,240}background-image:\s*var\(--dream-skin-art\)\s*!important;[\s\S]{0,180}background-position:\s*var\(--ds-art-position\)\s*!important;/,
+    new RegExp(`data-dream-art-scope="main"[\\s\\S]{0,320}${shellPattern}:has\\(\\[role="main"\\]\\)\\s*\\{[\\s\\S]{0,240}background-image:\\s*var\\(--dream-skin-art\\)\\s*!important;[\\s\\S]{0,180}background-position:\\s*var\\(--ds-art-position\\)\\s*!important;`),
     "Home artwork must be centered by the responsive main surface itself.",
   );
   assert.match(
@@ -304,12 +306,12 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     css,
-    /data-dream-art-sidebar="shared"[\s\S]{0,520}main\.main-surface:not\(:has\(\[role="main"\]\)\)::before\s*\{[\s\S]{0,120}content:\s*none\s*!important;/,
+    new RegExp(`data-dream-art-sidebar="shared"[\\s\\S]{0,520}${shellPattern}:not\\(:has\\(\\[role="main"\\]\\)\\)::before\\s*\\{[\\s\\S]{0,120}content:\\s*none\\s*!important;`),
     "Shared canvases must not apply a second route-specific dim layer over only the main surface.",
   );
   assert.match(
     css,
-    /data-dream-art-sidebar="shared"[\s\S]{0,1300}main\.main-surface:not\(:has\(\[role="main"\]\)\)\s*\{[\s\S]{0,180}background:\s*transparent\s*!important;[\s\S]{0,120}box-shadow:\s*none\s*!important;/,
+    new RegExp(`data-dream-art-sidebar="shared"[\\s\\S]{0,1300}${shellPattern}:not\\(:has\\(\\[role="main"\\]\\)\\)\\s*\\{[\\s\\S]{0,180}background:\\s*transparent\\s*!important;[\\s\\S]{0,120}box-shadow:\\s*none\\s*!important;`),
     "Shared canvases must clear the legacy task-only main-surface gradient.",
   );
   assert.match(css, /content:\s*var\(--dream-skin-name[\s\S]{0,180}var\(--dream-skin-brand-subtitle/);
@@ -322,7 +324,7 @@ export async function runRendererRuntimeTest(assetRoot) {
   const customPolicy = css.slice(customPolicyOffset);
   assert.match(
     customPolicy,
-    /header\.app-header-tint::before,[\s\S]{0,420}header\.app-header-tint::after,[\s\S]{0,420}main\.main-surface:has\(\[role="main"\]\)::after\s*\{\s*content:\s*none\s*!important;\s*\}/,
+    new RegExp(`${headerPattern}::before,[\\s\\S]{0,520}${headerPattern}::after,[\\s\\S]{0,520}${shellPattern}:has\\(\\[role="main"\\]\\)::after\\s*\\{\\s*content:\\s*none\\s*!important;\\s*\\}`),
     "Personal builds must suppress the task brand, status, and home quote pseudo-content.",
   );
   assert.match(
@@ -392,7 +394,7 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     customPolicy,
-    /data-dream-art-scope="main"\]\[data-dream-art-sidebar="shared"\][\s\S]{0,320}main\.main-surface:not\(:has\(\[role="main"\]\)\)[\s\S]{0,220}\.thread-scroll-container\s+\.sticky\.bottom-0[\s\S]{0,160}\[class~="bg-gradient-to-t"\]\[class~="from-token-main-surface-primary"\]\s*\{[\s\S]{0,120}background-image:\s*none\s*!important;/,
+    new RegExp(`data-dream-art-scope="main"\\]\\[data-dream-art-sidebar="shared"\\][\\s\\S]{0,320}${shellPattern}:not\\(:has\\(\\[role="main"\\]\\)\\)[\\s\\S]{0,220}\\.thread-scroll-container\\s+\\.sticky\\.bottom-0[\\s\\S]{0,160}\\[class~="bg-gradient-to-t"\\]\\[class~="from-token-main-surface-primary"\\]\\s*\\{[\\s\\S]{0,120}background-image:\\s*none\\s*!important;`),
     "Shared-canvas sessions must clear native footer gradients below the composer.",
   );
   assert.match(

@@ -1,6 +1,48 @@
 # Task Progress
 
-Updated: 2026-07-30 (Asia/Shanghai)
+Updated: 2026-07-31 (Asia/Shanghai)
+
+## ChatGPT 26.727 Injection Compatibility (2026-07-31)
+
+- [root_cause] The installed ChatGPT app updated to `26.727.40816`, while the
+  current v1.5.9 selector contract was verified against `26.721.41059`.
+  The visible 1512x949 renderer still exposes the native sidebar, composer and
+  thread surface, but `main.main-surface` became a CSS-module
+  `_MainContentSurface_…` class, `header.app-header-tint` became
+  `_Header_…`, and the prior home-only `[role="main"]` marker is absent on
+  the active thread. The injector therefore rejects the real renderer before
+  installing any theme; the theme package and its managed background remain
+  intact.
+- [verified] The second 408x400 `app:` target is an auxiliary renderer with no
+  sidebar, composer or thread surface and must continue to be rejected. The
+  compatibility fix must not weaken target binding to accept that window.
+- [complete] Added regression coverage for the new visible renderer while
+  retaining the existing sidebar-gated auxiliary-window rejection. Updated the
+  shared selector contract to accept both the old semantic classes and stable
+  CSS-module name prefixes without matching build hashes; regenerated the
+  byte-identical macOS/Windows renderer and CSS assets.
+- [complete] Stopped the stale v1.5.9 launchd watcher that was immediately
+  restoring its old payload after a one-shot source injection. Hot-deployed
+  the verified local v1.5.10 engine to the managed `~/.codex` engine directory,
+  restarted its watcher, and confirmed the installed engine remains active on
+  port 9341 with `custom-iron-man`, exact revision
+  `cdca77883d0d4daa06e8`, visible 1512x949 window, L1 thread scope, zero
+  missing anchors and no horizontal overflow.
+- [verified] Real-session screenshot:
+  `/private/tmp/chatgpt-26727-dream-skin-fixed.png`. The Iron Man canvas,
+  shared sidebar, dimming, transparent session surfaces and compact composer
+  are visibly restored.
+- [verified] Shared asset sync, focused selector/bootstrap/window/renderer/CSS
+  tests, payload checks and `git diff --check` pass. The complete macOS suite
+  passes outside the restricted SwiftPM sandbox, including the native Swift
+  build, all 10 XCTest cases, shell/static/runtime/package/import/security
+  regressions. Signed-runtime integrations are explicit environment skips.
+- [decision] The user explicitly prohibited publishing a new version unless
+  asked. The v1.5.10 identifier is local and unreleased: do not push, create a
+  tag, trigger Release, or claim updater availability.
+- [pending] Commit locally if desired; publication remains blocked on a new
+  explicit user instruction. The currently open renderer is a thread, so the
+  26.727 home route has not yet received a separate live navigation smoke test.
 
 ## Personal v1.5.9 Update (2026-07-30)
 

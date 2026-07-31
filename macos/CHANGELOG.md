@@ -4,12 +4,14 @@
 
 ### 修复
 
+- 修复 ChatGPT Desktop 26.727.40816 更新后无法应用任何主题的问题。新版把可见主窗口的 `main.main-surface` 与 `header.app-header-tint` 改成 CSS Modules 类，v1.5.9 因而把真实 renderer 当成非 ChatGPT 辅助窗口并停止注入。选择器合同现在同时兼容旧语义类和新版稳定模块名前缀，不匹配随机 hash；无侧栏、无 composer、无 thread surface 的 408x400 辅助 renderer 仍然 fail closed。
 - 修复 Codex Desktop 26.721.x 首页在 `home-icon` 延迟渲染时被误判为注入校验失败的问题（#306）。校验现在复用已由首页内容信号解析出的 `[role="main"]` 容器；严格的 `home-icon` 路径仍优先，旧版行为不变。
 - 修复显式浅色、宽幅 artwork 的 `taskMode: "full"` 任务页 Markdown 继承原生深色壳白色前景的问题（#309）。完整模式现与 ambient/banner 一样强制使用主题文本色，并保留浅色壳对比阴影。
 - 修复社区主题 ZIP 导入拒绝 `backdrop-filter: blur(var(--ds-theme-surface-blur))` 的问题（#312）。Safe CSS 仍只允许 `none`、0-20px blur 或注册的主题 blur 变量，不放宽到任意 filter 函数。
 
 ### 内部
 
+- 同步 v1.5.10 版本号以发布 ChatGPT 26.727 renderer 兼容修复。
 - 同步 v1.5.9 版本号以发布 Windows 一键换肤补丁；macOS 运行时代码相对 v1.5.8 无行为变化。
 - 同步 v1.5.8 版本号以发布 Windows 安装器补丁；macOS 运行时代码相对 v1.5.7 无行为变化。
 

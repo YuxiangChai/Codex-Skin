@@ -1,16 +1,16 @@
 {
   "schema": "codex-dream-skin-selectors/1",
-  "description": "双端统一选择器契约。scope 与 required 来自双端 DOM 快照及 2026-07-29 macOS 26.721.41059 实机复核。doctor / CI 应逐条 querySelector 并按 tier 判级：L1 缺失=皮肤主行为受损，L2 缺失=精修静默降级。",
+  "description": "双端统一选择器契约。scope 与 required 来自双端 DOM 快照及 2026-07-31 macOS 26.727.40816 实机复核。doctor / CI 应逐条 querySelector 并按 tier 判级：L1 缺失=皮肤主行为受损，L2 缺失=精修静默降级。",
   "verifiedAgainst": {
-    "date": "2026-07-29",
+    "date": "2026-07-31",
     "chromium": "150.0.7871.128",
-    "codexVersionMac": "26.721.41059",
+    "codexVersionMac": "26.727.40816",
     "codexVersionWindows": "版本号未记录；bundle hash 与 mac 不同（ModelPickerTrigger mac=1fm6a win=1w4ob），确认存在版本错位",
     "fixtures": [
       "runtime/dom-fixtures/codex-dom-fixture-darwin-watch.json (15 状态)",
       "runtime/dom-fixtures/codex-dom-fixture-win32-watch.json (7 状态)"
     ],
-    "verdict": "双端 DOM 同源；macOS 26.721.41059 已移除旧 home-icon，但首页仍保留仅首页存在的 [role=main] 根。旧图标与旧装饰容器降为 L2，路由判定改由 [role=main] 承担"
+    "verdict": "macOS 26.727.40816 把 main.main-surface 与 header.app-header-tint 改为 CSS Modules，但模块语义前缀仍稳定；合同同时保留旧类名和新版前缀。可见主 renderer 仍有 sidebar/composer/thread，408x400 辅助 renderer 无这些业务锚点并继续 fail closed。首页 [role=main] 合同保留，待该版本首页实机复核"
   },
   "appearanceSignal": {
     "dark": "html.electron-dark",
@@ -26,9 +26,9 @@
     "config": "依赖用户配置才出现（如未配置项目则无项目选择器）"
   },
   "selectors": [
-    { "key": "shell-main", "selector": "main.main-surface", "tier": "L1", "scope": "all", "required": true, "notes": "全局主表面。mac 设置页缺失（win 存在），缺失时整页仅 L0" },
+    { "key": "shell-main", "selector": "main:is(.main-surface, [class*=\"_MainContentSurface_\"])", "tier": "L1", "scope": "all", "required": true, "notes": "全局主表面。兼容 26.721 的语义类与 26.727 的 CSS Modules 模块名前缀；禁止匹配完整 hash。mac 设置页缺失（win 存在），缺失时整页仅 L0" },
     { "key": "left-panel", "selector": "aside.app-shell-left-panel", "tier": "L1", "scope": "all", "required": true, "notes": "左侧栏；收起/重建时会移除节点，勿在其消失时清皮" },
-    { "key": "header-tint", "selector": "header.app-header-tint", "tier": "L1", "scope": "all", "required": true, "notes": "顶栏；皮肤不得覆盖其 position/z-index（既有回归约束）" },
+    { "key": "header-tint", "selector": "header:is(.app-header-tint, [class*=\"_Header_\"])", "tier": "L1", "scope": "all", "required": true, "notes": "顶栏。兼容 26.721 的语义类与 26.727 的 CSS Modules 模块名前缀；禁止匹配完整 hash。皮肤不得覆盖其 position/z-index（既有回归约束）" },
     { "key": "home-icon", "selector": "[data-testid=\"home-icon\"]", "tier": "L2", "scope": "home", "required": false, "notes": "旧版首页图标。Codex 26.721.41059 已移除；只能用于旧版 hero 精修，不得再参与路由成功判定" },
     { "key": "home-route", "selector": "[role=\"main\"]:has([data-testid=\"home-icon\"])", "tier": "L2", "scope": "home", "required": false, "notes": "旧版首页装饰容器别名。保留以避免立刻激活历史结构样式；新版路由判定与安全 CSS 门控统一使用 home-route-css" },
     { "key": "home-route-css", "selector": "[role=\"main\"]", "tier": "L1", "scope": "home", "required": true, "notes": "当前首页根与 CSS 可组合路由别名，不含 :has()。2026-07-29 实机复核：Codex 26.721.41059 首页存在、thread 页不存在；旧 home-icon 消失后仍可稳定判定首页。CSS 禁止 :has() 嵌套，故所有新版路由门控、运行时 scope 和注入校验均依赖此项" },
