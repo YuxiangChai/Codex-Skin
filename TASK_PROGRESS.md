@@ -2,6 +2,67 @@
 
 Updated: 2026-07-31 (Asia/Shanghai)
 
+## Engine Repair, Self-Update, and Border Cleanup (2026-07-31)
+
+- [goal] Make the bundled-engine repair action understandable and complete,
+  replace the manual DMG drag workflow with a confirmed, verified, atomic
+  in-app self-update, remove visible skin border colors, and reconcile the
+  result with the latest upstream without losing personal behavior.
+- [constraints] macOS is the active product target. Preserve Iron Man,
+  main-centered shared artwork, theme-owned dimming, unified custom home title,
+  bottom compact composer, hidden recommendation cards, transparent session
+  footer and ChatGPT 26.727 renderer compatibility. Do not push, tag, publish,
+  or claim updater availability without a new explicit user request.
+- [finding] “安装 / 修复引擎” currently copies the engine bundled inside the
+  menu-bar App into the managed `~/.codex/codex-dream-skin-studio` runtime,
+  validates versions and required files, and preserves user themes. It is not
+  an online update. The current installed App bundles v1.5.9 while the managed
+  local hotfix is v1.5.10, so repair correctly refuses a downgrade. Even at
+  equal versions, the current UI does not coordinate the installer’s required
+  ChatGPT shutdown, repair, restart and skin reapply.
+- [finding] “检查更新” already presents a native version confirmation and
+  downloads/verifies the DMG’s GitHub size and SHA-256, but stops after opening
+  Finder. The user still has to quit the menu-bar App and drag/replace it.
+- [finding] Fetched `origin/main`; it remains `cd71dfd` (v1.5.9), already
+  incorporated by local merge `53e71e5`. `HEAD..origin/main` contains zero
+  commits, so there is currently no upstream merge to perform.
+- [complete] Replaced the repair menu action with an explicit native
+  confirmation and a bundled repair transaction. It validates the official
+  ChatGPT runtime, stops only the recorded injector, removes its launch job,
+  restarts ChatGPT only when it was previously running, atomically reinstalls
+  the App-bundled same-version engine, preserves user themes, and reapplies.
+  A newer managed engine is still never downgraded by an older App.
+- [complete] Added a confirmation-driven self-updater. It keeps the fixed
+  personal GitHub channel and existing size/SHA checks, mounts the DMG
+  read-only, validates the app/engine version, Bundle ID, strict code
+  signature, matching Apple Team ID and Gatekeeper result, then uses a detached
+  acknowledged helper to rename the current App to a rollback copy, install
+  the staged App, reopen it and restore the previous copy if startup is not
+  acknowledged. It never requests privilege, strips quarantine, disables
+  Gatekeeper, or touches theme/image state.
+- [complete] Automatic update intentionally rejects ad-hoc current Apps. Added
+  Developer ID + hardened-runtime signing and App/DMG notarization/stapling
+  support, and changed the personal Release workflow to require certificate
+  and notary secrets rather than silently publishing another unsigned DMG.
+  This Mac currently reports zero valid code-signing identities, so a real
+  trusted release remains blocked until the user provisions an Apple Developer
+  Program Developer ID certificate and CI secrets.
+- [complete] Made selected sidebar chrome consume the theme `line` token rather
+  than a hard-coded accent border. Iron Man now sets `line: transparent` and
+  uses registered Safe CSS parts to clear sidebar, main, header, composer and
+  project-list border colors. Other themes retain control of their own lines.
+- [verified] Full macOS regression suite passes outside the SwiftPM sandbox:
+  Swift build, all 10 XCTest cases, shell/static safety checks, renderer/CSS
+  sync, Safe CSS, payload, package/import and installer rollback tests. Built
+  an arm64 App and DMG, mounted and statically validated the DMG, confirmed
+  both new helpers are packaged/executable, and confirmed an ad-hoc fixture is
+  rejected as an automatic-update trust root. Signed-runtime integrations are
+  explicit skips; actual Developer ID/notary submission cannot be exercised
+  without credentials.
+- [decision] No upstream merge was needed, no installed App was replaced, and
+  no push, tag or Release was created. Publication remains forbidden until the
+  user explicitly requests it.
+
 ## ChatGPT 26.727 Injection Compatibility (2026-07-31)
 
 - [root_cause] The installed ChatGPT app updated to `26.727.40816`, while the

@@ -77,6 +77,7 @@ fi
   "$ROOT/scripts/switch-theme-macos.sh"
 /usr/bin/grep -F -q 'CFBundleURLTypes.0.CFBundleURLSchemes.0' "$ROOT/scripts/build-dmg.sh"
 for required_runtime in apply-community-theme-macos.sh download-update-macos.sh \
+  install-update-macos.sh repair-engine-macos.sh \
   snapshot-active-theme-macos.sh theme-content-fingerprint.mjs \
   theme-switch-lock-macos.sh; do
   /usr/bin/grep -F -q "$required_runtime" "$ROOT/scripts/build-dmg.sh"
@@ -97,7 +98,11 @@ UPDATE_JSON="$({
 ' "$UPDATE_JSON"
 /usr/bin/grep -F -q '"scripts/download-update-macos.sh"' \
   "$ROOT/menubar-app/Sources/CodexDreamSkinMenuBar/AppDelegate.swift"
-/usr/bin/grep -F -q '下载并打开安装包' \
+/usr/bin/grep -F -q '自动下载、校验并安装更新' \
+  "$ROOT/menubar-app/Sources/CodexDreamSkinMenuBar/AppDelegate.swift"
+/usr/bin/grep -F -q 'install-update-macos.sh' \
+  "$ROOT/menubar-app/Sources/CodexDreamSkinMenuBar/AppDelegate.swift"
+/usr/bin/grep -F -q 'repair-engine-macos.sh' \
   "$ROOT/menubar-app/Sources/CodexDreamSkinMenuBar/AppDelegate.swift"
 /usr/bin/grep -F -q 'YuxiangChai/Codex-Skin' "$ROOT/scripts/check-update-macos.sh"
 /usr/bin/grep -F -q -- '--max-filesize 1048576' "$ROOT/scripts/check-update-macos.sh"
@@ -105,7 +110,11 @@ UPDATE_JSON="$({
 /usr/bin/grep -F -q 'plutil -convert binary1 -o /dev/null' \
   "$ROOT/scripts/download-update-macos.sh"
 /usr/bin/grep -F -q -- '--download-only' "$ROOT/scripts/download-update-macos.sh"
-if /usr/bin/grep -R -n -E --exclude-dir='.build' \
+/usr/bin/grep -F -q -- '--install-app' "$ROOT/scripts/download-update-macos.sh"
+/usr/bin/grep -F -q 'pending-self-update.plist' "$ROOT/scripts/install-update-macos.sh"
+/usr/bin/grep -F -q 'codesign --verify --deep --strict' "$ROOT/scripts/install-update-macos.sh"
+/usr/bin/grep -F -q 'rollback' "$ROOT/scripts/install-update-macos.sh"
+if /usr/bin/grep -R -n -E --exclude-dir='.build*' \
   'xattr|spctl[[:space:]]+--master-disable' \
   "$ROOT/menubar-app" "$ROOT/scripts/build-menubar-app.sh" "$ROOT/scripts/build-dmg.sh" >/dev/null; then
   printf 'Native distribution must not bypass Gatekeeper or remove quarantine attributes.\n' >&2
@@ -116,10 +125,23 @@ if /usr/bin/grep -n -F -q 'xattr' \
   printf 'Standalone release builders must not strip quarantine.\n' >&2
   exit 1
 fi
+/usr/bin/grep -F -q 'DREAMSKIN_CODESIGN_IDENTITY' "$ROOT/scripts/build-menubar-app.sh"
+/usr/bin/grep -F -q 'DREAMSKIN_NOTARY_PROFILE' "$ROOT/scripts/build-dmg.sh"
+/usr/bin/grep -F -q 'xcrun notarytool submit' "$ROOT/scripts/build-dmg.sh"
+/usr/bin/grep -F -q 'xcrun stapler staple' "$ROOT/scripts/build-dmg.sh"
+/usr/bin/grep -F -q 'MACOS_CERTIFICATE_P12_BASE64' "$ROOT/../.github/workflows/release.yml"
+/usr/bin/grep -F -q 'Build signed and notarized DMG' "$ROOT/../.github/workflows/release.yml"
 for retired_preset in preset-gothic-void-crusade preset-arina-hashimoto; do
   [ ! -e "$ROOT/presets/$retired_preset" ] \
     || { printf 'Retired preset remains in the macOS source: %s\n' "$retired_preset" >&2; exit 1; }
 done
+THEME_LINE="$("$NODE" -e '
+  const fs = require("node:fs");
+  const theme = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+  process.stdout.write(String(theme.colors?.line ?? ""));
+' "$ROOT/presets/preset-iron-man/theme.json")"
+[ "$THEME_LINE" = "transparent" ] \
+  || { printf 'Iron Man chrome borders must be transparent.\n' >&2; exit 1; }
 if ! /usr/bin/grep -F -q 'DEPLOY_PREVIOUS' "$ROOT/scripts/install-dream-skin-macos.sh" ||
    ! /usr/bin/grep -F -q 'rollback_deployed_project' "$ROOT/scripts/install-dream-skin-macos.sh"; then
   printf 'The macOS outer installer must roll back a failed engine deployment.\n' >&2

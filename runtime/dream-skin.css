@@ -280,7 +280,7 @@ html[data-dream-skin="active"] __DREAM_SELECTOR_LEFT_PANEL__ button[aria-label^=
 html[data-dream-skin="active"] __DREAM_SELECTOR_LEFT_PANEL__ [class~="bg-token-list-hover-background"],
 html[data-dream-skin="active"] __DREAM_SELECTOR_LEFT_PANEL__ [aria-current="page"] {
   background: rgb(var(--ds-accent-rgb) / .12) !important;
-  border: 1px solid rgb(var(--ds-accent-rgb) / .22) !important;
+  border: 1px solid var(--ds-line) !important;
   box-shadow: 0 4px 16px rgb(var(--ds-bg-rgb) / .12) !important;
   color: var(--ds-text) !important;
 }

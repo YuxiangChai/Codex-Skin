@@ -97,12 +97,14 @@ RUNTIME_SCRIPTS=(
   image-metadata.mjs
   import-theme-zip-macos.sh
   injector.mjs
+  install-update-macos.sh
   install-dream-skin-macos.sh
   load-image-theme-macos.sh
   pause-dream-skin-macos.sh
   publish-theme-import.mjs
   snapshot-active-theme-macos.sh
   restore-dream-skin-macos.sh
+  repair-engine-macos.sh
   snapshot-theme-zip.mjs
   stage-theme.mjs
   theme-content-fingerprint.mjs
@@ -124,8 +126,8 @@ done
 /usr/bin/rsync -a "$ROOT/assets/" "$ENGINE/assets/"
 PUBLIC_PRESET="preset-iron-man"
 PUBLIC_PRESET_SHA256="59e09087072b7d66d988fe9c286bbff724118f8e1e73c9c25235d5eefa690eaf"
-PUBLIC_PRESET_THEME_SHA256="37c751260b0b56f6ce98756d460b0e36ff43c2f7a28dec7dcc67bc8f72fd0025"
-PUBLIC_PRESET_CSS_SHA256="ab3417924523d617ff88d21abae84e62f322ef7781a588d2753ae426be5b620c"
+PUBLIC_PRESET_THEME_SHA256="d312c99e06db571ec9957aedaeba692adadac7bf1fd1583be4650ad56254143f"
+PUBLIC_PRESET_CSS_SHA256="33f4033f221c34b44227f3754f52c7852bde0f342bff1c1bef048204114c5efc"
 [ -d "$ROOT/presets/$PUBLIC_PRESET" ] \
   || { printf 'Public release preset missing: %s\n' "$PUBLIC_PRESET" >&2; exit 1; }
 actual_public_preset_sha256="$(LC_ALL=C /usr/bin/shasum -a 256 \
@@ -156,7 +158,24 @@ PRESET_COUNT="$(/usr/bin/find "$ENGINE/presets" -mindepth 1 -maxdepth 1 -type d 
 "$ROOT/scripts/generate-app-icon.sh" "$RESOURCES/DreamSkin.icns"
 [ -s "$RESOURCES/DreamSkin.icns" ] \
   || { printf 'App icon is missing after generation: %s\n' "$RESOURCES/DreamSkin.icns" >&2; exit 1; }
-/usr/bin/codesign --force --deep --sign - --timestamp=none "$APP"
+if [ -n "${DREAMSKIN_CODESIGN_IDENTITY:-}" ]; then
+  case "$DREAMSKIN_CODESIGN_IDENTITY" in
+    "Developer ID Application:"*) ;;
+    *) printf 'DREAMSKIN_CODESIGN_IDENTITY must be a Developer ID Application identity.\n' >&2; exit 1 ;;
+  esac
+  CODESIGN_KEYCHAIN_ARGS=()
+  if [ -n "${DREAMSKIN_BUILD_KEYCHAIN:-}" ]; then
+    CODESIGN_KEYCHAIN_ARGS=(--keychain "$DREAMSKIN_BUILD_KEYCHAIN")
+  fi
+  /usr/bin/codesign --force --deep \
+    --sign "$DREAMSKIN_CODESIGN_IDENTITY" \
+    --options runtime \
+    --timestamp \
+    "${CODESIGN_KEYCHAIN_ARGS[@]}" \
+    "$APP"
+else
+  /usr/bin/codesign --force --deep --sign - --timestamp=none "$APP"
+fi
 /usr/bin/codesign --verify --deep --strict "$APP"
 
 /bin/rm -rf "$OUTPUT_APP"

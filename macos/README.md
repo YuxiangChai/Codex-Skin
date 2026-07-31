@@ -18,8 +18,27 @@ This project injects through **local loopback CDP**. It does **not** modify the 
 
 普通用户请从 [GitHub Releases](https://github.com/YuxiangChai/Codex-Skin/releases) 下载
 `CodexDreamSkin-vX.Y.Z.dmg`，按 [`docs/install-macos.md`](../docs/install-macos.md) 的图形界面步骤
-拖入 Applications。首次运行可能需要在“系统设置 → 隐私与安全性 → 仍要打开”确认一次；不需要
-运行 `xattr` 或安装源码。后续更新下载新的 DMG 覆盖安装即可，用户主题和图片会保留。
+拖入 Applications。正式 Developer ID 签名并公证的版本可从菜单执行确认式自动更新；开发构建
+可能需要在“系统设置 → 隐私与安全性 → 仍要打开”确认，且只能手动覆盖。不需要运行 `xattr`
+或安装源码，用户主题和图片会保留。
+
+### Maintainer signing and notarization
+
+本机构建默认仍使用 ad-hoc 签名，避免伪装成可分发产物。正式分发需要 Apple Developer Program
+签发的 `Developer ID Application` 证书，并先把 notarytool 凭据存入钥匙串。例如：
+
+```bash
+xcrun notarytool store-credentials dreamskin-notary \
+  --apple-id "APPLE_ID" --team-id "TEAM_ID" --password "APP_SPECIFIC_PASSWORD"
+
+DREAMSKIN_CODESIGN_IDENTITY="Developer ID Application: NAME (TEAM_ID)" \
+DREAMSKIN_NOTARY_PROFILE="dreamskin-notary" \
+./scripts/build-dmg.sh
+```
+
+构建器会使用 hardened runtime 与可信时间戳签 App 和 DMG，分别提交公证、staple 并运行
+`spctl` 校验。凭据只放在本机钥匙串或 CI secrets，不提交到仓库。没有 Developer ID 身份时，
+构建器会继续产生明确的 ad-hoc 开发包，自动更新器会拒绝把它当作可信更新链。
 
 ## Advanced: run from source
 

@@ -54,11 +54,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     "scripts/image-metadata.mjs",
     "scripts/import-theme-zip-macos.sh",
     "scripts/injector.mjs",
+    "scripts/install-update-macos.sh",
     "scripts/install-dream-skin-macos.sh",
     "scripts/load-image-theme-macos.sh",
     "scripts/pause-dream-skin-macos.sh",
     "scripts/publish-theme-import.mjs",
     "scripts/restore-dream-skin-macos.sh",
+    "scripts/repair-engine-macos.sh",
     "scripts/snapshot-active-theme-macos.sh",
     "scripts/snapshot-theme-zip.mjs",
     "scripts/stage-theme.mjs",
@@ -108,6 +110,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     NSApp.setActivationPolicy(.accessory)
     configureStatusItem()
     ensureUserDirectories()
+    acknowledgeCompletedSelfUpdate()
     cleanupStalePrivateOperationDirectories()
     migrateLegacySwiftBarIfNeeded()
     installBundledEngineIfNeeded(force: false)
@@ -203,6 +206,31 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
   }
 
+  private func acknowledgeCompletedSelfUpdate() {
+    let pending = stateRootURL
+      .appendingPathComponent("updates", isDirectory: true)
+      .appendingPathComponent("pending-self-update.plist")
+    guard let value = NSDictionary(contentsOf: pending),
+          let targetVersion = value["targetVersion"] as? String,
+          let currentPath = value["currentAppPath"] as? String,
+          let backupPath = value["backupAppPath"] as? String else {
+      return
+    }
+    let runningApp = Bundle.main.bundleURL.standardizedFileURL
+    let currentApp = URL(fileURLWithPath: currentPath).standardizedFileURL
+    let backupApp = URL(fileURLWithPath: backupPath).standardizedFileURL
+    let sameParent = backupApp.deletingLastPathComponent() == currentApp.deletingLastPathComponent()
+    let safeBackupName = backupApp.lastPathComponent.hasPrefix(".Codex Dream Skin.backup.")
+    guard targetVersion == appVersion,
+          currentApp == runningApp,
+          sameParent,
+          safeBackupName else {
+      return
+    }
+    try? fileManager.removeItem(at: backupApp)
+    try? fileManager.removeItem(at: pending)
+  }
+
   private func cleanupStalePrivateOperationDirectories() {
     let cutoff = Date().addingTimeInterval(-24 * 60 * 60)
     let allowedPrefixes = [".community-apply-", ".theme-switch.", ".theme-import-work."]
@@ -268,7 +296,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
       addDisabledItem("正在安装引擎…")
     } else {
       addActionItem(
-        needsEngineInstall ? "安装 / 升级引擎…" : "修复 / 重新安装引擎…",
+        needsEngineInstall ? "安装 App 内置引擎…" : "验证 / 修复本机引擎…",
         action: #selector(reinstallEngine),
         enabled: !busy
       )
@@ -466,7 +494,49 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
   @objc private func reinstallEngine() {
     guard !operationInFlight, !snapshot.busy else { return }
-    installBundledEngineIfNeeded(force: true)
+    guard let bundledVersion = version(at: bundledEngineURL?.appendingPathComponent("VERSION")) else {
+      showError(title: "安装资源损坏", message: "App 内的版本信息无效，请重新下载。")
+      return
+    }
+    if let installedVersion = version(at: installedEngineURL.appendingPathComponent("VERSION")),
+       installedVersion > bundledVersion {
+      showError(
+        title: "不会降级本机引擎",
+        message: "本机引擎 v\(installedVersion) 比当前 App 的 v\(bundledVersion) 更新。请先更新 App。"
+      )
+      return
+    }
+    guard let script = bundledScript(named: "repair-engine-macos.sh") else {
+      showError(title: "安装资源损坏", message: "App 内没有找到引擎修复工具，请重新下载。")
+      return
+    }
+    let alert = NSAlert()
+    alert.messageText = engineNeedsInstall() ? "安装 App 内置引擎？" : "验证并重新安装本机引擎？"
+    alert.informativeText =
+      "这会用当前 App 内置的同版本引擎替换本机引擎，保留图片和已保存主题。若 ChatGPT 正在运行，会自动重启一次并重新应用皮肤。"
+    alert.addButton(withTitle: engineNeedsInstall() ? "安装" : "修复")
+    alert.addButton(withTitle: "取消")
+    activateForUserInteraction()
+    guard alert.runModal() == .alertFirstButtonReturn else { return }
+    engineInstallInFlight = true
+    rebuildMenu()
+    ScriptRunner.run(script: script, arguments: ["--restart-if-running"]) { [weak self] result in
+      guard let self else { return }
+      self.engineInstallInFlight = false
+      self.refreshStatus()
+      self.rebuildMenu()
+      if result.succeeded {
+        self.showInfo(
+          title: "引擎已就绪",
+          message: "当前 App 内置引擎已完成验证和重新安装；图片与已保存主题均已保留。"
+        )
+      } else {
+        self.showError(
+          title: "引擎修复失败",
+          message: self.conciseOutput(result.output, fallback: "本机引擎保持原状，请查看日志后重试。")
+        )
+      }
+    }
   }
 
   @objc private func chooseBackgroundImage() {
@@ -959,8 +1029,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
   @objc private func checkForUpdates() {
     guard !operationInFlight,
-          let script = installedScript(named: "check-update-macos.sh")
-            ?? bundledScript(named: "check-update-macos.sh") else {
+          let script = bundledScript(named: "check-update-macos.sh") else {
       showError(title: "无法检查更新", message: "更新检查脚本缺失，请重新安装应用。")
       return
     }
@@ -986,12 +1055,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
       if available {
         let alert = NSAlert()
         alert.messageText = "发现新版本 \(latest)"
-        alert.informativeText = "当前版本为 \(current)。Dream Skin 可以直接下载、校验并打开安装包。"
-        alert.addButton(withTitle: "下载并打开安装包")
+        alert.informativeText =
+          "当前版本为 \(current)。Dream Skin 将自动下载、校验并安装更新，失败时恢复当前 App；图片和已保存主题不会被覆盖。"
+        alert.addButton(withTitle: "自动更新")
         alert.addButton(withTitle: "稍后")
         self.activateForUserInteraction()
         if alert.runModal() == .alertFirstButtonReturn {
-          self.downloadAndOpenUpdate()
+          self.downloadAndInstallUpdate()
         }
       } else {
         self.showInfo(title: "已是最新版本", message: "当前安装的是 \(current)。")
@@ -999,28 +1069,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
   }
 
-  private func downloadAndOpenUpdate() {
+  private func downloadAndInstallUpdate() {
     guard !operationInFlight,
-          let script = installedScript(named: "download-update-macos.sh")
-            ?? bundledScript(named: "download-update-macos.sh") else {
-      showError(title: "无法下载更新", message: "更新下载脚本缺失，请从个人 Release 页面手动下载。")
+          let script = bundledScript(named: "download-update-macos.sh") else {
+      showError(title: "无法自动更新", message: "自动更新组件缺失，请重新安装应用。")
       return
     }
     operationInFlight = true
     rebuildMenu()
-    ScriptRunner.run(script: script) { [weak self] result in
+    ScriptRunner.run(
+      script: script,
+      arguments: [
+        "--install-app", Bundle.main.bundleURL.path,
+        "--parent-pid", String(ProcessInfo.processInfo.processIdentifier)
+      ]
+    ) { [weak self] result in
       guard let self else { return }
       self.operationInFlight = false
       self.rebuildMenu()
       if result.succeeded {
-        self.showInfo(
-          title: "安装包已校验并打开",
-          message: "把 DMG 里的 Codex Dream Skin 拖到“应用程序”并选择替换；主题和图片会保留。"
-        )
+        NSApp.terminate(nil)
       } else {
         self.showError(
-          title: "下载更新失败",
-          message: self.conciseOutput(result.output, fallback: "无法下载或校验安装包，请稍后重试。")
+          title: "自动更新失败",
+          message: self.conciseOutput(
+            result.output,
+            fallback: "无法下载、校验或准备更新；当前 App 未被替换。"
+          )
         )
       }
     }

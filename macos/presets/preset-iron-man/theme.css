@@ -11,3 +11,23 @@
 [data-ds-part="project-list"] {
   color: #f0b13f;
 }
+
+[data-ds-part="sidebar"] {
+  border-color: transparent;
+}
+
+[data-ds-part="main"] {
+  border-color: transparent;
+}
+
+[data-ds-part="header"] {
+  border-color: transparent;
+}
+
+[data-ds-part="composer"] {
+  border-color: transparent;
+}
+
+[data-ds-part="project-list"] {
+  border-color: transparent;
+}

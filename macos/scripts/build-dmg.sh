@@ -36,6 +36,23 @@ APP="$TMP/Codex Dream Skin.app"
 STAGE="$TMP/stage"
 /bin/mkdir -p "$STAGE" "$RELEASE_DIR"
 "$ROOT/scripts/build-menubar-app.sh" --skip-tests --output "$APP"
+
+if [ -n "${DREAMSKIN_NOTARY_PROFILE:-}" ]; then
+  [ -n "${DREAMSKIN_CODESIGN_IDENTITY:-}" ] \
+    || { printf 'DREAMSKIN_NOTARY_PROFILE requires DREAMSKIN_CODESIGN_IDENTITY.\n' >&2; exit 1; }
+  APP_ARCHIVE="$TMP/CodexDreamSkin-app.zip"
+  /usr/bin/ditto -c -k --keepParent "$APP" "$APP_ARCHIVE"
+  NOTARY_KEYCHAIN_ARGS=()
+  if [ -n "${DREAMSKIN_NOTARY_KEYCHAIN:-}" ]; then
+    NOTARY_KEYCHAIN_ARGS=(--keychain "$DREAMSKIN_NOTARY_KEYCHAIN")
+  fi
+  /usr/bin/xcrun notarytool submit "$APP_ARCHIVE" \
+    --keychain-profile "$DREAMSKIN_NOTARY_PROFILE" \
+    "${NOTARY_KEYCHAIN_ARGS[@]}" --wait
+  /usr/bin/xcrun stapler staple "$APP"
+  /usr/bin/xcrun stapler validate "$APP"
+  /usr/sbin/spctl --assess --type execute "$APP"
+fi
 /usr/bin/ditto "$APP" "$STAGE/Codex Dream Skin.app"
 /bin/ln -s /Applications "$STAGE/Applications"
 
@@ -43,6 +60,27 @@ STAGE="$TMP/stage"
 LC_ALL=C LANG=C /usr/bin/hdiutil create -quiet -ov -format UDZO \
   -volname "Codex Dream Skin" -srcfolder "$STAGE" "$DMG"
 [ -s "$DMG" ] || { printf 'DMG was not created: %s\n' "$DMG" >&2; exit 1; }
+
+if [ -n "${DREAMSKIN_CODESIGN_IDENTITY:-}" ]; then
+  CODESIGN_KEYCHAIN_ARGS=()
+  if [ -n "${DREAMSKIN_BUILD_KEYCHAIN:-}" ]; then
+    CODESIGN_KEYCHAIN_ARGS=(--keychain "$DREAMSKIN_BUILD_KEYCHAIN")
+  fi
+  /usr/bin/codesign --force \
+    --sign "$DREAMSKIN_CODESIGN_IDENTITY" \
+    --timestamp \
+    "${CODESIGN_KEYCHAIN_ARGS[@]}" \
+    "$DMG"
+  /usr/bin/codesign --verify --strict "$DMG"
+fi
+if [ -n "${DREAMSKIN_NOTARY_PROFILE:-}" ]; then
+  /usr/bin/xcrun notarytool submit "$DMG" \
+    --keychain-profile "$DREAMSKIN_NOTARY_PROFILE" \
+    "${NOTARY_KEYCHAIN_ARGS[@]}" --wait
+  /usr/bin/xcrun stapler staple "$DMG"
+  /usr/bin/xcrun stapler validate "$DMG"
+  /usr/sbin/spctl --assess --type open --context context:primary-signature "$DMG"
+fi
 
 MOUNT="$TMP/mount"
 /bin/mkdir -p "$MOUNT"
@@ -85,6 +123,7 @@ MOUNTED_ENGINE="$MOUNTED_APP/Contents/Resources/engine"
 [ -f "$MOUNTED_ENGINE/assets/selectors.json" ] \
   || { printf 'Mounted app is missing the selector contract.\n' >&2; exit 1; }
 for runtime_script in apply-community-theme-macos.sh download-update-macos.sh \
+  install-update-macos.sh repair-engine-macos.sh \
   snapshot-active-theme-macos.sh theme-switch-lock-macos.sh; do
   [ -x "$MOUNTED_ENGINE/scripts/$runtime_script" ] \
     || { printf 'Mounted runtime script is missing or not executable: %s\n' "$runtime_script" >&2; exit 1; }

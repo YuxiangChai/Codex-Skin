@@ -317,7 +317,56 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Build unsigned DMG
+      - name: Import Developer ID certificate and configure notarization
+        shell: bash
+        env:
+          MACOS_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_CODESIGN_IDENTITY: ${{ secrets.MACOS_CODESIGN_IDENTITY }}
+          MACOS_NOTARY_APPLE_ID: ${{ secrets.MACOS_NOTARY_APPLE_ID }}
+          MACOS_NOTARY_PASSWORD: ${{ secrets.MACOS_NOTARY_PASSWORD }}
+          MACOS_NOTARY_TEAM_ID: ${{ secrets.MACOS_NOTARY_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          for name in MACOS_CERTIFICATE_P12_BASE64 MACOS_CERTIFICATE_PASSWORD \
+            MACOS_CODESIGN_IDENTITY MACOS_NOTARY_APPLE_ID MACOS_NOTARY_PASSWORD \
+            MACOS_NOTARY_TEAM_ID; do
+            test -n "${!name}" || {
+              echo "Required macOS release secret is missing: $name" >&2
+              exit 1
+            }
+          done
+          keychain="$RUNNER_TEMP/dreamskin-signing.keychain-db"
+          password="$(openssl rand -hex 24)"
+          security create-keychain -p "$password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$password" "$keychain"
+          printf '%s' "$MACOS_CERTIFICATE_P12_BASE64" | base64 -D \
+            > "$RUNNER_TEMP/developer-id.p12"
+          security import "$RUNNER_TEMP/developer-id.p12" \
+            -k "$keychain" \
+            -P "$MACOS_CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign \
+            -T /usr/bin/security
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign: \
+            -s -k "$password" "$keychain"
+          security list-keychains -d user -s "$keychain"
+          security find-identity -v -p codesigning "$keychain" \
+            | grep -F "$MACOS_CODESIGN_IDENTITY"
+          xcrun notarytool store-credentials dreamskin-ci \
+            --keychain "$keychain" \
+            --apple-id "$MACOS_NOTARY_APPLE_ID" \
+            --team-id "$MACOS_NOTARY_TEAM_ID" \
+            --password "$MACOS_NOTARY_PASSWORD"
+          {
+            echo "DREAMSKIN_CODESIGN_IDENTITY=$MACOS_CODESIGN_IDENTITY"
+            echo "DREAMSKIN_NOTARY_PROFILE=dreamskin-ci"
+            echo "DREAMSKIN_NOTARY_KEYCHAIN=$keychain"
+            echo "DREAMSKIN_BUILD_KEYCHAIN=$keychain"
+          } >> "$GITHUB_ENV"
+
+      - name: Build signed and notarized DMG
         shell: bash
         env:
           VERSION: ${{ needs.guard.outputs.version }}
@@ -329,13 +378,21 @@ jobs:
             ./macos/tests/run-tests.sh
           swift test --package-path macos/menubar-app
           test -x macos/scripts/build-dmg.sh || chmod +x macos/scripts/build-dmg.sh
-          # The builder owns app assembly, engine staging, and ad-hoc signing.
-          # Release signing/notarization remains optional and is intentionally
-          # outside this unsigned public workflow.
           ./macos/scripts/build-dmg.sh --skip-tests
           artifact="macos/release/CodexDreamSkin-v${VERSION}.dmg"
           test -s "$artifact"
           hdiutil imageinfo "$artifact" >/dev/null
+          xcrun stapler validate "$artifact"
+          spctl --assess --type open --context context:primary-signature "$artifact"
+
+      - name: Remove temporary signing keychain
+        if: always()
+        shell: bash
+        run: |
+          if [[ -n "${DREAMSKIN_BUILD_KEYCHAIN:-}" ]]; then
+            security delete-keychain "$DREAMSKIN_BUILD_KEYCHAIN" || true
+          fi
+          rm -f "$RUNNER_TEMP/developer-id.p12"
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -387,7 +444,7 @@ jobs:
           - [SHA256SUMS.txt](https://github.com/${GITHUB_REPOSITORY}/releases/download/v${VERSION}/SHA256SUMS.txt)
 
           This personal release currently publishes macOS only. The package is
-          unsigned; follow the graphical first-run steps in
+          signed with Apple Developer ID and notarized; follow
           [macOS installation](https://github.com/${GITHUB_REPOSITORY}/blob/v${VERSION}/docs/install-macos.md).
           No terminal trust command is required for ordinary users.
 

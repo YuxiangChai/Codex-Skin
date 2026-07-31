@@ -30,6 +30,6 @@
     "highlight": "#f0b13f",
     "text": "#edfaff",
     "muted": "#9bb6c5",
-    "line": "rgba(100, 230, 255, .28)"
+    "line": "transparent"
   }
 }
