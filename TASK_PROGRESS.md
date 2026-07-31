@@ -2,6 +2,30 @@
 
 Updated: 2026-07-31 (Asia/Shanghai)
 
+## Personal v1.5.9.2 Release and Assisted-Update Smoke Test (2026-07-31)
+
+- [goal] Publish the committed personal `v1.5.9.2` macOS App, then exercise
+  the installed `v1.5.9.1` App's “检查更新” flow against the new public Release.
+- [release_candidate] Functional source commit `f925244` contains the synchronized six-file
+  `1.5.9.2` version, Iron Man user-message surface, default-closed pinned
+  summary, Settings continuity/flash fix, and current homepage behavior.
+- [verified] `personal/main` is an ancestor of the release candidate, so the
+  personal repository can be fast-forwarded without rewriting history.
+  Source-level macOS tests pass with only the live Doctor skipped because the
+  currently running older injected session intentionally cannot verify against
+  the new workspace payload; signed runtime and theme-switch tests pass.
+- [in_progress] Build and mount-check the local DMG, push the release candidate
+  to personal `main`, wait for the public GitHub Release assets, then verify the
+  assisted updater. Do not modify or publish to upstream `origin`.
+- [finding] The first DMG build correctly stopped at the reviewed Iron Man
+  metadata hash because `theme.json` intentionally changed. The background and
+  Safe CSS hashes remain unchanged; the reviewed metadata hash was updated to
+  the exact new manifest bytes before rebuilding.
+- [verified] The rebuilt local universal macOS DMG passed its mandatory mount,
+  strict code-signature, bundle/engine version, URL scheme, two-architecture,
+  sole-preset and packaged-runtime checks. Local candidate SHA-256 is
+  `9209abea07e0095e76bc8ef2d1aed30b21b25aef7a592411dfaa2a4b12bcb505`.
+
 ## Theme-Owned User Message Surface and v1.5.9.2 (2026-07-31)
 
 - [goal] Give only user-authored chat messages a subtle translucent
