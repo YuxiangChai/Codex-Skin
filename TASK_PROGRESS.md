@@ -30,9 +30,24 @@ Updated: 2026-07-31 (Asia/Shanghai)
   `cc.dreamskin.menubar`, strict ad-hoc code-signature verification passes, and
   the reviewed Iron Man preset is present. Local DMG SHA-256 is
   `dff3e511555830994413bbcd0c2a9e25cfb61b0efbc4b71cf57acd41b739d793`.
-- [in_progress] Commit and fast-forward personal `main`, then verify the public GitHub
-  Release, tag, DMG, checksum file and downloaded digest.
-- [state] No push, tag or GitHub Release has occurred yet.
+- [complete] Release commit `112ca3578fec32346fafa119b7e75c7b3b32bb60`
+  was fast-forwarded to personal `main`. GitHub Release run
+  `30610704512` passed its guard, portable regressions, tag creation, macOS
+  build, asset verification and publication jobs.
+- [released] Public non-prerelease GitHub Release `v1.5.9.1` was published at
+  `2026-07-31T06:50:46Z`; its tag points exactly at the release commit. Assets
+  are `CodexDreamSkin-v1.5.9.1.dmg` (2,978,569 bytes) and
+  `SHA256SUMS.txt`.
+- [verified] Re-downloaded the public DMG in independent byte ranges and
+  confirmed the published checksum:
+  `e123d7581fb986b557789049a5c281dd534161137aa4cb16fde91642ef638818`.
+  The public DMG mounts read-only and contains a strict-valid ad-hoc universal
+  (`x86_64 arm64`) App. App short/build version and bundled engine are all
+  `1.5.9.1`; Bundle ID, Iron Man preset, repair helper and update helper match
+  the release contract.
+- [complete] Publication is finished. The first installation of this release
+  remains a manual DMG replacement and may require macOS Privacy & Security
+  approval; later personal releases can use the included assisted updater.
 
 ## Engine Repair, Self-Update, and Border Cleanup (2026-07-31)
 
