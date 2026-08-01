@@ -74,9 +74,36 @@ validate_app() {
 }
 
 signing_team_id() {
-  /usr/bin/codesign -dvv "$1" 2>&1 \
-    | /usr/bin/sed -n 's/^TeamIdentifier=//p' \
-    | /usr/bin/head -1
+  local team_id=""
+  team_id="$({
+    /usr/bin/codesign -dvv "$1" 2>&1 \
+      | /usr/bin/sed -n 's/^TeamIdentifier=//p' \
+      | /usr/bin/head -1
+  } || true)"
+  # Ad-hoc signatures are reported as the literal text "not set" on some
+  # macOS/codesign versions. Treat that value as the absence of a Developer
+  # Team ID so the assisted-update path preserves quarantine and asks
+  # Gatekeeper for user approval instead of pretending the bundle is signed.
+  case "$team_id" in
+    ""|"not set") return 0 ;;
+    *) printf '%s\n' "$team_id" ;;
+  esac
+}
+
+signature_type() {
+  local signature=""
+  signature="$({
+    /usr/bin/codesign -dvv "$1" 2>&1 \
+      | /usr/bin/sed -n 's/^Signature=//p' \
+      | /usr/bin/head -1
+  } || true)"
+  printf '%s\n' "$signature"
+}
+
+quarantine_is_reusable() {
+  LC_ALL=C printf '%s' "$1" \
+    | /usr/bin/grep -Eq \
+      '^[0-9A-Fa-f]{4};[0-9A-Fa-f]+;[^;[:cntrl:]]{1,64};[0-9A-Fa-f-]{0,64}$'
 }
 
 case "$CURRENT_APP" in /*) ;; *) fail_update "Current app path must be absolute." ;; esac
@@ -111,13 +138,12 @@ else
     || fail_update "This ad-hoc app requires an assisted update with Gatekeeper approval."
   [ -z "$STAGED_TEAM_ID" ] \
     || fail_update "An ad-hoc current app cannot automatically trust a differently signed update."
-  /usr/bin/codesign -dvv "$CURRENT_APP" 2>&1 | /usr/bin/grep -F -q 'Signature=adhoc' \
+  [ "$(signature_type "$CURRENT_APP")" = "adhoc" ] \
     || fail_update "The current app has an unsupported signing state."
-  /usr/bin/codesign -dvv "$STAGED_APP" 2>&1 | /usr/bin/grep -F -q 'Signature=adhoc' \
+  [ "$(signature_type "$STAGED_APP")" = "adhoc" ] \
     || fail_update "The staged app has an unsupported signing state."
   QUARANTINE_VALUE="$(/usr/bin/xattr -p com.apple.quarantine "$CURRENT_APP" 2>/dev/null || true)"
-  printf '%s' "$QUARANTINE_VALUE" \
-    | /usr/bin/grep -Eq '^[0-9A-Fa-f]{4};[0-9A-Fa-f]+;[^;\r\n]{1,64};[0-9A-Fa-f-]{0,64}$' \
+  quarantine_is_reusable "$QUARANTINE_VALUE" \
     || fail_update "The current app has no reusable Gatekeeper quarantine record; use the DMG once for this update."
   UPDATE_MODE="ad-hoc-assisted"
 fi

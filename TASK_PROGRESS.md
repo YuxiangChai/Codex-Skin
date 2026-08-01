@@ -1,6 +1,48 @@
 # Task Progress
 
-Updated: 2026-07-31 (Asia/Shanghai)
+Updated: 2026-08-01 (Asia/Shanghai)
+
+## Assisted Self-Update Ad-Hoc Team ID Regression (2026-08-01)
+
+- [goal] Complete the real installed-App update smoke test from personal
+  `v1.5.9.1` to the newly published personal `v1.5.9.2` Release without
+  bypassing Gatekeeper or overwriting an existing public Release.
+- [verified] Personal Release `v1.5.9.2` is public from commit `d7f49ab`; its
+  Release workflow and repository CI both passed. The public DMG is 2,982,572
+  bytes with SHA-256
+  `705ee8d82a7703444be8fd923714e652d0b371643f693b19b952aaf639d46005`.
+- [verified] The installed `v1.5.9.1` menu action correctly discovered
+  `v1.5.9.2`, displayed the confirmation alert, downloaded the exact public
+  asset, verified it, mounted it, and staged a complete replacement App. The
+  current App remained intact when preflight failed.
+- [root_cause] `/usr/bin/codesign -dvv` reports an ad-hoc signature as the
+  literal `TeamIdentifier=not set` on this Mac. The updater treated that
+  non-empty text as a Developer Team ID, incorrectly entered the signed-update
+  branch, and failed `spctl` instead of using the explicit ad-hoc assisted path.
+- [root_cause] The ad-hoc signature checks also piped `codesign` into
+  `grep -q` under `set -o pipefail`; an early grep match can close the pipe and
+  turn a valid `Signature=adhoc` result into a SIGPIPE failure. Both metadata
+  values must be captured completely and then compared exactly.
+- [root_cause] The quarantine validator used `[^;\r\n]` with POSIX
+  `grep -E`, where `\r` and `\n` do not mean CR/LF and instead reject ordinary
+  letters such as the `r` in `Chrome`. Replace that class with the POSIX
+  control-character class while continuing to reject separators and injected
+  line breaks.
+- [complete] Normalize `TeamIdentifier=not set` to an absent Team ID, capture
+  `Signature=adhoc` without a `pipefail`/SIGPIPE false negative, and validate
+  quarantine provenance with POSIX control-character semantics. A real ad-hoc
+  codesign regression covers all three cases.
+- [verified] The repaired source installer passes preflight against the exact
+  public `v1.5.9.2` staged App and the running installed `v1.5.9.1` App. The
+  complete macOS suite passes, including Swift build, all 11 XCTest cases,
+  signed theme switching, runtime-state integration and package/security
+  regressions; only Doctor was intentionally skipped to preserve the live
+  ChatGPT session.
+- [next] `v1.5.9.2` is already public and therefore cannot be replaced. Keep
+  the verified repair local until the user explicitly authorizes a new patch
+  version (recommended `1.5.9.3`); then synchronize all six version sources,
+  rebuild/mount-check the DMG, publish, and repeat the installed-App update
+  smoke test.
 
 ## Personal v1.5.9.2 Release and Assisted-Update Smoke Test (2026-07-31)
 
@@ -14,9 +56,11 @@ Updated: 2026-07-31 (Asia/Shanghai)
   Source-level macOS tests pass with only the live Doctor skipped because the
   currently running older injected session intentionally cannot verify against
   the new workspace payload; signed runtime and theme-switch tests pass.
-- [in_progress] Build and mount-check the local DMG, push the release candidate
-  to personal `main`, wait for the public GitHub Release assets, then verify the
-  assisted updater. Do not modify or publish to upstream `origin`.
+- [complete] Built and mount-checked the local DMG, pushed the release candidate
+  to personal `main`, and verified the public GitHub Release assets. The real
+  assisted updater reached the final preflight but exposed the ad-hoc Team ID
+  parsing regression documented above. Do not modify or publish to upstream
+  `origin`.
 - [finding] The first DMG build correctly stopped at the reviewed Iron Man
   metadata hash because `theme.json` intentionally changed. The background and
   Safe CSS hashes remain unchanged; the reviewed metadata hash was updated to

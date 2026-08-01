@@ -16,6 +16,7 @@ while IFS= read -r file; do "$NODE" --check "$file" >/dev/null; done < <(
 # same source aborts at runtime under a UTF-8 locale with `set -u` and masks
 # the real failure behind a bogus "unbound variable" (#251).
 "$NODE" "$ROOT/tests/shell-braced-vars-before-cjk.test.mjs"
+"$ROOT/tests/install-update-adhoc-team-id.test.sh"
 
 if /usr/bin/grep -R -n -E 'dream-skin-skin|DREAM_SKIN_SKIN|1\.0\.0-rc2' \
   "$ROOT/scripts" "$ROOT/assets" >/dev/null; then
