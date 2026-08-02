@@ -154,6 +154,52 @@ ad-hoc 构建时，macOS 仍可能要求确认一次。
 
 这样既能继续合并上游的新功能，也不会占用上游下一次发布的版本号。
 
+### 导入下载的主题
+
+新版保留 DreamSkin.cc 一键换肤，也支持手动导入来自其他可信来源的 `.zip` 主题包。
+
+在 macOS 菜单栏选择“导入主题 ZIP…”。只支持普通 `.zip`，
+不支持 `.dreamskin` 后缀，也不要仅改后缀伪装。正式 Studio 主题包包含 `manifest.json`、
+`theme.json`、非空 `theme.css` 和恰好一张 `background.webp|jpg|png`；还可包含 `LICENSE.txt` 和预留的
+`manifest.sig`。这些文件可以位于 ZIP 根目录或唯一一层主题目录。导入器会核对适用平台、最低客户端
+版本，以及清单中每个负载文件的大小和 SHA-256。`theme.css` 必须通过本机 Safe CSS 校验，导入后只会
+作用于 12 个注册部件；每次切换/应用仍会重新校验。`manifest.sig` 当前不参与签名验证。
+
+本地简化 ZIP 也必须恰好包含非空 `theme.json`、非空 `theme.css` 和其引用图片；该格式没有正式清单的
+完整性与兼容性声明，只应从可信来源使用。压缩包最大 32 MiB、最多 32 个条目、解压后最多 64 MiB。
+导入成功后主题只会加入“已保存的主题”，不会自动替换当前主题；相同内容不会重复写入。同 ID 的新版本会在
+确认旧目录身份后原地更新，并仅清理语义指纹完全一致、已确认属于同一主题的旧版 `-2`/`-3` 重复目录；无法
+确认身份时会拒绝覆盖，也不会根据名称猜测并删除其他主题。
+
+也可以先手动解压，再把包含 `theme.json`、`theme.css` 和背景图的完整主题目录移动到本机主题库：
+
+- macOS：`~/Library/Application Support/CodexDreamSkinStudio/themes/`
+
+菜单里有“打开主题文件夹”快捷入口。移动后重新打开菜单/托盘即可；不要再套一层目录，也不要放链接、
+嵌套压缩包或缺少三件套的文件夹。手动目录不会经过 ZIP 导入器的归档校验，请只使用可信内容。升级前
+已经保存且没有 CSS 的 legacy 主题仍可切换，但不会注入额外 CSS。
+
+### 开发者：从源码运行
+
+macOS 源码入口：
+
+| 平台 | 目录 | 入口 |
+|------|------|------|
+| Apple Silicon / Intel Mac | [`macos/`](./macos/) | 双击 `Install Codex Dream Skin.command` |
+
+更细的说明：
+
+- Mac：[`macos/README.md`](./macos/README.md)
+- 路径对照：[`docs/platforms.md`](./docs/platforms.md)
+- 可直接复制的参考生图模板：[`docs/reference-background-prompt-guide.md`](./docs/reference-background-prompt-guide.md)
+- 八种概念方向详细提示词：[`docs/background-generation-prompts.md`](./docs/background-generation-prompts.md)
+- 项目记录：[`docs/PROJECT.md`](./docs/PROJECT.md)
+
+## 反馈与贡献
+
+- **Issue：** 请用 [Issue 模板](./.github/ISSUE_TEMPLATE/)（Bug / 功能）；已关闭空白 Issue。提交前建议先跑 Verify / Restore 自检。
+- **PR：** 请按 [PR 模板](./.github/pull_request_template.md) 写清改动，并勾选对应自测（如 `macos/tests/run-tests.sh`、verify / restore）。
+
 ## 安全边界
 
 - CDP 只监听 `127.0.0.1`。

@@ -1,16 +1,17 @@
 {
   "schema": "codex-dream-skin-selectors/1",
-  "description": "双端统一选择器契约。scope 与 required 来自双端 DOM 快照及 2026-07-31 macOS 26.727.40816 实机复核。doctor / CI 应逐条 querySelector 并按 tier 判级：L1 缺失=皮肤主行为受损，L2 缺失=精修静默降级。",
+  "description": "双端统一选择器契约。scope 与 required 来自双端 DOM 快照实测；shell-main 与 header-tint 另由 2026-07-31 Codex 26.727.40816 真实 macOS renderer 复核。doctor / CI 应逐条 querySelector 并按 tier 判级：L1 缺失=皮肤主行为受损，L2 缺失=精修静默降级。",
   "verifiedAgainst": {
-    "date": "2026-07-31",
-    "chromium": "150.0.7871.128",
-    "codexVersionMac": "26.727.40816",
+    "date": "2026-08-02",
+    "chromium": "150.0.7871.124（双端快照）；150.0.7871.182（macOS 真实 renderer 复核）",
+    "codexVersionMac": "26.715.61943（历史快照）；26.727.40816（真实 renderer 复核）",
     "codexVersionWindows": "版本号未记录；bundle hash 与 mac 不同（ModelPickerTrigger mac=1fm6a win=1w4ob），确认存在版本错位",
     "fixtures": [
       "runtime/dom-fixtures/codex-dom-fixture-darwin-watch.json (15 状态)",
-      "runtime/dom-fixtures/codex-dom-fixture-win32-watch.json (7 状态)"
+      "runtime/dom-fixtures/codex-dom-fixture-win32-watch.json (7 状态)",
+      "Codex 26.727.40816 signed macOS app, live app:// renderer"
     ],
-    "verdict": "macOS 26.727.40816 把 main.main-surface 与 header.app-header-tint 改为 CSS Modules，但模块语义前缀仍稳定；合同同时保留旧类名和新版前缀。可见主 renderer 仍有 sidebar/composer/thread，408x400 辅助 renderer 无这些业务锚点并继续 fail closed。首页 [role=main] 合同保留，待该版本首页实机复核"
+    "verdict": "双端运行时继续共用一份 selector/CSS 合同。26.727.40816 将主表面和顶栏的旧语义类改为 CSS Modules，同时提供稳定 app-shell data 属性；合同保留旧类并优先增加稳定属性。可见主 renderer 仍要求业务锚点，辅助 renderer 继续 fail closed；首页 [role=main] 兼容无 home-icon 的新版结构。Windows 26.727 仍需真实 renderer 验收。"
   },
   "appearanceSignal": {
     "dark": "html.electron-dark",
@@ -26,12 +27,13 @@
     "config": "依赖用户配置才出现（如未配置项目则无项目选择器）"
   },
   "selectors": [
-    { "key": "shell-main", "selector": "main:is(.main-surface, [class*=\"_MainContentSurface_\"])", "tier": "L1", "scope": "all", "required": true, "notes": "全局主表面。兼容 26.721 的语义类与 26.727 的 CSS Modules 模块名前缀；禁止匹配完整 hash。mac 设置页缺失（win 存在），缺失时整页仅 L0" },
+    { "key": "shell-main", "selector": "main:is(.main-surface, [data-app-shell-main-surface], [class*=\"_MainContentSurface_\"])", "tier": "L1", "scope": "all", "required": true, "notes": "全局主表面。26.727.40816 提供 data-app-shell-main-surface，并使用 _MainContentSurface_ CSS Module；保留旧类兼容历史版本，前缀只限定在 main 元素。mac 设置页缺失（win 存在），缺失时整页仅 L0" },
     { "key": "left-panel", "selector": "aside.app-shell-left-panel", "tier": "L1", "scope": "all", "required": true, "notes": "左侧栏；收起/重建时会移除节点，勿在其消失时清皮" },
-    { "key": "header-tint", "selector": "header:is(.app-header-tint, [class*=\"_Header_\"])", "tier": "L1", "scope": "all", "required": true, "notes": "顶栏。兼容 26.721 的语义类与 26.727 的 CSS Modules 模块名前缀；禁止匹配完整 hash。皮肤不得覆盖其 position/z-index（既有回归约束）" },
-    { "key": "home-icon", "selector": "[data-testid=\"home-icon\"]", "tier": "L2", "scope": "home", "required": false, "notes": "旧版首页图标。Codex 26.721.41059 已移除；只能用于旧版 hero 精修，不得再参与路由成功判定" },
-    { "key": "home-route", "selector": "[role=\"main\"]:has([data-testid=\"home-icon\"])", "tier": "L2", "scope": "home", "required": false, "notes": "旧版首页装饰容器别名。保留以避免立刻激活历史结构样式；新版路由判定与安全 CSS 门控统一使用 home-route-css" },
-    { "key": "home-route-css", "selector": "[role=\"main\"]", "tier": "L1", "scope": "home", "required": true, "notes": "当前首页根与 CSS 可组合路由别名，不含 :has()。2026-07-29 实机复核：Codex 26.721.41059 首页存在、thread 页不存在；旧 home-icon 消失后仍可稳定判定首页。CSS 禁止 :has() 嵌套，故所有新版路由门控、运行时 scope 和注入校验均依赖此项" },
+    { "key": "header-tint", "selector": "header:is(.app-header-tint, [data-app-shell-header-edge-scroll], [class*=\"_Header_\"])", "tier": "L1", "scope": "all", "required": true, "notes": "顶栏。26.727.40816 输出 data-app-shell-header-edge-scroll 并使用 _Header_ CSS Module；保留旧类兼容历史版本，前缀只限定在 header 元素。皮肤不得覆盖其 position/z-index（既有回归约束）" },
+    { "key": "main-content-top-fade", "selector": ":is(.app-shell-main-content-top-fade, [data-app-shell-main-content-top-fade], [class*=\"_MainContentTopFade_\"])", "tier": "L2", "scope": "all", "required": false, "notes": "主区顶部渐变遮罩。26.727.40816 提供 data-app-shell-main-content-top-fade 并使用 _MainContentTopFade_ CSS Module；用于在主题背景下移除原生白色 fade" },
+    { "key": "home-icon", "selector": "[data-testid=\"home-icon\"]", "tier": "L2", "scope": "home", "required": false, "notes": "旧版首页图标；部分 26.721/26.727 构建已移除，只用于 hero 精修，不单独阻断路由" },
+    { "key": "home-route", "selector": "[role=\"main\"]:has([data-testid=\"home-icon\"])", "tier": "L2", "scope": "home", "required": false, "notes": "带旧版 home-icon 的严格首页别名；新版路由判定与 CSS 门控使用 home-route-css" },
+    { "key": "home-route-css", "selector": "[role=\"main\"]", "tier": "L1", "scope": "home", "required": true, "notes": "首页根与 CSS 可组合路由别名，不含 :has()；兼容 home-icon 已移除的新版结构" },
     { "key": "home-banners", "selector": ".home-banners", "tier": "L2", "scope": "home", "required": false, "notes": "Codex 26.721+ 新增的原生首页 banner 插槽，位于 home-route 第一个子节点内、通常为空（0 子节点）靠原生 empty:hidden 折叠。真正的首页内容（标题/建议卡/输入框）在这个版本上已变成该插槽外层容器的兄弟节点，不再是它的后代（见 #244 实测：home-route > div:first-child 被撑到 100% 高度会把内容挤出视口）。用于判定新旧 home DOM 形态，皮肤据此把 first-child 链路的强制尺寸限定在旧形态或改走兄弟节点" },
     { "key": "composer-chrome", "selector": ".composer-surface-chrome", "tier": "L2", "scope": "home+thread", "required": false, "notes": "输入框壳。win 实测存在无 composer 的 detail 路由，不可当全局锚点" },
     { "key": "composer-toolbar", "selector": ".composer-surface-chrome [class*=\"_footer_\"]", "tier": "L2", "scope": "home+thread", "required": false, "notes": "输入框工具栏；CSS Modules 名称跨端稳定，hash 随版本变化" },
@@ -41,8 +43,10 @@
     { "key": "project-selector", "selector": ".group\\/project-selector", "tier": "L2", "scope": "home config", "required": false, "notes": "依赖用户项目配置；win 快照未出现（该机可能未配置项目），不算平台差异" },
     { "key": "markdown", "selector": "[class*=\"_markdown\"]", "tier": "L2", "scope": "thread", "required": false, "notes": "会话内容块，单页可达 100+ 个，样式规则注意性能" },
     { "key": "thread-surface", "selector": ".thread-scroll-container", "tier": "L2", "scope": "thread", "required": false, "notes": "会话滚动表面；双端活动会话快照均存在" },
-    { "key": "message", "selector": "[data-message-author-role]", "tier": "L2", "scope": "thread", "required": false, "notes": "用户与助手消息的稳定语义边界；运行时对子节点变更做合并刷新" },
+    { "key": "message", "selector": ":is([data-message-author-role], [data-local-conversation-user-anchor], [data-local-conversation-final-assistant])", "tier": "L2", "scope": "thread", "required": false, "notes": "兼容旧版 role 属性和 Codex 26.727 的用户/助手语义属性" },
+    { "key": "message-user", "selector": ":is([data-message-author-role=\"user\"], [data-local-conversation-user-anchor])", "tier": "L2", "scope": "thread", "required": false, "notes": "用户消息的稳定语义边界，用于受限 message-user 主题部件" },
     { "key": "pinned-summary-toggle", "selector": "button[aria-label=\"Toggle pinned summary\"]", "tier": "L2", "scope": "thread", "required": false, "notes": "macOS 26.727 原生置顶摘要开关；aria-pressed=false|true 是收起/展开状态。只允许默认收起策略点击，不隐藏或移除控件" },
+    { "key": "settings-panel", "selector": "[data-settings-panel-slug=\"general-settings\"]", "tier": "L2", "scope": "settings", "required": false, "notes": "Codex 26.727 设置页稳定导航锚点；设置页可先落在 General" },
     { "key": "appearance-radio", "selector": "input[name=\"appearance-theme\"]", "tier": "L2", "scope": "settings", "required": false, "notes": "旧设置页外观三选一；26.727 的 General 设置首页不再保证出现，用 settings-sidebar 识别当前设置壳" },
     { "key": "settings-sidebar", "selector": ".app-shell-left-panel:has([data-settings-panel-slug])", "tier": "L2", "scope": "settings", "required": false, "notes": "macOS 26.727 设置页导航壳。与普通 aside 侧栏互斥；用于保持共享背景和识别设置路由" },
     { "key": "settings-surface", "selector": ".app-shell-left-panel:has([data-settings-panel-slug]) + div > .electron\\:bg-token-main-surface-primary", "tier": "L2", "scope": "settings", "required": false, "notes": "macOS 26.727 设置内容的原生不透明主表面；只清背景，不改变布局、滚动或交互" },

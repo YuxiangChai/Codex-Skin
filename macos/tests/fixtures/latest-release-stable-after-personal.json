@@ -1,10 +1,10 @@
 {
-  "tag_name": "v1.5.10",
+  "tag_name": "v1.5.12",
   "assets": [
     {
-      "name": "CodexDreamSkin-v1.5.10.dmg",
+      "name": "CodexDreamSkin-v1.5.12.dmg",
       "size": 3350526,
-      "browser_download_url": "https://github.com/YuxiangChai/Codex-Skin/releases/download/v1.5.10/CodexDreamSkin-v1.5.10.dmg",
+      "browser_download_url": "https://github.com/YuxiangChai/Codex-Skin/releases/download/v1.5.12/CodexDreamSkin-v1.5.12.dmg",
       "digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
     }
   ]
