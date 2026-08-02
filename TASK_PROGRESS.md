@@ -2,6 +2,43 @@
 
 Updated: 2026-08-02 (Asia/Shanghai)
 
+## Merge Upstream v1.5.11 Into Personal Engine (2026-08-02)
+
+- [goal] Merge current `origin/main` (`v1.5.11`) into the personal engine while
+  retaining Iron Man, theme-owned homepage/message styling, main-centered
+  shared artwork, default-closed pinned summary and the repaired ad-hoc updater.
+- [baseline] Local `codex/custom-engine` and `personal/main` are at `a9ed47a`;
+  `origin/main` is `1c7a859` with four upstream-only commits since common base
+  `cd71dfd`. The upstream changes cover v1.5.10 community-import/renderer work
+  and v1.5.11 Codex 26.727 Settings renderer detection.
+- [constraint] Merge and validate locally only. Do not push the version-changing
+  result to personal `main`, tag it or publish a Release without a separate
+  explicit user request. Use personal version `1.5.11.1` after integration so
+  it remains distinct from upstream `1.5.11`.
+- [in_progress] Review the upstream commits, checkpoint the interrupted local
+  migration record, merge, resolve conflicts by preserving both upstream safety
+  fixes and personal behavior, then run release-proportionate regression tests.
+
+## Local Legacy v1.5.10 Engine Migration (2026-08-02)
+
+- [goal] Replace the user's unpublished legacy managed engine `v1.5.10`, which
+  lacks the `message-user` theme contract, with the installed App's bundled
+  `v1.5.9.3` engine so the Iron Man user-message surface becomes available.
+- [finding] The App and bundled engine are both `v1.5.9.3`, while
+  `~/.codex/codex-dream-skin-studio/VERSION` is the older local-development
+  label `1.5.10`. Semantic ordering correctly blocks the GUI from silently
+  downgrading, even though this particular unpublished engine is functionally
+  older and has no `message-user` / `userMessage` runtime support.
+- [authorized] The user saved their work and explicitly authorized restarting
+  ChatGPT/Codex. Run the bundled repair script directly with its explicit
+  restart flag; retain atomic deployment/rollback and preserve themes/images in
+  the separate Application Support state root.
+- [stopped] The restart interrupted the active tool turn before installation.
+  Post-restart verification showed no partial deployment: App remains
+  `v1.5.9.3`, managed engine remains the intact legacy `v1.5.10`, and its old
+  injector restarted normally. The user chose to defer this visual issue and
+  requested an upstream merge instead.
+
 ## Personal v1.5.9.3 Assisted-Update Repair Release (2026-08-02)
 
 - [goal] Publish the verified ad-hoc assisted-update repair as personal
