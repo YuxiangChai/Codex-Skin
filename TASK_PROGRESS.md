@@ -1,6 +1,33 @@
 # Task Progress
 
-Updated: 2026-08-01 (Asia/Shanghai)
+Updated: 2026-08-02 (Asia/Shanghai)
+
+## Personal v1.5.9.3 Assisted-Update Repair Release (2026-08-02)
+
+- [goal] Publish the verified ad-hoc assisted-update repair as personal
+  `v1.5.9.3`, so the user can perform one final manual App replacement and use
+  the corrected updater for later releases.
+- [baseline] Personal `main` is an ancestor of local commit `b25d4df`, and the
+  current public personal Release is `v1.5.9.2`. Upstream `origin/main` has
+  advanced to `1c7a859`; defer that unrelated merge so this patch Release stays
+  limited to the already verified updater repair and current personal features.
+- [complete] Synchronized all six version-bound sources and current-version
+  assertions to `1.5.9.3`; README and changelog now document the one-time
+  manual upgrade required from `v1.5.9.1` / `v1.5.9.2`.
+- [verified] The complete macOS suite passes, including the real ad-hoc signing
+  regression, Swift build, all 11 XCTest cases, signed theme switching,
+  runtime-state integration and package/security tests; Doctor alone is
+  intentionally skipped to preserve the live old-version session. All 18
+  portable Windows Node tests pass after synchronizing their version-bound
+  window-readiness fixture; Windows PowerShell coverage remains assigned to CI.
+- [verified] The local universal `v1.5.9.3` DMG passed mandatory mount,
+  strict code-signature, App/engine version, URL scheme, arm64+x86_64,
+  sole-Iron-Man-preset and packaged-runtime checks. Local candidate SHA-256 is
+  `0eb7c4cfc9a83bc51db0f885d23b03a642fda0911b1ec45a16f19a96d8314367`.
+- [in_progress] Commit the release preparation, push only to personal `main`,
+  wait for both repository CI and Release workflow, then verify that the public
+  `v1.5.9.3` Release is non-draft and contains a non-empty DMG plus matching
+  `SHA256SUMS.txt`. Never overwrite the existing `v1.5.9.2` tag or Release.
 
 ## Assisted Self-Update Ad-Hoc Team ID Regression (2026-08-01)
 

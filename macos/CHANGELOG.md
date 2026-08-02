@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### 个人发行 1.5.9.3
+
+- 修复 ad-hoc 自动更新把 `TeamIdentifier=not set` 误当成真实开发者 Team ID，导致下载和 staging 成功后仍被 Gatekeeper 预检拒绝的问题。
+- 修复 `pipefail` 下用 `grep -q` 检查 `Signature=adhoc` 时可能触发 SIGPIPE、把有效签名误判为失败的问题。
+- 修复 quarantine 来源字段的 POSIX 正则错误地拒绝 `Chrome` 等包含字母 `r` 或 `n` 的合法记录；继续拒绝额外字段和控制字符注入。
+- `v1.5.9.1` / `v1.5.9.2` 用户需要手动安装本版一次，后续版本即可使用修复后的自动更新流程。
+
 ### 个人发行 1.5.9.2
 
 - 用户发送的消息现在可通过受限的 `message-user` 主题部件单独着色；Iron Man 使用淡淡的半透明电弧蓝，助手消息保持原生样式。
