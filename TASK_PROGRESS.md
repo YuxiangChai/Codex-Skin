@@ -24,10 +24,17 @@ Updated: 2026-08-02 (Asia/Shanghai)
   strict code-signature, App/engine version, URL scheme, arm64+x86_64,
   sole-Iron-Man-preset and packaged-runtime checks. Local candidate SHA-256 is
   `0eb7c4cfc9a83bc51db0f885d23b03a642fda0911b1ec45a16f19a96d8314367`.
-- [in_progress] Commit the release preparation, push only to personal `main`,
-  wait for both repository CI and Release workflow, then verify that the public
-  `v1.5.9.3` Release is non-draft and contains a non-empty DMG plus matching
-  `SHA256SUMS.txt`. Never overwrite the existing `v1.5.9.2` tag or Release.
+- [released] Release commit `32bdcf7db657508120873fe3dd00d7cc0ee24c58`
+  was pushed to personal `main`; CI run `30730262892` and Release run
+  `30730262925` both completed successfully. Tag `v1.5.9.3` points exactly to
+  that commit, and the public Release is neither draft nor prerelease.
+- [verified] Public asset `CodexDreamSkin-v1.5.9.3.dmg` is uploaded and non-empty
+  at 2,982,809 bytes. GitHub's asset digest and `SHA256SUMS.txt` both report
+  `389fe95e4466263b13e820c6b9b897315509a65776229e444d42da83976fb682`.
+  The installed `v1.5.9.1` checker correctly discovers `v1.5.9.3` and its exact
+  metadata; do not use its broken install step. The user should download and
+  manually replace the App once, then repair/apply the bundled `v1.5.9.3`
+  engine so later releases can use the corrected automatic updater.
 
 ## Assisted Self-Update Ad-Hoc Team ID Regression (2026-08-01)
 
