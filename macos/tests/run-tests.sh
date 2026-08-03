@@ -108,7 +108,7 @@ STABLE_AFTER_PERSONAL_JSON="$({
 ' "$STABLE_AFTER_PERSONAL_JSON"
 /usr/bin/grep -F -q '"scripts/download-update-macos.sh"' \
   "$ROOT/menubar-app/Sources/CodexDreamSkinMenuBar/AppDelegate.swift"
-/usr/bin/grep -F -q '自动下载、校验并安装更新' \
+/usr/bin/grep -F -q '先下载并验证' \
   "$ROOT/menubar-app/Sources/CodexDreamSkinMenuBar/AppDelegate.swift"
 /usr/bin/grep -F -q 'install-update-macos.sh' \
   "$ROOT/menubar-app/Sources/CodexDreamSkinMenuBar/AppDelegate.swift"
@@ -116,14 +116,25 @@ STABLE_AFTER_PERSONAL_JSON="$({
   "$ROOT/menubar-app/Sources/CodexDreamSkinMenuBar/AppDelegate.swift"
 /usr/bin/grep -F -q 'YuxiangChai/Codex-Skin' "$ROOT/scripts/check-update-macos.sh"
 /usr/bin/grep -F -q -- '--max-filesize 1048576' "$ROOT/scripts/check-update-macos.sh"
+/usr/bin/grep -F -q -- '--retry-all-errors' "$ROOT/scripts/check-update-macos.sh"
 /usr/bin/grep -F -q 'shasum -a 256' "$ROOT/scripts/download-update-macos.sh"
 /usr/bin/grep -F -q 'plutil -convert binary1 -o /dev/null' \
   "$ROOT/scripts/download-update-macos.sh"
 /usr/bin/grep -F -q -- '--download-only' "$ROOT/scripts/download-update-macos.sh"
 /usr/bin/grep -F -q -- '--install-app' "$ROOT/scripts/download-update-macos.sh"
+/usr/bin/grep -F -q '[update-progress]' "$ROOT/scripts/download-update-macos.sh"
+/usr/bin/grep -F -q -- '--reuse-downloaded' "$ROOT/scripts/download-update-macos.sh"
+/usr/bin/grep -F -q -- '--continue-at -' "$ROOT/scripts/download-update-macos.sh"
+/usr/bin/grep -F -q -- '--restart-codex' "$ROOT/scripts/download-update-macos.sh"
+/usr/bin/grep -F -q 'stop_codex true' "$ROOT/scripts/download-update-macos.sh"
 /usr/bin/grep -F -q 'pending-self-update.plist' "$ROOT/scripts/install-update-macos.sh"
+/usr/bin/grep -F -q 'restartCodex' "$ROOT/scripts/install-update-macos.sh"
 /usr/bin/grep -F -q 'codesign --verify --deep --strict' "$ROOT/scripts/install-update-macos.sh"
 /usr/bin/grep -F -q 'rollback' "$ROOT/scripts/install-update-macos.sh"
+/usr/bin/grep -F -q 'UpdateProgressWindowController' \
+  "$ROOT/menubar-app/Sources/CodexDreamSkinMenuBar/AppDelegate.swift"
+/usr/bin/grep -F -q '安装并重启' \
+  "$ROOT/menubar-app/Sources/CodexDreamSkinMenuBar/AppDelegate.swift"
 if /usr/bin/grep -R -n -E --exclude-dir='.build*' \
   'xattr|spctl[[:space:]]+--master-disable' \
   "$ROOT/menubar-app" "$ROOT/scripts/build-menubar-app.sh" "$ROOT/scripts/build-dmg.sh" >/dev/null; then

@@ -64,7 +64,8 @@ if [ -n "${CODEX_DREAM_SKIN_TEST_RESPONSE_FILE:-}" ]; then
   /bin/cp "$CODEX_DREAM_SKIN_TEST_RESPONSE_FILE" "$RESPONSE"
 else
   /usr/bin/curl --proto '=https' --tlsv1.2 --fail --silent --show-error \
-    --connect-timeout 5 --max-time 12 \
+    --connect-timeout 8 --max-time 45 \
+    --retry 3 --retry-all-errors --retry-delay 1 --retry-max-time 45 \
     --max-filesize 1048576 \
     --header 'Accept: application/vnd.github+json' \
     --header 'X-GitHub-Api-Version: 2022-11-28' \

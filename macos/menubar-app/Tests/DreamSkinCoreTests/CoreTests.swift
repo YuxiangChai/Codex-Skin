@@ -67,6 +67,33 @@ final class CoreTests: XCTestCase {
     XCTAssertEqual(snapshot.title, "Skin ON · 操作失败")
   }
 
+  func testUpdateProgressEventParsingAndBounds() throws {
+    let download = try XCTUnwrap(UpdateProgressEvent(
+      line: "[update-progress]\tdownload\t1024\t4096\t正在下载 v1.5.11.3…"
+    ))
+    XCTAssertEqual(download.stage, "download")
+    XCTAssertEqual(download.completedBytes, 1024)
+    XCTAssertEqual(download.totalBytes, 4096)
+    XCTAssertEqual(download.fractionCompleted, 0.25)
+    XCTAssertEqual(download.message, "正在下载 v1.5.11.3…")
+
+    let verify = try XCTUnwrap(UpdateProgressEvent(
+      line: "[update-progress]\tverify\t0\t0\t正在验证安装包完整性…"
+    ))
+    XCTAssertNil(verify.fractionCompleted)
+
+    for invalid in [
+      "download\t1\t2\tmissing marker",
+      "[update-progress]\t../escape\t1\t2\tbad stage",
+      "[update-progress]\tdownload\t-1\t2\tnegative",
+      "[update-progress]\tdownload\t3\t2\toverflow",
+      "[update-progress]\tdownload\t1\t2\tbad\tmessage",
+      "[update-progress]\tdownload\t1\t2\tbad\nmessage"
+    ] {
+      XCTAssertNil(UpdateProgressEvent(line: invalid), invalid)
+    }
+  }
+
   func testCommunityApplyRequiresAnExactVisibleBaseline() {
     let ready = StatusSnapshot(
       session: "active",

@@ -4,6 +4,12 @@ import DreamSkinCore
 import ServiceManagement
 import UniformTypeIdentifiers
 
+private struct PendingSelfUpdateContext {
+  let markerURL: URL
+  let backupAppURL: URL
+  let restartCodex: Bool
+}
+
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
   private enum CommunityRollbackRetention {
     case preserved(URL)
@@ -27,6 +33,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
   private var pendingCommunityVersionID: String?
   private var communityBaselineThemeID = ""
   private var communityStageMessage = ""
+  private var updateProgressController: UpdateProgressWindowController?
+  private var updateTask: ScriptTask?
+  private var pendingSelfUpdate: PendingSelfUpdateContext?
   private var refreshTimer: Timer?
   private lazy var communityHTTP = BoundedCommunityHTTPClient(
     userAgent: "CodexDreamSkin/\(appVersion)"
@@ -112,7 +121,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     NSApp.setActivationPolicy(.accessory)
     configureStatusItem()
     ensureUserDirectories()
-    acknowledgeCompletedSelfUpdate()
+    pendingSelfUpdate = loadPendingSelfUpdate()
     cleanupStalePrivateOperationDirectories()
     migrateLegacySwiftBarIfNeeded()
     installBundledEngineIfNeeded(force: false)
@@ -208,7 +217,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
   }
 
-  private func acknowledgeCompletedSelfUpdate() {
+  private func loadPendingSelfUpdate() -> PendingSelfUpdateContext? {
     let pending = stateRootURL
       .appendingPathComponent("updates", isDirectory: true)
       .appendingPathComponent("pending-self-update.plist")
@@ -216,7 +225,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
           let targetVersion = value["targetVersion"] as? String,
           let currentPath = value["currentAppPath"] as? String,
           let backupPath = value["backupAppPath"] as? String else {
-      return
+      return nil
     }
     let runningApp = Bundle.main.bundleURL.standardizedFileURL
     let currentApp = URL(fileURLWithPath: currentPath).standardizedFileURL
@@ -227,10 +236,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
           currentApp == runningApp,
           sameParent,
           safeBackupName else {
-      return
+      return nil
     }
-    try? fileManager.removeItem(at: backupApp)
-    try? fileManager.removeItem(at: pending)
+    return PendingSelfUpdateContext(
+      markerURL: pending,
+      backupAppURL: backupApp,
+      restartCodex: value["restartCodex"] as? Bool ?? false
+    )
   }
 
   private func cleanupStalePrivateOperationDirectories() {
@@ -1061,23 +1073,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             let value = object as? [String: Any],
             let current = value["currentVersion"] as? String,
             let latest = value["latestVersion"] as? String,
+            let assetBytes = (value["assetBytes"] as? NSNumber)?.int64Value,
+            assetBytes > 0,
             let available = value["updateAvailable"] as? Bool else {
-        self.showError(
+        self.offerUpdateRetry(
           title: "检查更新失败",
-          message: self.conciseOutput(result.output, fallback: "无法连接 GitHub，请稍后重试。")
-        )
+          message: self.conciseOutput(result.output, fallback: "无法连接 GitHub，请稍后重试。"),
+          buttonTitle: "重新检查"
+        ) { [weak self] in
+          self?.checkForUpdates()
+        }
         return
       }
       if available {
         let alert = NSAlert()
         alert.messageText = "发现新版本 \(latest)"
         alert.informativeText =
-          "当前版本为 \(current)。Dream Skin 将自动下载、校验并安装更新，失败时恢复当前 App；图片和已保存主题不会被覆盖。未签名版本安装后会打开“隐私与安全性”，你只需允许新 App 打开一次。"
-        alert.addButton(withTitle: "自动更新")
+          "当前版本为 \(current)。先下载并验证 \(ByteCountFormatter.string(fromByteCount: assetBytes, countStyle: .file)) 的安装包；下载完成后再由你确认是否关闭 Codex 并重启安装。图片和已保存主题不会被覆盖。"
+        alert.addButton(withTitle: "下载更新")
         alert.addButton(withTitle: "稍后")
         self.activateForUserInteraction()
         if alert.runModal() == .alertFirstButtonReturn {
-          self.downloadAndInstallUpdate()
+          self.downloadUpdate(current: current, latest: latest)
         }
       } else {
         self.showInfo(title: "已是最新版本", message: "当前安装的是 \(current)。")
@@ -1085,7 +1102,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
   }
 
-  private func downloadAndInstallUpdate() {
+  private func downloadUpdate(current: String, latest: String) {
     guard !operationInFlight,
           let script = bundledScript(named: "download-update-macos.sh") else {
       showError(title: "无法自动更新", message: "自动更新组件缺失，请重新安装应用。")
@@ -1093,28 +1110,154 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     operationInFlight = true
     rebuildMenu()
-    ScriptRunner.run(
+    let controller = UpdateProgressWindowController { [weak self] in
+      self?.updateTask?.cancel()
+    }
+    updateProgressController = controller
+    controller.present(
+      stage: "正在下载 \(latest)",
+      detail: "当前版本为 \(current)，下载完成后会再次确认安装。",
+      cancellable: true
+    )
+    updateTask = ScriptRunner.run(
       script: script,
-      arguments: [
-        "--install-app", Bundle.main.bundleURL.path,
-        "--parent-pid", String(ProcessInfo.processInfo.processIdentifier)
-      ]
+      arguments: ["--download-only", "--reuse-downloaded", "--emit-progress"],
+      outputHandler: { [weak self] line in self?.applyUpdateProgress(line) }
     ) { [weak self] result in
       guard let self else { return }
+      self.updateTask = nil
+      self.updateProgressController?.dismiss()
+      self.updateProgressController = nil
+      self.operationInFlight = false
+      self.rebuildMenu()
+      if result.cancelled {
+        self.showInfo(
+          title: "已取消更新",
+          message: "当前 App 没有被替换；已经完整验证的安装包会保留，稍后重试时可以直接复用。"
+        )
+      } else if result.succeeded {
+        self.confirmDownloadedUpdateInstall(latest: latest)
+      } else {
+        self.offerUpdateRetry(
+          title: "下载更新失败",
+          message: self.conciseOutput(
+            result.output,
+            fallback: "无法下载或校验更新；当前 App 没有被替换，请检查网络后重试。"
+          ),
+          buttonTitle: "重试下载"
+        ) { [weak self] in
+          self?.downloadUpdate(current: current, latest: latest)
+        }
+      }
+    }
+  }
+
+  private func confirmDownloadedUpdateInstall(latest: String) {
+    let codexRunning = !NSRunningApplication.runningApplications(
+      withBundleIdentifier: "com.openai.codex"
+    ).isEmpty
+    let alert = NSAlert()
+    alert.messageText = "\(latest) 已下载并验证"
+    alert.informativeText = codexRunning
+      ? "安装时会自动退出 Codex、停止旧注入器并关闭 Dream Skin。新 App 启动后会安装同版本引擎并恢复 Codex。请先确认没有尚未发送或需要保留的输入内容。"
+      : "安装时会关闭 Dream Skin，原子替换 App 并重新启动。DMG 会自动挂载和卸载；失败时恢复当前 App。"
+    alert.addButton(withTitle: "安装并重启")
+    alert.addButton(withTitle: "稍后")
+    activateForUserInteraction()
+    guard alert.runModal() == .alertFirstButtonReturn else { return }
+    installDownloadedUpdate(restartCodex: codexRunning)
+  }
+
+  private func installDownloadedUpdate(restartCodex: Bool) {
+    guard !operationInFlight,
+          let script = bundledScript(named: "download-update-macos.sh") else {
+      showError(title: "无法安装更新", message: "自动更新组件缺失，请重新安装应用。")
+      return
+    }
+    operationInFlight = true
+    rebuildMenu()
+    let controller = UpdateProgressWindowController()
+    updateProgressController = controller
+    controller.present(
+      stage: "正在准备安装",
+      detail: restartCodex
+        ? "将自动关闭 Codex，安装完成后恢复当前皮肤。"
+        : "将原子替换 App，失败时自动恢复当前版本。",
+      cancellable: false
+    )
+    var arguments = [
+      "--install-app", Bundle.main.bundleURL.path,
+      "--parent-pid", String(ProcessInfo.processInfo.processIdentifier),
+      "--reuse-downloaded",
+      "--emit-progress"
+    ]
+    if restartCodex { arguments.append("--restart-codex") }
+    updateTask = ScriptRunner.run(
+      script: script,
+      arguments: arguments,
+      outputHandler: { [weak self] line in self?.applyUpdateProgress(line) }
+    ) { [weak self] result in
+      guard let self else { return }
+      self.updateTask = nil
+      self.updateProgressController?.dismiss()
+      self.updateProgressController = nil
       self.operationInFlight = false
       self.rebuildMenu()
       if result.succeeded {
         NSApp.terminate(nil)
       } else {
-        self.showError(
-          title: "自动更新失败",
-          message: self.conciseOutput(
+        self.restoreCodexAfterFailedUpdateIfNeeded(
+          restartCodex: restartCodex,
+          errorMessage: self.conciseOutput(
             result.output,
-            fallback: "无法下载、校验或准备更新；当前 App 未被替换。"
+            fallback: "当前 App 没有被替换。"
           )
         )
       }
     }
+  }
+
+  private func restoreCodexAfterFailedUpdateIfNeeded(
+    restartCodex: Bool,
+    errorMessage: String
+  ) {
+    let codexIsClosed = NSRunningApplication.runningApplications(
+      withBundleIdentifier: "com.openai.codex"
+    ).isEmpty
+    guard restartCodex, codexIsClosed,
+          let script = installedScript(named: "start-dream-skin-macos.sh") else {
+      offerUpdateRetry(
+        title: "自动安装失败",
+        message: errorMessage + "\n当前 App 没有被替换。",
+        buttonTitle: "重试安装"
+      ) { [weak self] in
+        self?.installDownloadedUpdate(restartCodex: restartCodex)
+      }
+      return
+    }
+    operationInFlight = true
+    rebuildMenu()
+    ScriptRunner.run(script: script) { [weak self] restoreResult in
+      guard let self else { return }
+      self.operationInFlight = false
+      self.refreshStatus()
+      self.rebuildMenu()
+      let recovery = restoreResult.succeeded
+        ? "已重新打开 Codex 并恢复当前皮肤。"
+        : "Codex 未能自动恢复，请从菜单栏点击“应用皮肤”。"
+      self.offerUpdateRetry(
+        title: "自动安装失败",
+        message: errorMessage + "\n当前 App 没有被替换。\n" + recovery,
+        buttonTitle: "重试安装"
+      ) { [weak self] in
+        self?.installDownloadedUpdate(restartCodex: restartCodex)
+      }
+    }
+  }
+
+  private func applyUpdateProgress(_ line: String) {
+    guard let event = UpdateProgressEvent(line: line) else { return }
+    updateProgressController?.apply(event)
   }
 
   @objc private func toggleLoginItem() {
@@ -1235,14 +1378,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
   private func installBundledEngineIfNeeded(force: Bool) {
     guard !engineInstallInFlight, !operationInFlight, !themeRecoveryInFlight, !snapshot.busy else { return }
     if !force && !engineNeedsInstall() {
-      recoverInterruptedThemeImports { [weak self] recovered in
-        guard let self else { return }
-        if recovered {
-          self.resumePendingCommunityApply()
-        } else {
-          self.pendingCommunityVersionID = nil
-        }
-      }
+      continueAfterEngineReady()
       return
     }
     guard let bundledVersion = version(at: bundledEngineURL?.appendingPathComponent("VERSION")) else {
@@ -1275,24 +1411,89 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
       self.rebuildMenu()
       if result.succeeded {
         self.refreshStatus()
-        self.recoverInterruptedThemeImports { [weak self] recovered in
-          guard let self else { return }
-          if recovered {
-            self.resumePendingCommunityApply()
-          } else {
-            self.pendingCommunityVersionID = nil
-          }
-        }
+        self.continueAfterEngineReady()
       } else {
         self.pendingCommunityVersionID = nil
         self.showError(
-          title: "引擎安装未完成",
+          title: self.pendingSelfUpdate == nil ? "引擎安装未完成" : "更新后的引擎安装未完成",
           message: self.conciseOutput(
             result.output,
-            fallback: "安装脚本返回了错误，请重试；如果问题持续，请查看 Dream Skin 日志。"
+            fallback: self.pendingSelfUpdate == nil
+              ? "安装脚本返回了错误，请重试；如果问题持续，请查看 Dream Skin 日志。"
+              : "新版 App 尚未确认更新完成，旧 App 备份仍然保留。请重试引擎安装。"
           )
         )
       }
+    }
+  }
+
+  private func continueAfterEngineReady() {
+    let restartCodex: Bool
+    if let update = pendingSelfUpdate {
+      do {
+        try fileManager.removeItem(at: update.markerURL)
+        try? fileManager.removeItem(at: update.backupAppURL)
+        let updateRoot = update.markerURL.deletingLastPathComponent()
+        try? fileManager.removeItem(
+          at: updateRoot.appendingPathComponent("CodexDreamSkin-v\(appVersion).dmg")
+        )
+        try? fileManager.removeItem(
+          at: updateRoot.appendingPathComponent("staged-v\(appVersion)", isDirectory: true)
+        )
+        restartCodex = update.restartCodex
+        pendingSelfUpdate = nil
+      } catch {
+        showError(
+          title: "无法确认更新完成",
+          message: "新版引擎已经安装，但更新确认记录无法提交；旧 App 备份仍然保留。\n\(error.localizedDescription)"
+        )
+        return
+      }
+    } else {
+      restartCodex = false
+    }
+
+    let recover: () -> Void = { [weak self] in
+      guard let self else { return }
+      self.recoverInterruptedThemeImports { [weak self] recovered in
+        guard let self else { return }
+        if recovered {
+          self.resumePendingCommunityApply()
+        } else {
+          self.pendingCommunityVersionID = nil
+        }
+      }
+    }
+
+    guard restartCodex else {
+      recover()
+      return
+    }
+    guard let script = installedScript(named: "start-dream-skin-macos.sh") else {
+      showError(
+        title: "更新完成，但 Codex 未能恢复",
+        message: "新版 App 和引擎已经安装，请从菜单栏点击“应用皮肤”重新打开 Codex。"
+      )
+      recover()
+      return
+    }
+    engineInstallInFlight = true
+    rebuildMenu()
+    ScriptRunner.run(script: script) { [weak self] result in
+      guard let self else { return }
+      self.engineInstallInFlight = false
+      self.refreshStatus()
+      self.rebuildMenu()
+      if !result.succeeded {
+        self.showError(
+          title: "更新完成，但 Codex 未能恢复",
+          message: self.conciseOutput(
+            result.output,
+            fallback: "请从菜单栏点击“应用皮肤”重新打开 Codex。"
+          )
+        )
+      }
+      recover()
     }
   }
 
@@ -1479,5 +1680,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     alert.addButton(withTitle: "好")
     activateForUserInteraction()
     alert.runModal()
+  }
+
+  private func offerUpdateRetry(
+    title: String,
+    message: String,
+    buttonTitle: String,
+    retry: @escaping () -> Void
+  ) {
+    let alert = NSAlert()
+    alert.alertStyle = .warning
+    alert.messageText = title
+    alert.informativeText = message
+    alert.addButton(withTitle: buttonTitle)
+    alert.addButton(withTitle: "稍后")
+    activateForUserInteraction()
+    if alert.runModal() == .alertFirstButtonReturn {
+      retry()
+    }
   }
 }

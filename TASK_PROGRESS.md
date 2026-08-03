@@ -2,6 +2,49 @@
 
 Updated: 2026-08-03 (Asia/Shanghai)
 
+## Native Self-Update Experience Repair (2026-08-03)
+
+- [goal] Turn “检查更新” into a native, observable and mostly unattended
+  update: show real download/stage progress, ask once after verification,
+  automatically close Codex and Dream Skin, install atomically, eject the DMG,
+  relaunch the new menu-bar App and restore Codex only when appropriate.
+- [evidence] The current shell path already downloads, hashes, mounts, stages,
+  detaches and rollback-swaps the App, but `ScriptRunner` buffers all output so
+  the UI appears frozen. It also leaves Codex running. The replacement App then
+  calls `install-dream-skin-macos.sh` directly, which correctly refuses to
+  rewrite `config.toml` while Codex is saving it; this produces the screenshot's
+  “Close Codex before installation” error after an otherwise successful App
+  update.
+- [scope] Preserve the strict GitHub URL/size/SHA checks, quarantine behavior,
+  atomic App backup/rollback and official Codex bundle validation. Add native
+  progress and explicit restart consent without weakening those boundaries.
+- [constraint] Implement and validate locally on `codex/custom-engine`. Do not
+  bump a version, push, tag or publish unless the user later requests it.
+- [implemented] Added a bounded `[update-progress]` event contract, streaming
+  script output, a native determinate/indeterminate progress panel and a safe
+  download cancel path. Update checking now downloads and verifies first, then
+  asks once before installation.
+- [implemented] The verified DMG can be reused without redownloading. Final
+  installation automatically stops the validated Codex process/injector when
+  authorized, mounts and detaches the DMG, stages the App, and hands off to the
+  existing atomic self-update helper.
+- [implemented] The replacement App defers update acknowledgement until its
+  bundled engine is installed. It then removes the rollback marker and restores
+  Codex/skin only if Codex had been running before the update.
+- [implemented] GitHub metadata and DMG transfers retry transient failures;
+  the DMG download resumes its verified staging file when GitHub supports byte
+  ranges. Persistent check/download failures now offer an immediate native
+  retry instead of ending at an acknowledgement-only alert.
+- [verified] Shell syntax and diff hygiene pass. The native menu-bar App builds,
+  all 12 Swift tests pass (including malformed progress-event bounds), and the
+  complete macOS suite passes with installer rollback, ad-hoc signature,
+  runtime-state, signed theme switching and package/security coverage. Doctor
+  alone was intentionally skipped because it requires touching the installed
+  signed Codex App.
+- [complete] Local implementation is ready on `codex/custom-engine`. No version
+  bump, push, tag, DMG or Release was created; the currently installed/public
+  `v1.5.11.2` therefore remains unchanged until the user requests a release.
+
 ## Personal v1.5.11.2 Build And Release (2026-08-03)
 
 - [goal] Publish the verified native user-message bubble surface repair as the

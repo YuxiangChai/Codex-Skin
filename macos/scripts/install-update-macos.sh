@@ -17,6 +17,7 @@ TARGET_VERSION=""
 EXECUTE="false"
 READY_FILE=""
 ALLOW_ADHOC_ASSISTED="false"
+RESTART_CODEX="false"
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -27,6 +28,7 @@ while [ "$#" -gt 0 ]; do
     --target-version) TARGET_VERSION="${2:-}"; shift 2 ;;
     --ready-file) READY_FILE="${2:-}"; shift 2 ;;
     --allow-ad-hoc-assisted) ALLOW_ADHOC_ASSISTED="true"; shift ;;
+    --restart-codex) RESTART_CODEX="true"; shift ;;
     *) printf 'Unknown self-update argument: %s\n' "$1" >&2; exit 2 ;;
   esac
 done
@@ -210,6 +212,7 @@ TEMP_PENDING="$PENDING_PATH.$$.tmp"
 /usr/bin/plutil -insert targetVersion -string "$TARGET_VERSION" "$TEMP_PENDING"
 /usr/bin/plutil -insert currentAppPath -string "$CURRENT_APP" "$TEMP_PENDING"
 /usr/bin/plutil -insert backupAppPath -string "$BACKUP_APP" "$TEMP_PENDING"
+/usr/bin/plutil -insert restartCodex -bool "$RESTART_CODEX" "$TEMP_PENDING"
 /bin/chmod 600 "$TEMP_PENDING"
 /bin/mv "$TEMP_PENDING" "$PENDING_PATH"
 
