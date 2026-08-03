@@ -28,6 +28,11 @@ assert.equal(
   "The message contract must bridge both legacy and Codex 26.727 role boundaries.",
 );
 assert.equal(
+  selectorFor("message-user-bubble"),
+  "[data-user-message-bubble]",
+  "The user-message theme surface must target the native rounded bubble, not its full-width row.",
+);
+assert.equal(
   selectorFor("settings-panel"),
   '[data-settings-panel-slug="general-settings"]',
   "The Settings contract must use the stable Codex 26.727 general-settings panel marker.",

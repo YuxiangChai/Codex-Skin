@@ -173,6 +173,11 @@ function makeFixture({
       partFixtures.thread,
       new Map([["data-local-conversation-user-anchor", ""]]),
     );
+    partFixtures.userMessageBubble = makeDomNode(
+      "user-message-bubble",
+      partFixtures.userMessage,
+      new Map([["data-user-message-bubble", ""]]),
+    );
     partFixtures.assistantMessage = makeDomNode(
       "assistant-message",
       partFixtures.thread,
@@ -216,6 +221,7 @@ function makeFixture({
       ':is([data-message-author-role], [data-local-conversation-user-anchor], [data-local-conversation-final-assistant])';
     const messageUserSelector =
       ':is([data-message-author-role="user"], [data-local-conversation-user-anchor])';
+    const messageUserBubbleSelector = '[data-user-message-bubble]';
     register(messageSelector, partFixtures.message);
     register(messageSelector, partFixtures.messageUser);
     register(messageUserSelector, partFixtures.messageUser);
@@ -223,6 +229,7 @@ function makeFixture({
       register(messageSelector, partFixtures.userMessage);
       register(messageSelector, partFixtures.assistantMessage);
       register(messageUserSelector, partFixtures.userMessage);
+      register(messageUserBubbleSelector, partFixtures.userMessageBubble);
     }
     if (partFixtures.pinnedSummaryToggle) {
       register('button[aria-label="Toggle pinned summary"]', partFixtures.pinnedSummaryToggle);
@@ -790,8 +797,10 @@ export async function runRendererRuntimeTest(assetRoot) {
   vm.runInNewContext(modernMessages.payloadFor(), modernMessages.context);
   assert.equal(modernMessages.partFixtures.message.getAttribute("data-ds-part"), "message",
     "The legacy message role attribute must remain supported.");
-  assert.equal(modernMessages.partFixtures.userMessage.getAttribute("data-ds-part"), "message-user",
-    "Codex 26.727 user message anchors must expose the dedicated user-message part.");
+  assert.equal(modernMessages.partFixtures.userMessage.getAttribute("data-ds-part"), null,
+    "Codex 26.727 user message rows must remain transparent instead of receiving a wide panel.");
+  assert.equal(modernMessages.partFixtures.userMessageBubble.getAttribute("data-ds-part"), "message-user",
+    "Codex 26.727 native rounded user bubbles must expose the dedicated user-message part.");
   assert.equal(modernMessages.partFixtures.assistantMessage.getAttribute("data-ds-part"), "message",
     "Codex 26.727 assistant message containers must expose the public message part.");
 

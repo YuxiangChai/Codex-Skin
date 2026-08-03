@@ -760,6 +760,18 @@
     addPart(desired, "thread", selectorNodes("thread-surface"));
     const messages = selectorNodes("message");
     const userMessages = new Set(selectorNodes("message-user"));
+    const explicitUserBubbles = selectorNodes("message-user-bubble");
+    const userMessageSurfaces = new Set();
+    for (const userMessage of userMessages) {
+      const boundedBubbles = explicitUserBubbles.filter((bubble) =>
+        bubble === userMessage || userMessage.contains?.(bubble));
+      if (boundedBubbles.length) {
+        for (const bubble of boundedBubbles) userMessageSurfaces.add(bubble);
+      } else if (userMessage.getAttribute?.("data-message-author-role") === "user") {
+        // Older Codex builds exposed the rounded surface as the role boundary itself.
+        userMessageSurfaces.add(userMessage);
+      }
+    }
     addPart(
       desired,
       "message",
@@ -768,7 +780,7 @@
     addPart(
       desired,
       "message-user",
-      messages.filter((node) => userMessages.has(node)),
+      userMessageSurfaces,
     );
     addPart(desired, "composer", [...selectorNodes("composer-chrome"), ...fallbackComposerNodes()]);
     addPart(desired, "composer-toolbar", selectorNodes("composer-toolbar"));

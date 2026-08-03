@@ -2,6 +2,35 @@
 
 Updated: 2026-08-03 (Asia/Shanghai)
 
+## User Message Bubble Surface Repair (2026-08-03)
+
+- [goal] Apply the Iron Man user-message color to the existing rounded native
+  bubble only. The full-width message row must remain transparent; do not add a
+  second rectangular backdrop behind the bubble.
+- [evidence] On the released v1.5.11.1 renderer, `message-user` is currently
+  assigned directly to `[data-local-conversation-user-anchor]`. In the current
+  Codex DOM that semantic anchor spans the full content row, while the native
+  rounded bubble is a descendant, producing the screenshot's wide rectangle.
+- [constraint] Preserve the bounded Safe CSS bridge and legacy message-role
+  compatibility. Diagnose the live DOM read-only, fix shared runtime sources,
+  synchronize generated platform assets and validate locally. Do not publish a
+  new version unless the user explicitly requests it.
+- [evidence] Live read-only CDP inspection found the native rounded surface at
+  `[data-user-message-bubble]` inside the full-width
+  `[data-local-conversation-user-anchor]`. The inner node owns the native 20 px
+  radius, padding and 77% max width.
+- [implemented] The renderer now assigns the public `message-user` part only to
+  `[data-user-message-bubble]` descendants bounded by a recognized user row.
+  The outer modern row remains unmarked and transparent. Older role-based
+  builds without the descendant keep the prior bounded fallback.
+- [verified] Selector contract and renderer regression tests pass. Shared asset
+  synchronization is clean; both macOS and Windows renderer payload tests pass;
+  all 19 Windows Node tests pass; the full macOS suite passes, including 11
+  Swift tests, Safe CSS, package import, installer and runtime-state coverage.
+- [release] Local fix only on `codex/custom-engine`. No version bump, push, tag,
+  DMG or Release was created because publication was not requested. A future
+  public build must use a version newer than the already published `1.5.11.1`.
+
 ## Personal v1.5.11.1 Build And Release (2026-08-03)
 
 - [goal] Build, verify and publish the already merged personal `v1.5.11.1`
