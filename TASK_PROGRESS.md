@@ -29,8 +29,19 @@ Updated: 2026-08-03 (Asia/Shanghai)
   with SHA-256
   `472be8791fd22c483980769655f5b6f872bbc6b1aec4c18eb76fa476dd889d8f`;
   an additional `hdiutil imageinfo` check also passed outside the test sandbox.
-- [in_progress] Review and commit the exact release candidate, then fast-forward
-  `personal/main` and verify both GitHub workflows plus the public Release.
+- [released] Candidate `30f1562c417dd8e2c457d47de3e816b82c9282d7`
+  was fast-forward pushed to `personal/main`. CI run `30787390568` and Release
+  run `30787390560` both completed successfully; public tag `v1.5.11.3` points
+  exactly to the candidate commit.
+- [verified] Public Release `364004634` is non-draft and non-prerelease with
+  exactly two uploaded assets. The published
+  `CodexDreamSkin-v1.5.11.3.dmg` is 3,047,815 bytes; GitHub's asset digest, the
+  published `SHA256SUMS.txt` and an independently resumed download all report
+  SHA-256
+  `9e1714d949663493dffa032d01f2df7c3aa659916e12e74bbb82328ed06adb3e`.
+- [complete] `v1.5.11.3` is publicly downloadable. It must still be installed
+  manually once because the user's current App predates this guided updater;
+  the new flow can then be exercised against a future version.
 
 ## Native Self-Update Experience Repair (2026-08-03)
 
