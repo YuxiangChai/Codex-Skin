@@ -2,6 +2,25 @@
 
 Updated: 2026-08-03 (Asia/Shanghai)
 
+## Personal v1.5.11.2 Build And Release (2026-08-03)
+
+- [goal] Publish the verified native user-message bubble surface repair as the
+  personal macOS release `v1.5.11.2`.
+- [baseline] `personal/main` is `516059c`; local `codex/custom-engine` adds the
+  tested fix at `340104b`. GitHub currently has no `v1.5.11.2` tag or Release.
+- [authorized] The user explicitly requested publication. Bump all six release
+  version sources and bound assertions, build and mount-check a local DMG, then
+  push the exact candidate and verify CI, tag, public Release and checksums.
+- [verified] All six release version sources and bound assertions are
+  `1.5.11.2`. Shared assets are synchronized; 67 macOS and 19 Windows portable
+  Node tests pass; the full macOS suite passes, including 11 Swift tests.
+- [verified] Local universal arm64+x86_64 DMG build and its built-in read-only
+  mount validation passed. `CodexDreamSkin-v1.5.11.2.dmg` is 3,002,295 bytes
+  with SHA-256
+  `f709c0596b0bfb97308fee6aa4e82447382f15b58c563c6fe51a2c55762b5d5f`.
+- [in_progress] Commit the exact release candidate, fast-forward it to
+  `personal/main`, then verify GitHub CI, tag, public Release and assets.
+
 ## User Message Bubble Surface Repair (2026-08-03)
 
 - [goal] Apply the Iron Man user-message color to the existing rounded native
