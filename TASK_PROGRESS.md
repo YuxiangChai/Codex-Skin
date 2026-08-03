@@ -1,6 +1,19 @@
 # Task Progress
 
-Updated: 2026-08-02 (Asia/Shanghai)
+Updated: 2026-08-03 (Asia/Shanghai)
+
+## Personal v1.5.11.1 Build And Release (2026-08-03)
+
+- [goal] Build, verify and publish the already merged personal `v1.5.11.1`
+  integration so the user can manually install its macOS DMG.
+- [baseline] `codex/custom-engine` is clean at merge commit `8525188`, whose
+  parents are the personal checkpoint `d9756c4` and upstream v1.5.11 commit
+  `1c7a859`. All six release-bound version sources are `1.5.11.1`.
+- [authorized] The user explicitly requested build and publication. Build and
+  mount-check a local DMG first; only after it passes, push the exact candidate
+  to `personal/main` and verify CI, tag, public Release and asset checksums.
+- [in_progress] Review the release guard and build scripts, then create the
+  local macOS release candidate without modifying the currently installed App.
 
 ## Merge Upstream v1.5.11 Into Personal Engine (2026-08-02)
 
