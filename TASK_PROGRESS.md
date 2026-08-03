@@ -12,8 +12,20 @@ Updated: 2026-08-03 (Asia/Shanghai)
 - [authorized] The user explicitly requested build and publication. Build and
   mount-check a local DMG first; only after it passes, push the exact candidate
   to `personal/main` and verify CI, tag, public Release and asset checksums.
-- [in_progress] Review the release guard and build scripts, then create the
-  local macOS release candidate without modifying the currently installed App.
+- [verified] Local candidate commit `0ad4c1603d0c8b37d0b8e51620d479f6cb4bee06`
+  built a 2.9 MiB universal arm64+x86_64 DMG. Read-only mount validation passed
+  for App/engine version `1.5.11.1`, strict ad-hoc signature, URL scheme and the
+  sole bundled `preset-iron-man`; local SHA-256 is
+  `08d433a1aa459773e7496ac33759927747729ea7de045714a9c0eaf48affc233`.
+- [released] Candidate `0ad4c16` was fast-forward pushed to `personal/main`.
+  CI run `30779967299` and Release run `30779967336` both completed
+  successfully. Public tag `v1.5.11.1` points exactly to that commit; Release
+  `363962488` is public, non-draft and non-prerelease.
+- [verified] Public `CodexDreamSkin-v1.5.11.1.dmg` is 3,001,280 bytes with
+  GitHub digest and `SHA256SUMS.txt` value
+  `cd02462b72eb3c072013560f6f51fef7eb8942a831d7ac940e29cf33ed3b2848`.
+  The public download responds and redirects to a release-asset URL. The
+  currently installed App was not modified; the user can now install manually.
 
 ## Merge Upstream v1.5.11 Into Personal Engine (2026-08-02)
 
