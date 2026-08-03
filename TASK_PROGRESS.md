@@ -18,8 +18,14 @@ Updated: 2026-08-03 (Asia/Shanghai)
   mount validation passed. `CodexDreamSkin-v1.5.11.2.dmg` is 3,002,295 bytes
   with SHA-256
   `f709c0596b0bfb97308fee6aa4e82447382f15b58c563c6fe51a2c55762b5d5f`.
-- [in_progress] Commit the exact release candidate, fast-forward it to
-  `personal/main`, then verify GitHub CI, tag, public Release and assets.
+- [released] Candidate `bbb8becbca00f20fca0c1b5cdb3327b512a27712`
+  was fast-forward pushed to `personal/main`. CI run `30782578410` and Release
+  run `30782578405` completed successfully; the public `v1.5.11.2` tag points
+  exactly to that candidate.
+- [verified] Public Release `363977236` is non-draft and non-prerelease. Its
+  `CodexDreamSkin-v1.5.11.2.dmg` is 3,001,601 bytes and uploaded alongside
+  `SHA256SUMS.txt`; both GitHub's asset digest and the published checksum report
+  SHA-256 `5d442b344130f7da466ed0acc7a892c202ea9e93ac4b09ce3845e73405fe64be`.
 
 ## User Message Bubble Surface Repair (2026-08-03)
 
