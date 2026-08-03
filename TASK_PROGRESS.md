@@ -2,6 +2,36 @@
 
 Updated: 2026-08-03 (Asia/Shanghai)
 
+## Personal v1.5.11.3 Build And Release (2026-08-03)
+
+- [goal] Publish the verified guided macOS self-update flow as personal release
+  `v1.5.11.3`, so the user can manually install it and exercise future updates
+  with progress, retry, automatic Codex/Dream Skin shutdown, atomic App swap,
+  DMG detach, engine handoff and Codex restoration.
+- [baseline] `personal/main` is `3ce0f7e`; local `codex/custom-engine` adds only
+  the tested self-update commit `a72c4eb`. Upstream remains at integrated
+  `v1.5.11` (`1c7a859`). Git refs and the public GitHub API confirm that neither
+  a personal `v1.5.11.3` tag nor Release exists.
+- [authorized] The user explicitly requested publication. Synchronize all six
+  release version sources and bound assertions, run local regressions, build
+  and mount-check the exact macOS DMG, then push the verified candidate and
+  confirm CI, tag, public Release, assets and checksums.
+- [verified] All six version sources and bound assertions are `1.5.11.3`;
+  shared runtime synchronization, shell syntax and diff hygiene pass. All 19
+  portable Windows Node tests pass. The complete macOS suite passes, including
+  the native App build, 12 Swift tests, installer rollback, ad-hoc identity,
+  package security, signed theme switching and runtime-state integration;
+  Doctor alone was intentionally skipped to preserve the installed Codex App.
+- [verified] The local universal arm64+x86_64 DMG passed the build script's
+  read-only mount validation for App/engine version `1.5.11.3`, strict ad-hoc
+  signature, URL scheme, icon, notices, packaged update helpers and the sole
+  bundled Iron Man preset. `CodexDreamSkin-v1.5.11.3.dmg` is 3,048,558 bytes
+  with SHA-256
+  `472be8791fd22c483980769655f5b6f872bbc6b1aec4c18eb76fa476dd889d8f`;
+  an additional `hdiutil imageinfo` check also passed outside the test sandbox.
+- [in_progress] Review and commit the exact release candidate, then fast-forward
+  `personal/main` and verify both GitHub workflows plus the public Release.
+
 ## Native Self-Update Experience Repair (2026-08-03)
 
 - [goal] Turn “检查更新” into a native, observable and mostly unattended
