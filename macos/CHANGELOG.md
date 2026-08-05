@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### 个人发行 1.5.11.4
+
+- 适配 Codex / ChatGPT Desktop 26.730.61309 的 Chat 与 Work 新首页结构：完整输入框现识别 `_ComposerLayoutBody_`，工具栏识别 `_ComposerLayoutFooter_`，不匹配构建 hash，并继续兼容旧 `.composer-surface-chrome`。
+- 恢复主题自定义的 `Jarvis at your service` 全窗口垂直居中标题，以及 640 px 底部输入框；Chat 保留新版原生单行样式，Work 保留完整圆角输入区和项目工具条。
+- 合并上游 v1.5.11 之后的 Gallery / Studio README 展示更新；上游运行时和版本号没有变化。继续保留 Iron Man 共享背景、主对话区域焦点、主题暗度、个人首页布局和自动更新流程。
+
 ### 个人发行 1.5.11.3
 
 - 重做菜单栏 App 的自动更新体验：使用原生进度窗口展示真实下载字节和安装阶段，下载可取消，完成校验后再确认安装；GitHub 临时网络故障会自动重试并续传，持续失败可直接重新检查或下载。

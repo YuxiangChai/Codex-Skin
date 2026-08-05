@@ -43,6 +43,26 @@ Updated: 2026-08-05 (Asia/Shanghai)
   feature. Merge keeps the personal Chinese README content where Git aligned
   upstream gallery blocks with unrelated personal feature sections; the
   conflict-free English gallery refresh and image asset history are retained.
+- [release] Personal latest is public v1.5.11.3; both local and remote
+  `v1.5.11.4` are absent. Prepare v1.5.11.4 with all six version sources and
+  bound update assertions synchronized, then run the full release gate before
+  pushing. Public artifacts remain macOS DMG plus SHA256SUMS only.
+- [verified] All six version sources and bound assertions are synchronized at
+  `1.5.11.4`. Portable macOS Node tests pass 67/67, Windows Node tests pass
+  19/19, and both platform payload checks pass.
+- [verified] The full macOS suite passes with the installed official Codex
+  26.730.61639 signed runtime, including 12 Swift tests, signed theme-switch
+  integration, runtime-state integration, Safe CSS, ZIP/import and updater
+  safety checks. The live Doctor check alone was explicitly skipped because
+  the user asked not to restart the currently open v1.5.11.3-injected Codex;
+  a direct Doctor trace confirmed that its only failure was the expected
+  candidate/live version and payload fingerprint mismatch.
+- [verified] The local universal arm64+x86_64 DMG passed the build script's
+  read-only mount validation, bundled App/engine version checks, strict ad-hoc
+  signature check, URL scheme, runtime file allowlist and sole Iron Man preset
+  contract. `CodexDreamSkin-v1.5.11.4.dmg` is 3,048,779 bytes with SHA-256
+  `7b8836e729e0f2d24c58d61dfe1249edc967f886756d4f546dadba5622d06e35`;
+  an independent `hdiutil imageinfo` and SHA-256 check also passed.
 
 ## Personal v1.5.11.3 Build And Release (2026-08-03)
 

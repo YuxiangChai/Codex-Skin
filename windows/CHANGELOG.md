@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 个人发行 1.5.11.4
+
+- 同步 Codex 26.730 首页 composer 的共享无 hash 选择器合同与测试：完整输入框使用 `_ComposerLayoutBody_`，工具栏使用 `_ComposerLayoutFooter_`，并保留旧结构兼容。Windows 对应新版仍需 CI 或 Windows 实机验收；本次公开发行继续只构建 macOS DMG。
+
 ### 个人发行 1.5.11.3
 
 - 随 macOS 自动更新体验版本同步运行时版本常量与测试断言；本版新增的原生进度窗口、DMG 安装助手和 Codex 自动恢复仅适用于 macOS，Windows 行为没有变化。
