@@ -1,17 +1,18 @@
 {
   "schema": "codex-dream-skin-selectors/1",
-  "description": "双端统一选择器契约。scope 与 required 来自双端 DOM 快照实测；shell-main 与 header-tint 另由 2026-07-31 Codex 26.727.40816 真实 macOS renderer 复核。doctor / CI 应逐条 querySelector 并按 tier 判级：L1 缺失=皮肤主行为受损，L2 缺失=精修静默降级。",
+  "description": "双端统一选择器契约。scope 与 required 来自双端 DOM 快照实测；shell-main、header-tint 与新版首页 composer 另由真实 macOS renderer 复核。doctor / CI 应逐条 querySelector 并按 tier 判级：L1 缺失=皮肤主行为受损，L2 缺失=精修静默降级。",
   "verifiedAgainst": {
-    "date": "2026-08-02",
-    "chromium": "150.0.7871.124（双端快照）；150.0.7871.182（macOS 真实 renderer 复核）",
-    "codexVersionMac": "26.715.61943（历史快照）；26.727.40816（真实 renderer 复核）",
+    "date": "2026-08-05",
+    "chromium": "150.0.7871.124（双端快照）；151.0.7922.71（macOS 真实 renderer 复核）",
+    "codexVersionMac": "26.715.61943（历史快照）；26.730.61309 build 6223（Chat / Work 首页真实 renderer 复核）",
     "codexVersionWindows": "版本号未记录；bundle hash 与 mac 不同（ModelPickerTrigger mac=1fm6a win=1w4ob），确认存在版本错位",
     "fixtures": [
       "runtime/dom-fixtures/codex-dom-fixture-darwin-watch.json (15 状态)",
       "runtime/dom-fixtures/codex-dom-fixture-win32-watch.json (7 状态)",
-      "Codex 26.727.40816 signed macOS app, live app:// renderer"
+      "Codex 26.727.40816 signed macOS app, live app:// renderer",
+      "Codex 26.730.61309 build 6223 signed macOS app, live Chat / Work app:// renderer geometry and screenshots"
     ],
-    "verdict": "双端运行时继续共用一份 selector/CSS 合同。26.727.40816 将主表面和顶栏的旧语义类改为 CSS Modules，同时提供稳定 app-shell data 属性；合同保留旧类并优先增加稳定属性。可见主 renderer 仍要求业务锚点，辅助 renderer 继续 fail closed；首页 [role=main] 兼容无 home-icon 的新版结构。Windows 26.727 仍需真实 renderer 验收。"
+    "verdict": "双端运行时继续共用一份 selector/CSS 合同。26.730.61309 的 Chat / Work 首页把输入框壳迁移到 _ComposerLayoutBody_，工具栏迁移到 _ComposerLayoutFooter_；合同使用模块名前缀并保留旧 .composer-surface-chrome 兼容路径，不匹配构建 hash。可见主 renderer 仍要求业务锚点，辅助 renderer 继续 fail closed；Windows 对应新版仍需真实 renderer 验收。"
   },
   "appearanceSignal": {
     "dark": "html.electron-dark",
@@ -35,8 +36,8 @@
     { "key": "home-route", "selector": "[role=\"main\"]:has([data-testid=\"home-icon\"])", "tier": "L2", "scope": "home", "required": false, "notes": "带旧版 home-icon 的严格首页别名；新版路由判定与 CSS 门控使用 home-route-css" },
     { "key": "home-route-css", "selector": "[role=\"main\"]", "tier": "L1", "scope": "home", "required": true, "notes": "首页根与 CSS 可组合路由别名，不含 :has()；兼容 home-icon 已移除的新版结构" },
     { "key": "home-banners", "selector": ".home-banners", "tier": "L2", "scope": "home", "required": false, "notes": "Codex 26.721+ 新增的原生首页 banner 插槽，位于 home-route 第一个子节点内、通常为空（0 子节点）靠原生 empty:hidden 折叠。真正的首页内容（标题/建议卡/输入框）在这个版本上已变成该插槽外层容器的兄弟节点，不再是它的后代（见 #244 实测：home-route > div:first-child 被撑到 100% 高度会把内容挤出视口）。用于判定新旧 home DOM 形态，皮肤据此把 first-child 链路的强制尺寸限定在旧形态或改走兄弟节点" },
-    { "key": "composer-chrome", "selector": ".composer-surface-chrome", "tier": "L2", "scope": "home+thread", "required": false, "notes": "输入框壳。win 实测存在无 composer 的 detail 路由，不可当全局锚点" },
-    { "key": "composer-toolbar", "selector": ".composer-surface-chrome [class*=\"_footer_\"]", "tier": "L2", "scope": "home+thread", "required": false, "notes": "输入框工具栏；CSS Modules 名称跨端稳定，hash 随版本变化" },
+    { "key": "composer-chrome", "selector": ":is(.composer-surface-chrome, [class*=\"_ComposerLayoutBody_\"])", "tier": "L2", "scope": "home+thread", "required": false, "notes": "完整输入框壳。26.730 Chat / Work 使用 _ComposerLayoutBody_；保留旧语义类兼容历史构建。禁止退化到 Footer，否则公开主题背景会只覆盖按钮行" },
+    { "key": "composer-toolbar", "selector": ":is(.composer-surface-chrome [class*=\"_footer_\"], [class*=\"_ComposerLayoutFooter_\"])", "tier": "L2", "scope": "home+thread", "required": false, "notes": "输入框工具栏；CSS Modules 名称跨端稳定，hash 随版本变化。26.730 的 Footer 是 Body 后代，不是输入框壳" },
     { "key": "home-utility", "selector": "[class*=\"_homeUtilityBar_\"]", "tier": "L2", "scope": "home", "required": false, "notes": "CSS Modules 前缀匹配；模块名跨端稳定、hash 随版本变，禁止匹配完整 hash" },
     { "key": "game-source", "selector": "[data-feature=\"game-source\"]", "tier": "L2", "scope": "home", "required": false },
     { "key": "home-suggestions", "selector": ".group\\/home-suggestions", "tier": "L2", "scope": "home", "required": false },

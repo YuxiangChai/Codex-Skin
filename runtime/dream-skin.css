@@ -1590,8 +1590,10 @@ html[data-dream-skin="active"]
 }
 
 /* Codex 26.721+ keeps the native composer in the second row of the home
-   grid. Preserve the native control and its utility bar, but anchor that row
-   to the bottom after the recommendation section is removed. */
+   grid. 26.730 renamed the complete surface to ComposerLayoutBody, which the
+   shared selector contract includes without its build hash. Preserve the
+   native control and its utility bar, but anchor that row to the bottom after
+   the recommendation section is removed. */
 html[data-dream-skin="active"] __DREAM_SELECTOR_HOME_ROUTE_CSS__
   > div:first-child > div:has(__DREAM_SELECTOR_COMPOSER_CHROME__) {
   margin-top: 0 !important;

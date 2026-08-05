@@ -1,6 +1,42 @@
 # Task Progress
 
-Updated: 2026-08-03 (Asia/Shanghai)
+Updated: 2026-08-05 (Asia/Shanghai)
+
+## Codex Updated Chat / Work Home Adaptation (2026-08-05)
+
+- [goal] Inspect the currently installed Codex/ChatGPT desktop build and repair
+  the Chat and Work home layouts after its DOM update, while preserving the
+  Iron Man shared artwork, theme-owned Jarvis text, vertical centering and the
+  compact bottom composer.
+- [constraint] Diagnose the live renderer read-only before changing selectors
+  or CSS. Keep the shared runtime as source of truth, synchronize both platform
+  payloads, and do not publish a new version unless the user explicitly asks.
+- [done] Captured live Chat / Work evidence from Codex 26.730.61309 build 6223
+  (Chromium 151.0.7922.71): the complete composer moved to
+  `_ComposerLayoutBody_`, while the old fallback incorrectly exposed
+  `_ComposerLayoutFooter_` as the whole surface.
+- [in_progress] Update the shared hash-free selector contract, restore the
+  bottom composer row and centered theme title, sync both platform payloads,
+  and verify with tests plus live screenshots.
+- [done] Updated the shared contract to select the full
+  `_ComposerLayoutBody_` and its `_ComposerLayoutFooter_` toolbar without the
+  build hash, while preserving the legacy `.composer-surface-chrome` path.
+- [done] Synchronized macOS and Windows assets. Targeted renderer/doctor tests,
+  the complete macOS suite (including Swift build and 12 XCTest cases; signed
+  runtime-only integrations intentionally skipped) and all six portable
+  Windows Node suites pass.
+- [done] Hot-applied the local payload to the signed Codex renderer and
+  verified both modes at 1512x949: Chat composer 640x44 at y=881; Work composer
+  640x98 at y=787 with its utility strip; both show the theme title on the
+  full-window vertical center and no horizontal/vertical overflow.
+- [pending] The currently open renderer is fixed, but persisting this exact
+  local engine across the next Codex restart requires one explicit Codex
+  restart through the atomic engine repair flow. No version was bumped or
+  published.
+- [authorized] User approved a Codex restart, requested an upstream check and
+  merge when available, then explicitly requested a new public release. Commit
+  this already verified adaptation before fetching/merging origin; preserve
+  the personal home layout and Iron Man behavior through the integration.
 
 ## Personal v1.5.11.3 Build And Release (2026-08-03)
 

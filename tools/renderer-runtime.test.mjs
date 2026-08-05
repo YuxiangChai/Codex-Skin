@@ -234,8 +234,14 @@ function makeFixture({
     if (partFixtures.pinnedSummaryToggle) {
       register('button[aria-label="Toggle pinned summary"]', partFixtures.pinnedSummaryToggle);
     }
-    register(".composer-surface-chrome", partFixtures.composer);
-    register('.composer-surface-chrome [class*="_footer_"]', partFixtures.composerToolbar);
+    register(
+      ':is(.composer-surface-chrome, [class*="_ComposerLayoutBody_"])',
+      partFixtures.composer,
+    );
+    register(
+      ':is(.composer-surface-chrome [class*="_footer_"], [class*="_ComposerLayoutFooter_"])',
+      partFixtures.composerToolbar,
+    );
   }
   const makeStyleNode = () => {
     const node = {
@@ -413,6 +419,12 @@ export async function runRendererRuntimeTest(assetRoot) {
     "Runtime payload must not carry retired selector documentation/fossils.");
   assert.doesNotMatch(template, /classList\.(add|remove|toggle)/);
   assert.doesNotMatch(template, /getBoundingClientRect|ResizeObserver/);
+  assert.match(template, /_ComposerLayoutBody_/,
+    "Codex 26.730 composer body must remain the public composer surface.");
+  assert.match(template, /_ComposerLayoutFooter_/,
+    "Codex 26.730 composer footer must remain the public toolbar surface.");
+  assert.doesNotMatch(template, /_ComposerLayout(?:Body|Footer)_[a-z0-9]+_\d+/i,
+    "Composer selectors must never bind to a build-specific CSS Modules hash.");
   assert.match(template, /childList:\s*true/);
   assert.match(template, /subtree:\s*true/);
   // The new contract intentionally keeps the `data-dream-*` attribute names
@@ -498,22 +510,22 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     customPolicy,
-    /\[role="main"\]\s*>\s*div:first-child\s*>\s*div:has\(\.composer-surface-chrome\)\s*\{[\s\S]{0,220}justify-content:\s*flex-end\s*!important;/,
+    /\[role="main"\]\s*>\s*div:first-child\s*>\s*div:has\(:is\(\.composer-surface-chrome,\s*\[class\*="_ComposerLayoutBody_"\]\)\)\s*\{[\s\S]{0,220}justify-content:\s*flex-end\s*!important;/,
     "Personal builds must bottom-align the native home composer row.",
   );
   assert.match(
     customPolicy,
-    /\[role="main"\]:has\(\[class\*="_homeUtilityBar_"\]\)\s+\.composer-surface-chrome\s*\{[\s\S]{0,420}background-color:\s*color-mix\(in oklab,\s*var\(--color-token-input-background\)\s*90%,\s*transparent\)\s*!important;[\s\S]{0,420}border-radius:\s*var\(--radius-3xl\)\s*!important;[\s\S]{0,420}box-shadow:\s*var\(--elevation-prominent\)\s*!important;/,
+    /\[role="main"\]:has\(\[class\*="_homeUtilityBar_"\]\)\s+:is\(\.composer-surface-chrome,\s*\[class\*="_ComposerLayoutBody_"\]\)\s*\{[\s\S]{0,420}background-color:\s*color-mix\(in oklab,\s*var\(--color-token-input-background\)\s*90%,\s*transparent\)\s*!important;[\s\S]{0,420}border-radius:\s*var\(--radius-3xl\)\s*!important;[\s\S]{0,420}box-shadow:\s*var\(--elevation-prominent\)\s*!important;/,
     "Personal builds must restore the native home composer surface instead of repainting it as a theme panel.",
   );
   assert.match(
     customPolicy,
-    /data-dream-art-wide="true"[\s\S]{0,260}\[role="main"\]:has\(\[data-feature="game-source"\]\):has\(\[class\*="_homeUtilityBar_"\]\)\s+\.composer-surface-chrome\s*\{[\s\S]{0,420}border-radius:\s*var\(--radius-3xl\)\s*!important;[\s\S]{0,320}box-shadow:\s*var\(--elevation-prominent\)\s*!important;/,
+    /data-dream-art-wide="true"[\s\S]{0,320}\[role="main"\]:has\(\[data-feature="game-source"\]\):has\(\[class\*="_homeUtilityBar_"\]\)\s+:is\(\.composer-surface-chrome,\s*\[class\*="_ComposerLayoutBody_"\]\)\s*\{[\s\S]{0,420}border-radius:\s*var\(--radius-3xl\)\s*!important;[\s\S]{0,320}box-shadow:\s*var\(--elevation-prominent\)\s*!important;/,
     "Wide standalone project homes must override the legacy split-card radius and inset outline.",
   );
   assert.match(
     customPolicy,
-    /data-dream-shell="dark"[\s\S]{0,220}\[role="main"\]:has\(\[class\*="_homeUtilityBar_"\]\)\s+\.composer-surface-chrome\s*\{[\s\S]{0,220}background-color:\s*var\(--color-token-input-background\)\s*!important;/,
+    /data-dream-shell="dark"[\s\S]{0,280}\[role="main"\]:has\(\[class\*="_homeUtilityBar_"\]\)\s+:is\(\.composer-surface-chrome,\s*\[class\*="_ComposerLayoutBody_"\]\)\s*\{[\s\S]{0,220}background-color:\s*var\(--color-token-input-background\)\s*!important;/,
     "The restored home composer must retain Codex's native dark appearance token.",
   );
   assert.match(
