@@ -37,6 +37,12 @@ Updated: 2026-08-05 (Asia/Shanghai)
   merge when available, then explicitly requested a new public release. Commit
   this already verified adaptation before fetching/merging origin; preserve
   the personal home layout and Iron Man behavior through the integration.
+- [upstream] Fetched origin/main at `0a727a5`; it adds two post-v1.5.11
+  documentation-only commits (Gallery / Studio captures and README table
+  layout). Runtime and version sources remain v1.5.11 with no new engine
+  feature. Merge keeps the personal Chinese README content where Git aligned
+  upstream gallery blocks with unrelated personal feature sections; the
+  conflict-free English gallery refresh and image asset history are retained.
 
 ## Personal v1.5.11.3 Build And Release (2026-08-03)
 
