@@ -112,6 +112,8 @@ STABLE_AFTER_PERSONAL_JSON="$({
   "$ROOT/menubar-app/Sources/CodexDreamSkinMenuBar/AppDelegate.swift"
 /usr/bin/grep -F -q 'install-update-macos.sh' \
   "$ROOT/menubar-app/Sources/CodexDreamSkinMenuBar/AppDelegate.swift"
+/usr/bin/grep -F -q 'SelfUpdatePolicy.restartCodexAfterInstall' \
+  "$ROOT/menubar-app/Sources/CodexDreamSkinMenuBar/AppDelegate.swift"
 /usr/bin/grep -F -q 'repair-engine-macos.sh' \
   "$ROOT/menubar-app/Sources/CodexDreamSkinMenuBar/AppDelegate.swift"
 /usr/bin/grep -F -q 'YuxiangChai/Codex-Skin' "$ROOT/scripts/check-update-macos.sh"
@@ -129,6 +131,8 @@ STABLE_AFTER_PERSONAL_JSON="$({
 /usr/bin/grep -F -q 'stop_codex true' "$ROOT/scripts/download-update-macos.sh"
 /usr/bin/grep -F -q 'pending-self-update.plist' "$ROOT/scripts/install-update-macos.sh"
 /usr/bin/grep -F -q 'restartCodex' "$ROOT/scripts/install-update-macos.sh"
+/usr/bin/grep -F -q 'wait_for_update_acknowledgement "$PENDING_PATH"' \
+  "$ROOT/scripts/install-update-macos.sh"
 /usr/bin/grep -F -q 'codesign --verify --deep --strict' "$ROOT/scripts/install-update-macos.sh"
 /usr/bin/grep -F -q 'rollback' "$ROOT/scripts/install-update-macos.sh"
 /usr/bin/grep -F -q 'UpdateProgressWindowController' \

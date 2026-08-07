@@ -2,6 +2,14 @@ import XCTest
 @testable import DreamSkinCore
 
 final class CoreTests: XCTestCase {
+  func testSelfUpdateAlwaysRestoresCodexAndActiveSkin() {
+    XCTAssertTrue(SelfUpdatePolicy.restartCodexAfterInstall(wasRunning: true))
+    XCTAssertTrue(SelfUpdatePolicy.restartCodexAfterInstall(wasRunning: false))
+    XCTAssertTrue(SelfUpdatePolicy.restartCodexForPendingMarker(true))
+    XCTAssertTrue(SelfUpdatePolicy.restartCodexForPendingMarker(false))
+    XCTAssertTrue(SelfUpdatePolicy.restartCodexForPendingMarker(nil))
+  }
+
   func testSemanticVersionParsingAndComparison() throws {
     XCTAssertEqual(SemanticVersion("v1.3")?.description, "1.3.0")
     XCTAssertEqual(SemanticVersion(" 2.0.1\n")?.description, "2.0.1")

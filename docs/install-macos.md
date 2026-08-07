@@ -10,7 +10,8 @@
    `CodexDreamSkin-vX.Y.Z.dmg`。`SHA256SUMS.txt` 是可选的完整性校验文件。
 2. 双击 DMG，把 **Codex Dream Skin.app** 拖到 **Applications（应用程序）**。
 3. 正式发行包应带 Apple Developer ID 签名与 Apple 公证。若下载页明确标注为开发构建，
-   macOS 仍可能提示应用来自无法验证的开发者；这类 ad-hoc 构建不能使用自动更新。
+   macOS 仍可能提示应用来自无法验证的开发者；首次图形界面放行后，这类 ad-hoc 构建也可使用带
+   quarantine 保留和启动确认的辅助自动更新。
 4. 如果提示框没有“打开”，点击“完成”，然后打开 **系统设置 → 隐私与安全性**。在“安全性”区域
    找到“Codex Dream Skin 已被阻止使用”一行，点击 **仍要打开**，输入登录密码并确认。
 5. 应用启动后会在用户目录部署或升级主题引擎。菜单中的“安装 App 内置引擎”会部署缺失的引擎；
@@ -73,9 +74,10 @@ SHA-256，再校验 App 的 Bundle ID、版本、内置引擎、Apple Team ID �
 主题、图片和状态均位于 Application Support，不随 App 覆盖。
 
 Developer ID 签名版会在验证同一个 Apple Team 与 Gatekeeper 后自动重启。ad-hoc 版本则使用辅助
-更新：校验、备份和替换仍自动完成，但客户端会把原 App 的 quarantine 来源记录保留到新版，主动触发
-macOS 审查并打开“隐私与安全性”。用户点击一次“仍要打开”后，新 App 启动并清理旧版备份；更新器
-不会删除 quarantine、关闭 Gatekeeper 或跳过系统确认。
+更新：校验、备份和替换仍自动完成，客户端把原 App 的 quarantine 来源记录保留到新版，然后先正常
+启动新版 App，并等待它部署同版本引擎。启动确认后会自动打开 Codex 并重新应用更新前的当前皮肤。
+只有新版 App 在受限等待时间内始终没有确认启动时，才会打开“隐私与安全性”提示检查 Gatekeeper；
+更新器不会删除 quarantine、关闭 Gatekeeper 或跳过系统确认。
 
 ### 手动备用方式
 
@@ -86,8 +88,9 @@ macOS 审查并打开“隐私与安全性”。用户点击一次“仍要打�
 3. 打开新 DMG，把新应用拖入 Applications，并选择替换。
 4. 再次打开应用；现有主题、图片和状态会保留。
 
-Developer ID 签名并公证的正式包通常不需要每个版本重复“仍要打开”。ad-hoc 包每次更新仍需要
-一次系统确认，但下载、校验、替换和打开系统设置都由客户端完成。不要手动运行 `xattr` 或关闭
+Developer ID 签名并公证的正式包通常不需要重复“仍要打开”。已经在图形界面允许过的 ad-hoc App
+也可能直接完成后续更新；是否需要再次确认由 macOS 决定。下载、校验、替换、重启 Codex 和恢复皮肤
+都由客户端完成，系统设置只在新 App 始终无法确认启动时作为兜底。不要手动运行 `xattr` 或关闭
 Gatekeeper。菜单栏只在用户点击“检查更新”后访问 GitHub，不会后台轮询，也不会在未确认时下载。
 
 ## 卸载
@@ -106,8 +109,9 @@ Gatekeeper。菜单栏只在用户点击“检查更新”后访问 GitHub，不
 
 ### 更新后菜单栏没有图标
 
-确认旧的 Dream Skin 已退出，再启动 Applications 中的新版本。若 Codex 正在运行，允许应用按
-提示重启；主题数据仍在上面的 Application Support 目录中。
+正常更新会退出旧 Dream Skin、启动 Applications 中的新版本，并自动打开 Codex、恢复当前皮肤。
+如果等待结束后仍没有菜单栏图标，再手动打开 Applications 中的新版本，并按系统提示检查
+Gatekeeper；主题数据仍在上面的 Application Support 目录中。
 
 ### 想继续使用脚本方式
 

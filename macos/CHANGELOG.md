@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### 自动更新动线改进
+
+- 更新确认后不再根据 Codex 在该瞬间是否运行决定恢复行为：每次成功安装都会自动打开 Codex，并通过 `start-dream-skin-macos.sh` 对当前主题做可见验证后应用。
+- ad-hoc 更新不再固定等待一秒就误判为 Gatekeeper 拦截。安装助手会保留 quarantine、正常启动新版 App，并给引擎接管留出最长 60 秒；只有始终没有启动确认时才打开“隐私与安全性”作为兜底。
+- 保留固定 GitHub 渠道、DMG 大小与 SHA-256 校验、Bundle ID/版本/签名验证、同卷原子替换、旧 App 备份和失败回滚。
+
 ### 个人发行 1.5.11.4
 
 - 适配 Codex / ChatGPT Desktop 26.730.61309 的 Chat 与 Work 新首页结构：完整输入框现识别 `_ComposerLayoutBody_`，工具栏识别 `_ComposerLayoutFooter_`，不匹配构建 hash，并继续兼容旧 `.composer-surface-chrome`。

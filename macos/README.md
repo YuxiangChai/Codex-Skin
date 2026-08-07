@@ -19,8 +19,9 @@ This project injects through **local loopback CDP**. It does **not** modify the 
 普通用户请从 [GitHub Releases](https://github.com/YuxiangChai/Codex-Skin/releases) 下载
 `CodexDreamSkin-vX.Y.Z.dmg`，按 [`docs/install-macos.md`](../docs/install-macos.md) 的图形界面步骤
 拖入 Applications。正式 Developer ID 签名并公证的版本可从菜单完整自动更新；ad-hoc 开发构建也会
-自动下载、校验、备份和替换，然后打开“系统设置 → 隐私与安全性”，用户只需点击一次“仍要打开”。
-不需要手动运行 `xattr` 或安装源码，用户主题和图片会保留。
+自动下载、校验、备份和替换，并优先直接重启新版 App、Codex 和当前皮肤。只有 macOS 实际阻止新版
+App 启动时才打开“系统设置 → 隐私与安全性”作为兜底。不需要手动运行 `xattr` 或安装源码，用户主题
+和图片会保留。
 
 ### Maintainer signing and notarization
 
@@ -39,7 +40,8 @@ DREAMSKIN_NOTARY_PROFILE="dreamskin-notary" \
 
 构建器会使用 hardened runtime 与可信时间戳签 App 和 DMG，分别提交公证、staple 并运行
 `spctl` 校验。凭据只放在本机钥匙串或 CI secrets，不提交到仓库。没有 Developer ID 身份时，
-构建器继续产生明确的 ad-hoc 开发包；辅助更新会保留 quarantine 并要求用户在系统设置确认。
+构建器继续产生明确的 ad-hoc 开发包；辅助更新会保留 quarantine，并在 macOS 实际阻止新版启动时
+才要求用户通过系统设置确认。
 
 ## Advanced: run from source
 

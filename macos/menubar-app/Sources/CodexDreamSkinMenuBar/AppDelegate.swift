@@ -241,7 +241,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     return PendingSelfUpdateContext(
       markerURL: pending,
       backupAppURL: backupApp,
-      restartCodex: value["restartCodex"] as? Bool ?? false
+      restartCodex: SelfUpdatePolicy.restartCodexForPendingMarker(
+        value["restartCodex"] as? Bool
+      )
     )
   }
 
@@ -1089,7 +1091,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let alert = NSAlert()
         alert.messageText = "发现新版本 \(latest)"
         alert.informativeText =
-          "当前版本为 \(current)。先下载并验证 \(ByteCountFormatter.string(fromByteCount: assetBytes, countStyle: .file)) 的安装包；下载完成后再由你确认是否关闭 Codex 并重启安装。图片和已保存主题不会被覆盖。"
+          "当前版本为 \(current)。先下载并验证 \(ByteCountFormatter.string(fromByteCount: assetBytes, countStyle: .file)) 的安装包；下载完成后再由你确认安装。新 App 会自动打开 Codex 并恢复当前皮肤，只有 macOS 确实拦截启动时才需要系统确认。图片和已保存主题不会被覆盖。"
         alert.addButton(withTitle: "下载更新")
         alert.addButton(withTitle: "稍后")
         self.activateForUserInteraction()
@@ -1160,12 +1162,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     alert.messageText = "\(latest) 已下载并验证"
     alert.informativeText = codexRunning
       ? "安装时会自动退出 Codex、停止旧注入器并关闭 Dream Skin。新 App 启动后会安装同版本引擎并恢复 Codex。请先确认没有尚未发送或需要保留的输入内容。"
-      : "安装时会关闭 Dream Skin，原子替换 App 并重新启动。DMG 会自动挂载和卸载；失败时恢复当前 App。"
+      : "安装时会关闭 Dream Skin，原子替换 App，然后自动打开 Codex 并恢复当前皮肤。DMG 会自动挂载和卸载；失败时恢复当前 App。"
     alert.addButton(withTitle: "安装并重启")
     alert.addButton(withTitle: "稍后")
     activateForUserInteraction()
     guard alert.runModal() == .alertFirstButtonReturn else { return }
-    installDownloadedUpdate(restartCodex: codexRunning)
+    installDownloadedUpdate(
+      restartCodex: SelfUpdatePolicy.restartCodexAfterInstall(wasRunning: codexRunning)
+    )
   }
 
   private func installDownloadedUpdate(restartCodex: Bool) {

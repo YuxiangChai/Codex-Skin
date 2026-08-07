@@ -108,6 +108,17 @@ quarantine_is_reusable() {
       '^[0-9A-Fa-f]{4};[0-9A-Fa-f]+;[^;[:cntrl:]]{1,64};[0-9A-Fa-f-]{0,64}$'
 }
 
+wait_for_update_acknowledgement() {
+  local marker="$1"
+  local remaining="${2:-600}"
+  case "$remaining" in ''|*[!0-9]*) return 2 ;; esac
+  while [ -e "$marker" ] && [ "$remaining" -gt 0 ]; do
+    remaining=$((remaining - 1))
+    /bin/sleep 0.1
+  done
+  [ ! -e "$marker" ]
+}
+
 case "$CURRENT_APP" in /*) ;; *) fail_update "Current app path must be absolute." ;; esac
 case "$STAGED_APP" in /*) ;; *) fail_update "Staged app path must be absolute." ;; esac
 case "$PARENT_PID" in ''|*[!0-9]*) fail_update "Parent process ID is invalid." ;; esac
@@ -242,20 +253,21 @@ fi
 
 if [ "$UPDATE_MODE" = "ad-hoc-assisted" ]; then
   # Preserve the existing download provenance on the replacement. This does
-  # not remove or bypass quarantine: it deliberately forces macOS to assess
-  # the new ad-hoc bundle and expose “仍要打开” in Privacy & Security.
+  # not remove or bypass quarantine: macOS can still assess the new ad-hoc
+  # bundle. Launch it normally first and give the replacement enough time to
+  # deploy its bundled engine. Privacy & Security is only a fallback when the
+  # new App never acknowledges startup, not an eager part of every update.
   /usr/bin/xattr -w com.apple.quarantine "$QUARANTINE_VALUE" "$CURRENT_APP" \
     || rollback "The Gatekeeper quarantine record could not be preserved"
   /usr/bin/open "$CURRENT_APP" >/dev/null 2>&1 || true
-  /bin/sleep 1
-  if [ -e "$PENDING_PATH" ]; then
+  if wait_for_update_acknowledgement "$PENDING_PATH"; then
+    printf 'Codex Dream Skin v%s launched without an additional approval step.\n' \
+      "$TARGET_VERSION"
+  else
     /usr/bin/open \
       'x-apple.systempreferences:com.apple.preference.security?General' \
       >/dev/null 2>&1 || true
     printf 'Codex Dream Skin v%s is installed and waiting for Gatekeeper approval.\n' \
-      "$TARGET_VERSION"
-  else
-    printf 'Codex Dream Skin v%s launched without an additional approval step.\n' \
       "$TARGET_VERSION"
   fi
   exit 0
@@ -267,12 +279,8 @@ fi
 # The new app removes the pending marker only after it verifies that it is
 # running from the expected destination and version. No acknowledgement means
 # startup failed, so restore the previous bundle.
-attempts=0
-while [ -e "$PENDING_PATH" ] && [ "$attempts" -lt 300 ]; do
-  attempts=$((attempts + 1))
-  /bin/sleep 0.1
-done
-[ ! -e "$PENDING_PATH" ] || rollback "The updated app did not acknowledge startup"
+wait_for_update_acknowledgement "$PENDING_PATH" \
+  || rollback "The updated app did not acknowledge startup"
 
 /bin/rm -rf "$BACKUP_APP" "$FAILED_APP" 2>/dev/null || true
 printf 'Codex Dream Skin updated to v%s.\n' "$TARGET_VERSION"

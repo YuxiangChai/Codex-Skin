@@ -1,6 +1,48 @@
 # Task Progress
 
-Updated: 2026-08-05 (Asia/Shanghai)
+Updated: 2026-08-07 (Asia/Shanghai)
+
+## Self-Update Restart And Skin Restore Repair (2026-08-07)
+
+- [goal] Simplify the macOS self-update path so a normal ad-hoc update relaunches
+  the replacement App directly, then opens Codex and visibly reapplies the
+  active theme without requiring the user to reopen either app or click Apply.
+  Privacy & Security should remain a fallback only when macOS actually blocks
+  the replacement, never an eager step on the normal path.
+- [upstream] Fetched `origin/main`; it remains at `0a727a5`, which was already
+  merged by `6dbd590`. The current branch is 50 commits ahead and zero behind,
+  so there is no upstream engine, version or documentation update to merge.
+- [evidence] The installed App and engine are both v1.5.11.4 and the current
+  Codex 26.803.41515 renderer is verified active with `custom-iron-man`. The
+  v1.5.11.2 self-update log records a launch without additional approval, while
+  v1.5.11.4 incorrectly reported “waiting for Gatekeeper approval”. The latter
+  helper waits only one second before opening Privacy & Security, even though
+  the replacement App still has to launch and deploy its bundled engine.
+- [root cause] The update confirmation passes `restartCodex` only when Codex is
+  detected running at that instant; a false/closed result intentionally skips
+  the post-update `start-dream-skin-macos.sh` path. Separately, the ad-hoc
+  helper's fixed one-second acknowledgement window can misclassify a slow but
+  successful replacement launch as a Gatekeeper block.
+- [implemented] Every confirmed update now records a deterministic Codex
+  restart, including the first upgrade from an older App whose pending marker
+  stored `restartCodex = false`. After the replacement App installs its bundled
+  engine, it opens Codex through `start-dream-skin-macos.sh`, which verifies and
+  reapplies the current theme before reporting success.
+- [implemented] Replaced the ad-hoc helper's fixed one-second decision with a
+  bounded 60-second acknowledgement wait. A normal replacement launch now
+  completes directly; Privacy & Security opens only when the new App never
+  acknowledges startup. Quarantine, signature checks, fixed download channel,
+  atomic swap, backup and rollback remain unchanged.
+- [verified] Added Swift policy coverage for running, closed and legacy pending
+  states, plus shell coverage for delayed acknowledgement and bounded timeout.
+  The complete macOS suite passes without skips, including 13 Swift tests,
+  signed theme switching, runtime-state integration and live Doctor against
+  Codex 26.803.41515 with `custom-iron-man` active.
+- [verified] A local, non-installed universal arm64+x86_64 App build passed
+  strict code-sign verification and contains the updated installer. No version
+  was bumped, no installed App was replaced, and no Release was published.
+- [complete] Source and documentation changes are ready for a future personal
+  release. `origin/main` had no new commits, so no merge was necessary.
 
 ## Codex Updated Chat / Work Home Adaptation (2026-08-05)
 
