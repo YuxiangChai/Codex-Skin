@@ -472,7 +472,7 @@ jobs:
           if [[ "$MACOS_SIGNED" == "true" ]]; then
             trust_note="The package is signed with Apple Developer ID and notarized. Future updates can complete automatically."
           else
-            trust_note="The package uses ad-hoc signing. Assisted updates install automatically, then open Privacy & Security so you can approve the new App once."
+            trust_note="The package uses ad-hoc signing. Assisted updates relaunch the new App and restore Codex automatically; Privacy & Security is only a fallback when macOS blocks that launch."
           fi
           cat > release-notes.md <<EOF
           ## Codex Dream Skin v${VERSION}

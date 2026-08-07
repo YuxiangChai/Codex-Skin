@@ -37,6 +37,11 @@ Updated: 2026-08-07 (Asia/Shanghai)
 - [complete] `v1.5.11.5` is publicly downloadable. The local and CI DMG bytes
   differ as expected for independent ad-hoc builds, while both passed the same
   mounted package contract.
+- [follow-up] Corrected the generated ad-hoc release guidance for subsequent
+  versions: assisted updates relaunch the replacement App and restore Codex;
+  Privacy & Security is documented only as a fallback when macOS blocks that
+  launch. The already-published v1.5.11.5 binaries, tag and checksums are
+  unchanged.
 
 ## Self-Update Restart And Skin Restore Repair (2026-08-07)
 
