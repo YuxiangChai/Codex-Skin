@@ -24,8 +24,19 @@ Updated: 2026-08-07 (Asia/Shanghai)
   read-only mount contract and an independent `hdiutil imageinfo` check.
   `CodexDreamSkin-v1.5.11.5.dmg` is 3,044,108 bytes with SHA-256
   `7c3e00ca684990973383108e975ad76c112c53c4371a02080ed6528bd6a9ca34`.
-- [in progress] Commit and push the exact verified candidate to
-  `personal/main`, then verify GitHub Actions, tag, public Release and assets.
+- [released] Candidate `3466927a0c5b76acf6d3f824a9001bb08f6d3067`
+  was fast-forward pushed to `personal/main`. CI run `31147682793` and Release
+  run `31147682796` completed successfully; public tag `v1.5.11.5` points
+  exactly to the candidate commit.
+- [verified] Public Release `366522542` is non-draft and non-prerelease with
+  exactly the expected macOS DMG and `SHA256SUMS.txt`. A clean single-pass
+  download of the 3,043,359-byte public DMG matches both the published checksum
+  and GitHub asset digest: SHA-256
+  `44ed110923826754e2b97387cdd3ade060033c468fbd02bbdfa5673a1fa65503`;
+  independent `hdiutil imageinfo` validation also passes.
+- [complete] `v1.5.11.5` is publicly downloadable. The local and CI DMG bytes
+  differ as expected for independent ad-hoc builds, while both passed the same
+  mounted package contract.
 
 ## Self-Update Restart And Skin Restore Repair (2026-08-07)
 
