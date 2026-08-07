@@ -2,6 +2,31 @@
 
 Updated: 2026-08-07 (Asia/Shanghai)
 
+## Personal v1.5.11.5 Release (2026-08-07)
+
+- [goal] Publish the verified macOS self-update restart and active-skin restore
+  repair as personal release `v1.5.11.5`.
+- [baseline] `origin/main` remains at already-integrated `0a727a5`; no upstream
+  merge is required. Public personal latest is `v1.5.11.4`, and both the remote
+  `v1.5.11.5` tag and Release are absent.
+- [authorized] The user explicitly requested a new public release. Synchronize
+  all six version sources and bound assertions, rerun the full release gate,
+  build and mount-check the macOS DMG, then push the exact candidate and verify
+  CI, tag, public Release, assets and checksums.
+- [verified] All six release version sources and their bound assertions are
+  synchronized at `1.5.11.5`. All 19 portable Windows Node tests and both
+  platform payload checks pass.
+- [verified] The complete macOS suite passes without skips after hot-applying
+  the candidate payload to the current renderer, including 13 Swift tests,
+  signed theme switching, runtime-state integration and live Doctor against
+  Codex 26.803.41515 with `custom-iron-man` active.
+- [verified] The local universal arm64+x86_64 DMG passed the build script's
+  read-only mount contract and an independent `hdiutil imageinfo` check.
+  `CodexDreamSkin-v1.5.11.5.dmg` is 3,044,108 bytes with SHA-256
+  `7c3e00ca684990973383108e975ad76c112c53c4371a02080ed6528bd6a9ca34`.
+- [in progress] Commit and push the exact verified candidate to
+  `personal/main`, then verify GitHub Actions, tag, public Release and assets.
+
 ## Self-Update Restart And Skin Restore Repair (2026-08-07)
 
 - [goal] Simplify the macOS self-update path so a normal ad-hoc update relaunches

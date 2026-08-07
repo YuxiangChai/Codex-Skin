@@ -89,7 +89,7 @@ UPDATE_JSON="$({
 })"
 "$NODE" -e '
   const value = JSON.parse(process.argv[1]);
-  if (value.currentVersion !== "v1.5.11.4" || value.latestVersion !== "v9.8.7") process.exit(1);
+  if (value.currentVersion !== "v1.5.11.5" || value.latestVersion !== "v9.8.7") process.exit(1);
   if (!value.updateAvailable) process.exit(1);
   if (value.releaseUrl !== "https://github.com/YuxiangChai/Codex-Skin/releases/latest") process.exit(1);
   if (value.assetName !== "CodexDreamSkin-v9.8.7.dmg") process.exit(1);
@@ -103,7 +103,7 @@ STABLE_AFTER_PERSONAL_JSON="$({
 })"
 "$NODE" -e '
   const value = JSON.parse(process.argv[1]);
-  if (value.currentVersion !== "v1.5.11.4" || value.latestVersion !== "v1.5.12") process.exit(1);
+  if (value.currentVersion !== "v1.5.11.5" || value.latestVersion !== "v1.5.12") process.exit(1);
   if (!value.updateAvailable) process.exit(1);
 ' "$STABLE_AFTER_PERSONAL_JSON"
 /usr/bin/grep -F -q '"scripts/download-update-macos.sh"' \
@@ -1179,7 +1179,7 @@ CRLF_BACKUP="$TMP/config-crlf-backup.json"
 "$NODE" "$ROOT/scripts/theme-config.mjs" restore "$CRLF_CONFIG" "$CRLF_BACKUP" >/dev/null
 /usr/bin/cmp -s "$CRLF_CONFIG" "$TMP/original-crlf.toml"
 
-/usr/bin/env -u HOME /bin/bash -c '. "$1/scripts/common-macos.sh"; [ -n "$HOME" ] && [ "$SKIN_VERSION" = "1.5.11.4" ]' _ "$ROOT"
+/usr/bin/env -u HOME /bin/bash -c '. "$1/scripts/common-macos.sh"; [ -n "$HOME" ] && [ "$SKIN_VERSION" = "1.5.11.5" ]' _ "$ROOT"
 if [ "${CODEX_DREAM_SKIN_SKIP_DOCTOR:-0}" = "1" ]; then
   printf 'SKIP: Doctor requires an installed, signed Codex app.\n'
   DOCTOR_RESULT="skipped"

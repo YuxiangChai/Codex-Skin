@@ -16,7 +16,7 @@ try {
       $PSScriptRoot 'fixtures\latest-release.json'
     $updateJson = & (Join-Path $Root 'scripts\check-update.ps1') -Json
     $updateResult = "$updateJson" | ConvertFrom-Json
-    if ($updateResult.currentVersion -cne 'v1.5.11.4' -or
+    if ($updateResult.currentVersion -cne 'v1.5.11.5' -or
       $updateResult.latestVersion -cne 'v9.8.7' -or
       -not $updateResult.updateAvailable -or
       $updateResult.releaseUrl -cne 'https://github.com/YuxiangChai/Codex-Skin/releases/latest' -or

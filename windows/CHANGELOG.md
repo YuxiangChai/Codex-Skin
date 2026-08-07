@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 个人发行 1.5.11.5
+
+- 同步个人发行版本常量和测试断言。新版的更新后自动重启 Codex、重新应用当前皮肤，以及仅在新版 App 无法确认启动时才打开“隐私与安全性”的动线只影响 macOS；本次公开发行继续只构建 macOS DMG。
+
 ### 个人发行 1.5.11.4
 
 - 同步 Codex 26.730 首页 composer 的共享无 hash 选择器合同与测试：完整输入框使用 `_ComposerLayoutBody_`，工具栏使用 `_ComposerLayoutFooter_`，并保留旧结构兼容。Windows 对应新版仍需 CI 或 Windows 实机验收；本次公开发行继续只构建 macOS DMG。
