@@ -1,6 +1,39 @@
 # Task Progress
 
-Updated: 2026-08-07 (Asia/Shanghai)
+Updated: 2026-08-14 (Asia/Shanghai)
+
+## Cross-Mac Consistency And Composer Shadow Repair (2026-08-14)
+
+- [goal] Explain why the same saved theme can render differently on another
+  Mac, inspect the newly updated local Codex renderer, and remove the new
+  shadow/underlay below the composer without changing the official App bundle.
+- [scope] Keep the repair in the shared runtime and synchronize generated
+  macOS/Windows payloads. Preserve the Iron Man artwork focus, unified home
+  title and compact composer. Do not restart Codex or publish a version unless
+  the user explicitly asks.
+- [root_cause] Local Codex/ChatGPT is 26.810.41047 (build 6570) with engine
+  v1.5.11.5. The sticky session footer renamed its two gradient stops from
+  `from-token-main-surface-primary` to `from-surface` / `via-surface`; the old
+  compatibility rule therefore missed a 148px native fade below the composer.
+  The other Mac difference was an older installed engine, as the user later
+  confirmed, rather than a separate theme-layout defect.
+- [implemented] Added a session-footer-scoped, hash-free selector for the new
+  `from-surface` class while retaining the legacy token selector. Synchronized
+  the canonical CSS into both macOS and Windows payloads and added assertions
+  for both generations.
+- [verified] Hot-applied the candidate payload to the open renderer without a
+  restart. Both live fade nodes remain structurally present but compute to
+  transparent `background` and `background-image: none`; the composer stays at
+  736x100 and the active `custom-iron-man` theme remains applied.
+- [verified] Runtime asset sync, both platform payload checks, all 19 portable
+  Windows Node tests, the full macOS source suite and 13 Swift tests pass.
+  Signed-runtime switching/state tests and Doctor were intentionally skipped
+  to avoid changing the current installed engine/session. No version was
+  bumped, no commit was created and no Release was published.
+- [authorized] The user requested an upstream comparison/merge when available,
+  followed by a new public personal release. Commit this verified repair first,
+  then fetch and integrate origin without losing the personal theme/layout
+  behavior; do not restart the currently open Codex during release work.
 
 ## Personal v1.5.11.5 Release (2026-08-07)
 

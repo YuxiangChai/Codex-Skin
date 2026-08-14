@@ -59,4 +59,14 @@ for (const file of files) {
     assert.match(css, lightShadowRule,
       "Full task mode must retain the light-shell Markdown contrast shadow (#309).");
   });
+
+  test(`current session composer fades are transparent in ${file}`, () => {
+    const css = readFileSync(join(root, file), "utf8");
+    assert.match(css,
+      /\.sticky\.bottom-0[\s\S]{0,900}\[class~="bg-gradient-to-t"\]\[class~="from-surface"\][\s\S]{0,900}background-image:\s*none\s*!important;/,
+      "Codex 26.810+ from-surface footer fades must not paint a band behind the session composer.");
+    assert.match(css,
+      /\.sticky\.bottom-0[\s\S]{0,240}\[class~="bg-gradient-to-t"\]\[class~="from-token-main-surface-primary"\][\s\S]{0,80}background-image:\s*none\s*!important;/,
+      "Legacy token-main footer fades must remain transparent.");
+  });
 }

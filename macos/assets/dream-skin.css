@@ -1229,9 +1229,12 @@ html[data-dream-skin="active"][data-dream-art-wide="true"] main:is(.main-surface
   background: transparent !important;
 }
 
-/* Codex paints a second opaque fade behind the sticky composer. The composer
-   already owns its readable surface, so retaining this layer creates a false
-   bottom panel and makes the control look duplicated. */
+/* Codex paints an opaque fade behind the sticky composer. 26.810 renamed the
+   token stop from from-token-main-surface-primary to from-surface. The
+   composer already owns its readable surface, so retaining either generation
+   creates a false bottom panel and makes the control look duplicated. */
+html[data-dream-skin="active"][data-dream-art-wide="true"] main:is(.main-surface, [data-app-shell-main-surface], [class*="_MainContentSurface_"])
+  .thread-scroll-container .bg-gradient-to-t.from-surface,
 html[data-dream-skin="active"][data-dream-art-wide="true"] main:is(.main-surface, [data-app-shell-main-surface], [class*="_MainContentSurface_"])
   .thread-scroll-container .bg-gradient-to-t.from-token-main-surface-primary {
   background: transparent !important;
@@ -1719,6 +1722,10 @@ html[data-dream-skin="active"] body
    On a shared canvas their solid token stop becomes a rectangular band below
    the composer. Keep the native footer geometry and controls, but reveal the
    wallpaper through those gradient-only layers. */
+html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"]
+  main:is(.main-surface, [data-app-shell-main-surface], [class*="_MainContentSurface_"]):not(:has([role="main"]))
+  .thread-scroll-container .sticky.bottom-0
+  [class~="bg-gradient-to-t"][class~="from-surface"],
 html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"]
   main:is(.main-surface, [data-app-shell-main-surface], [class*="_MainContentSurface_"]):not(:has([role="main"]))
   .thread-scroll-container .sticky.bottom-0

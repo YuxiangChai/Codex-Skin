@@ -1196,6 +1196,7 @@ try {
     'data-app-shell-main-content-top-fade',
     '_MainContentTopFade_',
     '.thread-scroll-container .bg-gradient-to-t.from-token-main-surface-primary',
+    '[class~="bg-gradient-to-t"][class~="from-surface"]',
     '--ds-immersive-composer',
     'background-position: var(--ds-art-position)',
     'html[data-dream-skin="active"]',
