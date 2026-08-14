@@ -127,18 +127,22 @@ const homeTitle = validateText(
 const tagline = validateText(
   valueFor("tagline", "把喜欢的画面变成可交互的 Codex 工作台。"),
   "tagline",
-  160,
+  120,
   "把喜欢的画面变成可交互的 Codex 工作台。",
 );
 const quote = validateText(
   valueFor("quote", "MAKE SOMETHING WONDERFUL"),
   "quote",
-  80,
+  120,
   "MAKE SOMETHING WONDERFUL",
 );
 const appearance = validateChoice(valueFor("appearance", "auto"), "appearance", ["auto", "light", "dark"]);
 const safeArea = validateChoice(valueFor("safe-area", "auto"), "safe-area", ["auto", "left", "right", "center", "none"]);
-const taskMode = validateChoice(valueFor("task-mode", "auto"), "task-mode", ["auto", "ambient", "banner", "off"]);
+const taskMode = validateChoice(
+  valueFor("task-mode", "auto"),
+  "task-mode",
+  ["auto", "ambient", "banner", "full", "off"],
+);
 const artScope = validateChoice(valueFor("art-scope", "window"), "art-scope", ["window", "main"]);
 const artSidebar = validateChoice(valueFor("art-sidebar", "solid"), "art-sidebar", ["solid", "shared"]);
 const artDim = validateUnit(valueFor("art-dim", "0"), "art-dim");

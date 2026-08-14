@@ -1,4 +1,5 @@
 import Foundation
+import DreamSkinCore
 
 struct ScriptResult {
   let exitCode: Int32
@@ -66,6 +67,7 @@ enum ScriptRunner {
       var environment = ProcessInfo.processInfo.environment
       environment["PATH"] = "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"
       environment["LC_ALL"] = "en_US.UTF-8"
+      environment["DREAMSKIN_LANG"] = DreamSkinLanguage.stored().environmentValue
       process.environment = environment
       process.standardOutput = pipe
       process.standardError = pipe

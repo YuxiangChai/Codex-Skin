@@ -75,7 +75,7 @@ if [ -z "$THEME_NAME" ]; then
   base="$(/usr/bin/basename "$IMAGE")"
   THEME_NAME="${base%.*}"
 fi
-[ -n "$THEME_NAME" ] || THEME_NAME="我的主题"
+[ -n "$THEME_NAME" ] || THEME_NAME="$(dreamskin_text default_theme_name)"
 
 theme_id="img-$(/bin/date '+%Y%m%d%H%M%S')-$$"
 
@@ -84,7 +84,7 @@ progress() {
   notify_user "$*"
 }
 
-progress "Loading image..."
+progress "$(dreamskin_text loading_image)"
 
 # Fast Node for write-theme (avoid full codesign when possible)
 ensure_node_runtime
@@ -92,6 +92,10 @@ ensure_node_runtime
   const value = Number(process.argv[1]);
   if (!Number.isFinite(value) || value < 0 || value > 1) process.exit(1);
 ' "$ART_DIM" || fail "Invalid art dim: $ART_DIM"
+
+# Reject decompression bombs before `sips -Z` rasterizes the full source image.
+"$NODE" "$SCRIPT_DIR/check-image-dimensions.mjs" "$IMAGE" \
+  || fail "Image dimensions are invalid or exceed the safe pixel budget (max 16384 px per side / 50 megapixels)."
 
 image_name="background.jpg"
 temporary="$THEME_DIR/.background.$$.tmp.jpg"
@@ -151,7 +155,7 @@ if [ "$src_dir/$(/usr/bin/basename "$IMAGE")" != "$img_dir/$(/usr/bin/basename "
 fi
 
 if [ "$APPLY_NOW" != "true" ]; then
-  progress "Ready: ${THEME_NAME} (not applied)"
+  progress "$(dreamskin_text theme_ready_not_applied): ${THEME_NAME}"
   exit 0
 fi
 
@@ -161,17 +165,17 @@ if [ -f "$STATE_PATH" ]; then
   [ -n "${saved:-}" ] && PORT="$saved"
 fi
 
-progress "Hot reapply..."
+progress "$(dreamskin_text hot_reload)"
 if hot_reapply_theme "$PORT" 8000; then
-  progress "Done: ${THEME_NAME}"
+  progress "$(dreamskin_text skin_applied): ${THEME_NAME}"
   exit 0
 fi
 
-progress "CDP not ready, full start..."
+progress "$(dreamskin_text starting_chatgpt_for_apply)"
 if "$SCRIPT_DIR/start-dream-skin-macos.sh" --port "$PORT" --restart-existing; then
-  progress "Done: ${THEME_NAME}"
+  progress "$(dreamskin_text skin_applied): ${THEME_NAME}"
   exit 0
 fi
 
-alert_user "Image saved but inject failed. Click Apply Skin."
+alert_user "$(dreamskin_text image_saved_apply_failed)"
 exit 1

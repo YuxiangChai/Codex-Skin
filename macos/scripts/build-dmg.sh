@@ -124,7 +124,7 @@ MOUNTED_ENGINE="$MOUNTED_APP/Contents/Resources/engine"
   || { printf 'Mounted app is missing the selector contract.\n' >&2; exit 1; }
 for runtime_script in apply-community-theme-macos.sh download-update-macos.sh \
   install-update-macos.sh repair-engine-macos.sh \
-  snapshot-active-theme-macos.sh theme-switch-lock-macos.sh; do
+  snapshot-active-theme-macos.sh theme-switch-lock-macos.sh localization-macos.sh; do
   [ -x "$MOUNTED_ENGINE/scripts/$runtime_script" ] \
     || { printf 'Mounted runtime script is missing or not executable: %s\n' "$runtime_script" >&2; exit 1; }
 done
