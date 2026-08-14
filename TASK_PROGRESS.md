@@ -27,9 +27,18 @@ Updated: 2026-08-14 (Asia/Shanghai)
   contracts, Safe CSS, ZIP/import and updater safety checks. Signed-runtime
   switching/state and Doctor were skipped locally to preserve the live Codex
   session; CI reruns the full gate on the pushed `main`.
-- [in_progress] Commit the tested merge, push it to `personal/main`, then
-  verify CI and the Release workflow produce a public v1.5.14.1 DMG plus
-  `SHA256SUMS.txt` with matching checksums.
+- [released] Merge commit `cc50ae064c248c8789376577c7b7a8b54a00bc85` was pushed
+  to `personal/main`. CI run `31810574603` and Release run `31810574598` both
+  completed successfully; the public tag `v1.5.14.1` points exactly to the
+  release commit.
+- [verified] Public Release
+  https://github.com/YuxiangChai/Codex-Skin/releases/tag/v1.5.14.1 is
+  non-draft and non-prerelease with exactly the macOS DMG plus `SHA256SUMS.txt`.
+  A clean single-pass download of the 3,117,898-byte DMG matches both the
+  published checksum and GitHub asset digest (SHA-256
+  `5726fa98694711500147399654fc027a6c1a8d632e5c285e922ee34b6c949034`), and
+  `hdiutil verify` reports the image checksum as valid.
+- [complete] v1.5.14.1 is publicly downloadable.
 
 ## Cross-Mac Consistency And Composer Shadow Repair (2026-08-14)
 
