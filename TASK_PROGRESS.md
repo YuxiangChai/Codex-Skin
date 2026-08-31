@@ -2,6 +2,39 @@
 
 Updated: 2026-08-31 (Asia/Shanghai)
 
+## Automatic Update Check GitHub 403 Recovery (2026-08-31)
+
+- [goal] Restore manual and background update checks when GitHub's anonymous
+  Releases API returns HTTP 403, without weakening version, repository, asset,
+  byte-size or SHA-256 verification.
+- [scope] Fix the bundled macOS update metadata check and add deterministic
+  regressions. Keep the API as the preferred source; use only GitHub's public
+  latest-release redirect, exact personal release URLs and published
+  `SHA256SUMS.txt` as the bounded fallback. Do not replace an existing Release
+  or modify the installed signed App in place.
+- [baseline] Reproduced the screenshot failure from current source: four API
+  retries each return `curl: (56) ... 403`, followed by `Could not connect to
+  GitHub.` The public Release page, redirect, DMG and checksum remain healthy,
+  so this is anonymous API rate limiting rather than a missing release.
+- [implemented] API success still uses the original bounded JSON contract. On
+  API transport/HTTP failure, the checker now follows only the fixed personal
+  repository's public `releases/latest`, requires its exact same-repository
+  version tag, constructs fixed DMG/checksum URLs, accepts exactly one matching
+  SHA-256 line, and parses one decimal Content-Length from the final HTTP 200
+  response block. The downloader retains its independent URL, size and
+  downloaded-file SHA-256 checks.
+- [validated] With the anonymous API still returning HTTP 403, the revised
+  live check succeeds silently through the fallback and reports
+  public `v1.5.16.2` metadata exactly: 3,129,298 bytes and SHA-256
+  `00bfd510a58ccfb00fca95bf0698a05bd7d86036d63c5c779c6762b61ba99ad3`.
+  Added 11 deterministic fallback/fail-closed cases. Passed macOS portable Node
+  (103), tools (10), Swift/XCTest (15), the protected full macOS suite, asset
+  sync, payload and `git diff --check`.
+- [remaining] The running/public `v1.5.16.2` App contains the old bundled
+  checker, so source changes cannot repair it in place. A new authorized patch
+  Release and one manual installation are required; subsequent checks can then
+  survive anonymous API rate limiting.
+
 ## Publish Personal macOS v1.5.16.2 (2026-08-31)
 
 - [authorized] The user explicitly requested a commit and a new public release
