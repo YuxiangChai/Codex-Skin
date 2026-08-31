@@ -37,6 +37,11 @@ assert.equal(
   '[data-settings-panel-slug="general-settings"]',
   "The Settings contract must use the stable Codex 26.727 general-settings panel marker.",
 );
+assert.equal(
+  selectorFor("settings-surface"),
+  ':is(.app-shell-left-panel:has([data-settings-panel-slug]) + div > .electron\\:bg-token-main-surface-primary, .app-shell-left-panel:has([data-settings-panel-slug]) + div [class~="electron:bg-surface"][class~="electron:elevation-prominent"])',
+  "Settings content must retain the 26.727 surface and add only the bounded 26.825 opaque wrapper.",
+);
 const resultFor = (baseState, hits, overlay = false) => gradeDoctorResult(contract, {
   baseState,
   overlay,
@@ -67,6 +72,7 @@ assert.deepEqual(
 );
 assert.equal(settings.tiers.L2.find(({ key }) => key === "settings-panel").status, "ok");
 assert.equal(settings.tiers.L2.find(({ key }) => key === "appearance-radio").status, "miss");
+assert.equal(settings.tiers.L2.find(({ key }) => key === "settings-surface").status, "miss");
 
 assert.equal(selectorMatchesScope("home+thread", { baseState: "thread", overlay: false }), true);
 assert.equal(selectorMatchesScope("home config", { baseState: "home", overlay: false }), true);

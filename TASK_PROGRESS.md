@@ -1,6 +1,94 @@
 # Task Progress
 
-Updated: 2026-08-14 (Asia/Shanghai)
+Updated: 2026-08-31 (Asia/Shanghai)
+
+## Origin v1.5.16 Integration With Personal macOS Features (2026-08-31)
+
+- [goal] Merge refreshed `origin/main` `e0341de` into the personal engine while
+  preserving the Iron Man theme, Chat / Work / Codex home states and layout,
+  main-area artwork focus, Settings main-surface transparency, composer fixes,
+  Safe CSS boundaries, and the assisted macOS updater / rollback / theme
+  restoration flow.
+- [scope] Integrate and validate macOS behavior. Keep shared runtime and
+  generated Windows assets coherent, but do not build or publish a Windows
+  Setup.exe and do not spend this task on Windows release packaging. No push or
+  public Release is implied by the merge request.
+- [baseline] `codex/custom-engine` is at `df48f18`, synchronized with
+  `personal/main`, and is 57 commits ahead / 8 commits behind `origin/main`.
+  The worktree contains the completed, tested Codex 26.825 Settings
+  transparency repair and no interrupted Git operation.
+- [upstream] The merge range contains released v1.5.15 / v1.5.16 Codex
+  26.814-26.818 compatibility plus unreleased watcher backoff, update-version
+  source, selector provenance, Windows overflow and managed-CDP-profile fixes,
+  and documentation.
+- [in_progress] Preserve the current Settings repair in its own commit, audit
+  upstream/personal overlap, merge on a dedicated integration branch, resolve
+  conflicts as a feature union, then run targeted personal-feature checks and
+  the complete applicable macOS regression suite.
+
+## Codex 26.825 Settings Main Background Repair (2026-08-31)
+
+- [goal] Restore the active theme background on the newly updated Codex
+  Settings main content while leaving the already-correct Settings sidebar and
+  every non-Settings native surface unchanged.
+- [scope] Update the shared selector contract, generated macOS/Windows runtime
+  assets and regression assertions. Do not modify the signed official Codex
+  App, restart it, change the selected theme, bump a version or publish.
+- [baseline] Working tree is clean on `codex/custom-engine` at `df48f18`, aligned
+  with `personal/main`; the latest personal release commit is `v1.5.14.1` at
+  `cc50ae0`.
+- [complete] Diagnosis, bounded compatibility implementation, generated asset
+  synchronization, current-renderer hot application and applicable regression
+  testing are complete.
+- [evidence] The installed official App is `26.825.51511` build `7377`; the
+  installed Dream Skin engine is active and verified at `1.5.14.1`, and its
+  renderer/selectors/generated CSS match this repository's released payload.
+  A sanitized live capture confirms the main renderer still has the Iron Man
+  payload and normal thread anchors, so this is not a stopped injector or lost
+  active-theme state.
+- [root_cause] The personal Settings transparency contract is still tied to
+  the Codex 26.727 content class/path
+  `.electron\\:bg-token-main-surface-primary`. Read-only inspection of the
+  26.825 renderer bundle shows that exact class no longer exists; the current
+  non-embedded Settings detail wrapper uses
+  `electron:bg-surface electron:elevation-prominent`, whose native CSS paints
+  `var(--color-surface)`. The old bounded selector therefore misses and the
+  opaque native dark surface covers the body artwork that remains underneath.
+- [diagnostic_gap] Selector doctor currently chooses the first `app://` page,
+  which can be the `/avatar-overlay` auxiliary target. Its no-shell fallback
+  then misclassifies that target as Settings; because every Settings probe is
+  optional L2 and Settings has no required L1 probes, four misses still return
+  `pass: true`. This is a doctor false positive, not live Settings evidence.
+- [test_gap] Existing renderer tests assert that the old selector text is
+  present and that a mocked Settings scope installs a stylesheet, but do not
+  exercise a real Settings hierarchy or computed transparency. Payload tests
+  only validate substitution/syntax, and verifier checks a visible Settings
+  anchor rather than the content surface's computed background.
+- [implemented] `settings-surface` now retains the 26.727 direct-child path and
+  adds the 26.825 `electron:bg-surface` + `electron:elevation-prominent` path.
+  Both alternatives remain anchored beneath the sibling of the confirmed
+  Settings sidebar; the rule clears only background and box-shadow. A negative
+  assertion prevents this repair from becoming a global native-surface rule.
+- [generated] `node tools/sync-runtime-assets.mjs` synchronized selectors,
+  compiled CSS and renderer payloads to both `macos/assets` and
+  `windows/assets`; `--check` confirms there is no generated drift.
+- [upstream] Remote `origin/main` is now `e0341de` and includes the Codex
+  26.818 / v1.5.16 compatibility work, but its current selector contract has no
+  personal `settings-surface` transparency selector. Merging upstream alone
+  will not repair this exact personal Settings background regression.
+- [verified] Selector-doctor tests, macOS and Windows renderer tests, both
+  payload integrity suites, `git diff --check`, and the full applicable macOS
+  suite pass. The full run includes 15 Swift/XCTest cases plus shell, CSS,
+  renderer, Safe CSS, staging, manifest, ZIP and HTTP boundary tests. Signed
+  runtime integrations and Doctor were intentionally skipped because this task
+  must not restart or mutate the official signed App; Windows PowerShell remains
+  for CI/on-platform validation.
+- [live] The candidate payload was hot-applied through the running renderer's
+  supported injector and passed visible verification with active theme
+  `custom-iron-man` at revision `bba760253d0cb64e8fff`. The user must reopen
+  Settings in the same app session for direct visual confirmation; the repo fix
+  has not replaced the installed engine on disk because its atomic installer
+  correctly requires Codex to be closed.
 
 ## Upstream v1.5.14 Integration And Personal v1.5.14.1 Release (2026-08-14)
 

@@ -477,8 +477,13 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     css,
-    /html\[data-dream-skin="active"\]\[data-dream-art-scope="main"\]\[data-dream-art-sidebar="shared"\]\s+\.app-shell-left-panel:has\(\[data-settings-panel-slug\]\)\s*\+\s*div\s*>\s*\.electron\\:bg-token-main-surface-primary\s*\{[\s\S]{0,180}background:\s*transparent\s*!important;/,
-    "Settings content must not flash an opaque route surface before route detection catches up.",
+    /html\[data-dream-skin="active"\]\[data-dream-art-scope="main"\]\[data-dream-art-sidebar="shared"\]\s+:is\([\s\S]{0,260}\.electron\\:bg-token-main-surface-primary,[\s\S]{0,360}\.app-shell-left-panel:has\(\[data-settings-panel-slug\]\)\s*\+\s*div\s+\[class~="electron:bg-surface"\]\[class~="electron:elevation-prominent"\]\)\s*\{[\s\S]{0,180}background:\s*transparent\s*!important;[\s\S]{0,120}box-shadow:\s*none\s*!important;/,
+    "Settings content must clear both the legacy surface and the bounded Codex 26.825 opaque wrapper.",
+  );
+  assert.doesNotMatch(
+    css,
+    /html\[data-dream-skin="active"\][^{]*>\s*\[class~="electron:bg-surface"\]/,
+    "The 26.825 repair must stay inside the verified Settings sibling instead of clearing every native surface.",
   );
   assert.match(
     css,

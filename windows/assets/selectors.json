@@ -2,17 +2,18 @@
   "schema": "codex-dream-skin-selectors/1",
   "description": "双端统一选择器契约。scope 与 required 来自双端 DOM 快照实测；shell-main、header-tint 与新版首页 composer 另由真实 macOS renderer 复核。doctor / CI 应逐条 querySelector 并按 tier 判级：L1 缺失=皮肤主行为受损，L2 缺失=精修静默降级。",
   "verifiedAgainst": {
-    "date": "2026-08-05",
-    "chromium": "150.0.7871.124（双端快照）；151.0.7922.71（macOS 真实 renderer 复核）",
-    "codexVersionMac": "26.715.61943（历史快照）；26.730.61309 build 6223（Chat / Work 首页真实 renderer 复核）",
+    "date": "2026-08-31",
+    "chromium": "150.0.7871.124（双端快照）；151.0.7922.71（macOS Chat / Work renderer）；151.0.7922.174（macOS 26.825 Settings 包结构复核）",
+    "codexVersionMac": "26.715.61943（历史快照）；26.730.61309 build 6223（Chat / Work 首页真实 renderer）；26.825.51511 build 7377（Settings 截图与签名 App renderer 包结构）",
     "codexVersionWindows": "版本号未记录；bundle hash 与 mac 不同（ModelPickerTrigger mac=1fm6a win=1w4ob），确认存在版本错位",
     "fixtures": [
       "runtime/dom-fixtures/codex-dom-fixture-darwin-watch.json (15 状态)",
       "runtime/dom-fixtures/codex-dom-fixture-win32-watch.json (7 状态)",
       "Codex 26.727.40816 signed macOS app, live app:// renderer",
-      "Codex 26.730.61309 build 6223 signed macOS app, live Chat / Work app:// renderer geometry and screenshots"
+      "Codex 26.730.61309 build 6223 signed macOS app, live Chat / Work app:// renderer geometry and screenshots",
+      "Codex 26.825.51511 build 7377 signed macOS app, Settings screenshot and packaged renderer structure"
     ],
-    "verdict": "双端运行时继续共用一份 selector/CSS 合同。26.730.61309 的 Chat / Work 首页把输入框壳迁移到 _ComposerLayoutBody_，工具栏迁移到 _ComposerLayoutFooter_；合同使用模块名前缀并保留旧 .composer-surface-chrome 兼容路径，不匹配构建 hash。可见主 renderer 仍要求业务锚点，辅助 renderer 继续 fail closed；Windows 对应新版仍需真实 renderer 验收。"
+    "verdict": "双端运行时继续共用一份 selector/CSS 合同。26.730.61309 的 Chat / Work 首页把输入框壳迁移到 _ComposerLayoutBody_，工具栏迁移到 _ComposerLayoutFooter_；26.825.51511 的 Settings 主内容把旧 electron:bg-token-main-surface-primary 换成 electron:bg-surface + electron:elevation-prominent。合同保留旧路径并仅在已确认的 Settings 侧栏之后兼容新版不透明外壳，不匹配构建 hash，也不全局清除 bg-surface。可见主 renderer 仍要求业务锚点，辅助 renderer 继续 fail closed；Windows 对应新版仍需真实 renderer 验收。"
   },
   "appearanceSignal": {
     "dark": "html.electron-dark",
@@ -51,7 +52,7 @@
     { "key": "settings-panel", "selector": "[data-settings-panel-slug=\"general-settings\"]", "tier": "L2", "scope": "settings", "required": false, "notes": "Codex 26.727 设置页稳定导航锚点；设置页可先落在 General" },
     { "key": "appearance-radio", "selector": "input[name=\"appearance-theme\"]", "tier": "L2", "scope": "settings", "required": false, "notes": "旧设置页外观三选一；26.727 的 General 设置首页不再保证出现，用 settings-sidebar 识别当前设置壳" },
     { "key": "settings-sidebar", "selector": ".app-shell-left-panel:has([data-settings-panel-slug])", "tier": "L2", "scope": "settings", "required": false, "notes": "macOS 26.727 设置页导航壳。与普通 aside 侧栏互斥；用于保持共享背景和识别设置路由" },
-    { "key": "settings-surface", "selector": ".app-shell-left-panel:has([data-settings-panel-slug]) + div > .electron\\:bg-token-main-surface-primary", "tier": "L2", "scope": "settings", "required": false, "notes": "macOS 26.727 设置内容的原生不透明主表面；只清背景，不改变布局、滚动或交互" },
+    { "key": "settings-surface", "selector": ":is(.app-shell-left-panel:has([data-settings-panel-slug]) + div > .electron\\:bg-token-main-surface-primary, .app-shell-left-panel:has([data-settings-panel-slug]) + div [class~=\"electron:bg-surface\"][class~=\"electron:elevation-prominent\"])", "tier": "L2", "scope": "settings", "required": false, "notes": "macOS 26.727 的 token-main 直接子表面与 26.825 的 bg-surface/elevation 后代表面；两条路径都锚定已确认的 Settings 侧栏，只清主内容背景与阴影，不改变布局、滚动、交互，也不误伤其他 bg-surface" },
     { "key": "overlay-menu", "selector": "[role=\"menu\"]", "tier": "L2", "scope": "overlay", "required": false },
     { "key": "overlay-dialog", "selector": "[role=\"dialog\"]", "tier": "L2", "scope": "overlay", "required": false },
     { "key": "overlay-popper", "selector": "[data-radix-popper-content-wrapper]", "tier": "L2", "scope": "overlay", "required": false }

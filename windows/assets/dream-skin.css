@@ -1420,7 +1420,7 @@ html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sideb
 }
 
 html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"]
-  .app-shell-left-panel:has([data-settings-panel-slug]) + div > .electron\:bg-token-main-surface-primary {
+  :is(.app-shell-left-panel:has([data-settings-panel-slug]) + div > .electron\:bg-token-main-surface-primary, .app-shell-left-panel:has([data-settings-panel-slug]) + div [class~="electron:bg-surface"][class~="electron:elevation-prominent"]) {
   background: transparent !important;
   box-shadow: none !important;
 }
