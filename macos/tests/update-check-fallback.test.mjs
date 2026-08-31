@@ -43,7 +43,7 @@ test("the public release fallback preserves exact update metadata", () => {
     const result = runFallback(directory);
     assert.equal(result.status, 0, result.stderr);
     const metadata = JSON.parse(result.stdout);
-    assert.equal(metadata.currentVersion, "v1.5.16.2");
+    assert.equal(metadata.currentVersion, "v1.5.16.3");
     assert.equal(metadata.latestVersion, "v9.8.7");
     assert.equal(metadata.updateAvailable, true);
     assert.equal(metadata.assetName, "CodexDreamSkin-v9.8.7.dmg");

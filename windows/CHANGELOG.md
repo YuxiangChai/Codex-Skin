@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 个人同步 1.5.16.3
+
+- 随 macOS GitHub API 403 自动更新修复同步版本常量和绑定断言；fallback 与自动安装改动仅用于 macOS，本次不构建、上传或发布 Windows Setup.exe。
+
 ### 个人同步 1.5.16.2
 
 - 同步 Codex 26.825 原生长文本附件初始化恢复与 Agent 完成时合成层闪烁修复的共享 renderer 合同。

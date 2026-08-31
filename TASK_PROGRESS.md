@@ -2,6 +2,31 @@
 
 Updated: 2026-08-31 (Asia/Shanghai)
 
+## Publish Personal macOS v1.5.16.3 (2026-08-31)
+
+- [authorized] The user explicitly requested publication of the GitHub 403
+  automatic-update recovery.
+- [scope] Publish macOS-only `v1.5.16.3`. Synchronize required shared Windows
+  version sources and assertions but do not build or upload a Windows
+  Setup.exe. Preserve all `v1.5.16.2` renderer/theme fixes.
+- [baseline] Refreshed both remotes. `personal/main` remains at `77f9cf4`, the
+  fix commit `09c6a14` is its sole descendant, refreshed `origin/main` is an
+  ancestor, and remote tag `v1.5.16.3` is absent.
+- [ready] All six release sources and bound assertions equal `1.5.16.3`.
+  Passed macOS portable Node (103), shared Windows Node (29), tools (10),
+  Swift/XCTest (15), the protected full macOS suite, both payload checks,
+  shared-asset sync, release checks, live API-403 fallback and
+  `git diff --check`.
+- [ready] Built, verified and read-only mounted
+  `macos/release/CodexDreamSkin-v1.5.16.3.dmg`. App and bundled engine versions
+  are `1.5.16.3`, the binary contains x86_64 + arm64, one Iron Man preset is
+  present, deep codesign verification passes, and the packaged checker contains
+  and successfully executes the public-Release fallback. Local SHA-256 is
+  `bac2930ddfab36a4bd2eb0a546309f5433fc96aebcc504009d870e05c606f16b`.
+- [in_progress] Create the immutable versioned release commit, re-fetch and
+  fast-forward `personal/main`, then verify CI/Release, tag SHA and independently
+  downloaded public DMG/checksum assets.
+
 ## Automatic Update Check GitHub 403 Recovery (2026-08-31)
 
 - [goal] Restore manual and background update checks when GitHub's anonymous
