@@ -23,13 +23,23 @@ Updated: 2026-08-31 (Asia/Shanghai)
   present, deep codesign verification passes, and the packaged checker contains
   and successfully executes the public-Release fallback. Local SHA-256 is
   `bac2930ddfab36a4bd2eb0a546309f5433fc96aebcc504009d870e05c606f16b`.
-- [in_progress] Commits `09c6a14` and `2f5de47` were fast-forwarded to
-  `personal/main`. Release run `33387137700` passed its release guard but failed
-  before tag creation in the Ubuntu portable Node job because the new macOS
-  integration test directly invokes Apple-only system utilities. No tag or
-  assets were created. Keep a portable source-contract test on Ubuntu and run
-  the 11 executable checker fixtures only on the macOS runner, then retry and
-  verify CI/Release, tag SHA and independently downloaded public assets.
+- [x] Commits `09c6a14` and `2f5de47` were fast-forwarded to `personal/main`.
+  Initial Release run `33387137700` passed its guard but failed before tag
+  creation because an Ubuntu portable job invoked Apple-only test utilities.
+  Commit `67970b5` retained a portable source-contract test and scoped the 11
+  executable checker fixtures to macOS; all 104 macOS Node, 29 shared Windows
+  Node and 10 tool tests passed locally.
+- [x] Release run `33387460983` and CI run `33387460999` completed successfully.
+  Public tag `v1.5.16.3` points exactly to `67970b5`. The public, macOS-only
+  Release contains `CodexDreamSkin-v1.5.16.3.dmg` (3,130,585 bytes, SHA-256
+  `ef4703b3c3bc065b0cab137a7c35f70214dbd0b1032207108e61c516c90a9f9c`)
+  and `SHA256SUMS.txt` (95 bytes); no Windows Setup asset was published.
+- [x] Independently downloaded the public assets, matched the published
+  checksum and passed `hdiutil verify`. The read-only mounted App and engine
+  both report `1.5.16.3`, the binary is universal x86_64 + arm64, deep codesign
+  verification passes, and exactly one Iron Man preset remains. The packaged
+  checker successfully resolves public `v1.5.16.3` through the fallback with
+  `updateAvailable:false` and the exact public byte count and SHA-256.
 
 ## Automatic Update Check GitHub 403 Recovery (2026-08-31)
 
