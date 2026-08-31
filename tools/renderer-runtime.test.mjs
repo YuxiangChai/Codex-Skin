@@ -737,8 +737,13 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     css,
-    /\[data-response-annotation-conversation\]\[data-response-annotation-target\][\s\S]{0,900}backdrop-filter:\s*blur\(20px\)/,
+    /\[data-response-annotation-conversation\]\[data-response-annotation-target\]\s*\{[^}]*backdrop-filter:\s*none\s*!important/,
     "Streaming reasoning needs a readable single themed surface.",
+  );
+  assert.doesNotMatch(
+    css,
+    /\[data-response-annotation-conversation\]\[data-response-annotation-target\]\s*\{[^}]*backdrop-filter:\s*blur\(/,
+    "Streaming-to-final reparenting must not tear down a live backdrop blur layer.",
   );
   assert.match(
     css,

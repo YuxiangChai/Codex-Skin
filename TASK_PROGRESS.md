@@ -2,6 +2,41 @@
 
 Updated: 2026-08-31 (Asia/Shanghai)
 
+## Agent Completion Top-left Flash (2026-08-31)
+
+- [goal] Reproduce and remove the very brief light/white flash near the main
+  page's upper-left corner when an agent finishes replying in a Session.
+- [scope] Preserve the published Iron Man canvas, Settings, Chat/Work/Codex
+  states, composer and message surfaces. Diagnose the transient completion
+  node/state before changing CSS; do not hide unrelated notifications or
+  weaken verification.
+- [baseline] Start from clean published-state commit `4c65139` on new branch
+  `codex/fix-completion-flash`; public `v1.5.16.1` remains untouched.
+- [diagnosis] Live CDP capture on Codex 26.825 ruled out Sonner toast, pinned
+  summary, and the main top fade. At finalization the response is reparented
+  into `data-local-conversation-final-assistant`, the reverse-thread virtual
+  list corrects its geometry by about 246px within two animation frames, and
+  the streaming reasoning surface simultaneously drops its `backdrop-filter`
+  compositor layer. No light-colored DOM surface was inserted; the flash is
+  compositor churn from destroying the transient blur layer during the scroll
+  correction.
+- [implemented] Keep the streaming reasoning glass fill, gradient, border,
+  shadow, and inset highlight, but force `backdrop-filter: none`. Added a
+  regression assertion that rejects a blur filter on this transient selector.
+- [validated] Synchronized the canonical CSS into both platform payloads and
+  hot-applied the exact rule to the currently running Codex renderer (one
+  matching rule changed from blur to none). Passed renderer tests for macOS
+  and Windows assets, shared-asset sync, `git diff --check`, the macOS suite
+  with signed-runtime/duplicate-Doctor probes skipped to avoid changing the
+  running app, and a separate live Doctor (`pass: true`, official signature
+  valid). The first unskipped suite reached only the signed runtime switch
+  integration before exiting without an assertion; no CSS or renderer test
+  failed.
+- [remaining_live_check] A post-fix natural agent-completion frame has not yet
+  occurred in the active Session. The running renderer already has the hot
+  patch, so the user's next completed response can verify the visual symptom
+  without restarting Codex.
+
 ## Publish Personal macOS v1.5.16.1 (2026-08-31)
 
 - [authorized] The user explicitly requested publication after reviewing the

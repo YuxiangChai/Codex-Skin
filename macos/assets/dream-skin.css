@@ -1261,7 +1261,14 @@ html[data-dream-skin="active"] [data-markdown-text-style]
 }
 
 /* Streaming reasoning is not yet inside the final assistant message. Give it
-   one readable surface, then remove the nested decoration after finalization. */
+   one readable surface, then remove the nested decoration after finalization.
+   Keep this transient surface out of the backdrop-filter compositor: Codex
+   reparents it into a content-visibility:auto final block and corrects the
+   reverse-thread scroll position in the same completion frame. Destroying a
+   live blur layer during that correction produces a brief light flash near
+   the top of the main surface on macOS. The translucent fill, gradient,
+   border, shadow, and inset highlight preserve the glass treatment without
+   creating that disposable compositor layer. */
 html[data-dream-skin="active"] .thread-scroll-container
   [data-response-annotation-conversation][data-response-annotation-target] {
   box-sizing: border-box;
@@ -1276,7 +1283,7 @@ html[data-dream-skin="active"] .thread-scroll-container
   box-shadow:
     0 10px 28px rgb(var(--ds-bg-rgb) / .18),
     inset 0 1px rgb(var(--ds-text-rgb) / .14) !important;
-  backdrop-filter: blur(20px) saturate(125%) brightness(104%) !important;
+  backdrop-filter: none !important;
 }
 
 html[data-dream-skin="active"] .thread-scroll-container
