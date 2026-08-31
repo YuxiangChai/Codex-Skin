@@ -2,6 +2,49 @@
 
 Updated: 2026-08-31 (Asia/Shanghai)
 
+## Native Long-text Pasted Attachment Recovery (2026-08-31)
+
+- [goal] Preserve Codex 26.825's native compact `Pasted text` attachment card
+  for long clipboard text while preventing its `Adding pasted text...` state
+  from remaining pending forever.
+- [scope] Repair the official attachment pipeline only. Do not insert long
+  clipboard contents into the ProseMirror composer, fabricate a visual card,
+  read/log pasted contents, patch `app.asar`, publish, or build a Windows
+  installer. Keep the completion-flash fix at `ce8da57`.
+- [correction] The earlier direct-composer workaround was the wrong UX and was
+  reverted in `74598e5`; its live listener was also removed. The native card
+  behavior is now the acceptance contract.
+- [root_cause] Codex 26.825 starts
+  `cleanupPendingPastedTextAttachments()` before the local app-server bridge is
+  reliably ready. Its initial attachment-registry `fs/readFile` request can
+  lose its response, has `timeoutMs=0`, and remains cached forever in
+  `pastedTextAttachments.state`. Every later long paste creates the native
+  pending card and then waits on that same Promise, so no attachment directory
+  or text file is written and the card never calls its official success path.
+- [evidence] The current local manager contains one startup-era attachment
+  registry read pending for hours. A separate bounded read of the same registry
+  completed in 47 ms and returned valid metadata, proving the filesystem,
+  registry and current app-server are healthy. Live transport tracing confirmed
+  that a reproduced paste emits no new filesystem request because it is blocked
+  on the cached startup Promise.
+- [implemented] Added a version- and structure-gated, one-shot recovery that
+  retries only the unique stale local registry read, validates its bounded
+  metadata, and resolves the original official request through the request
+  client's own result path. Normal, remote, cloud, ambiguous, invalid and
+  failed states remain untouched. The runtime neither listens for paste events
+  nor reads/inserts the clipboard body, and it does not fabricate attachment UI.
+- [validated] Hot-applied the exact renderer payload to the running Codex and
+  dispatched a generated long-text paste. The official compact attachment card
+  completed, `Adding pasted text...` disappeared, the ProseMirror editor stayed
+  empty, and the card's native remove control worked. The stale request was
+  recovered with one bounded retry; the generated test registry entry and its
+  uniquely timestamped orphan test directory were removed afterward.
+- [tests] Passed shared-asset sync, renderer syntax/runtime and early-injection
+  tests on both platform payloads, 39 portable tool/Windows Node tests, and the
+  macOS suite including 15 Swift/XCTest cases. Signed-runtime switching,
+  runtime-state integration and Doctor were intentionally skipped to avoid
+  changing the currently running signed Codex; no Windows installer was built.
+
 ## Agent Completion Top-left Flash (2026-08-31)
 
 - [goal] Reproduce and remove the very brief light/white flash near the main

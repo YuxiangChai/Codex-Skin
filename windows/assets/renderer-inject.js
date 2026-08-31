@@ -97,6 +97,10 @@
   let styleMode = null;
   let styleNode = null;
   let styleSheet = null;
+  let pastedTextRecoveryTimer = null;
+  let pastedTextRecoveryRunning = false;
+  let pastedTextRecoveryFinished = false;
+  let pastedTextRecoveryAttempts = 0;
   const now = () => typeof performance === "object" && typeof performance.now === "function"
     ? performance.now() : Date.now();
   const metrics = {
@@ -1025,6 +1029,249 @@
     if (partPass) refreshParts();
   };
 
+  // Codex Desktop 26.825 can dispatch its startup attachment-registry read
+  // before the local app-server bridge is reliably ready. The official client
+  // gives that request no timeout and caches the resulting Promise, so every
+  // later long paste can remain on the native "Adding pasted text..." card.
+  // Recover only that unique startup-era read and hand its validated result
+  // back through the official request-client completion path. No pasted text,
+  // composer content, or attachment body is inspected here.
+  const updatePastedTextRecoveryStatus = (status) => {
+    const state = window[STATE_KEY];
+    if (state?.installToken === installToken) {
+      state.pastedTextRecovery = { status, attempts: pastedTextRecoveryAttempts };
+    }
+  };
+  const finishPastedTextRecovery = (status) => {
+    pastedTextRecoveryFinished = true;
+    pastedTextRecoveryRunning = false;
+    if (pastedTextRecoveryTimer) clearTimeout(pastedTextRecoveryTimer);
+    pastedTextRecoveryTimer = null;
+    updatePastedTextRecoveryStatus(status);
+  };
+  const schedulePastedTextRecovery = (delay = 0) => {
+    if (pastedTextRecoveryFinished || pastedTextRecoveryRunning || pastedTextRecoveryTimer ||
+      window[DISABLED_KEY]) return;
+    pastedTextRecoveryTimer = setTimeout(() => {
+      pastedTextRecoveryTimer = null;
+      recoverStalePastedTextRegistryRead().catch(() => {
+        finishPastedTextRecovery("failed");
+      });
+    }, delay);
+  };
+  const findLocalAppServerManager = () => {
+    const editor = document.querySelector(
+      '.ProseMirror[contenteditable="true"][role="textbox"]',
+    );
+    const host = editor?.parentElement;
+    const fiberKey = host && Object.getOwnPropertyNames(host)
+      .find((key) => key.startsWith("__reactFiber$"));
+    if (!fiberKey) return null;
+    const queue = [];
+    let fiber = host[fiberKey];
+    for (let index = 0; fiber && index < 130; index += 1, fiber = fiber.return) {
+      queue.push({ value: fiber.memoizedProps, depth: 0 });
+      queue.push({ value: fiber.memoizedState, depth: 0 });
+      queue.push({ value: fiber.dependencies, depth: 0 });
+    }
+    const seen = new WeakSet();
+    let scanned = 0;
+    let queueIndex = 0;
+    while (queueIndex < queue.length && scanned < 300000) {
+      const { value, depth } = queue[queueIndex];
+      queueIndex += 1;
+      if ((typeof value !== "object" && typeof value !== "function") || value == null ||
+        seen.has(value) || value === window ||
+        (typeof Node === "function" && value instanceof Node)) continue;
+      seen.add(value);
+      scanned += 1;
+      let own;
+      let proto;
+      try {
+        own = Object.getOwnPropertyNames(value);
+        proto = Object.getOwnPropertyNames(Object.getPrototypeOf(value) || {});
+      } catch {
+        continue;
+      }
+      const managerShape = value.hostId === "local" && own.includes("requestClient") &&
+        own.includes("pastedTextAttachments") &&
+        proto.includes("createPastedTextAttachment") &&
+        proto.includes("cleanupPendingPastedTextAttachments");
+      if (managerShape) {
+        const client = value.requestClient;
+        const clientOwn = client && Object.getOwnPropertyNames(client);
+        const clientProto = client && Object.getOwnPropertyNames(Object.getPrototypeOf(client) || {});
+        if (client?.hostId === "local" && client.requestPromises instanceof Map &&
+          client.inFlightRequests instanceof Set && Array.isArray(client.queuedRequests) &&
+          clientOwn.includes("requestPromises") && clientProto.includes("sendRequest") &&
+          clientProto.includes("onResult") && clientProto.includes("onError") &&
+          clientProto.includes("getPendingRequestCount")) return value;
+      }
+      if (depth >= 12 || typeof value === "function") continue;
+      if (value instanceof Map) {
+        for (const [key, item] of value) {
+          queue.push({ value: key, depth: depth + 1 });
+          queue.push({ value: item, depth: depth + 1 });
+        }
+      } else if (value instanceof Set) {
+        for (const item of value) queue.push({ value: item, depth: depth + 1 });
+      }
+      for (const key of own) {
+        if (["return", "child", "sibling", "alternate", "stateNode", "_owner",
+          "window", "self", "globalThis"].includes(key)) continue;
+        let child;
+        try {
+          const descriptor = Object.getOwnPropertyDescriptor(value, key);
+          if (!descriptor || !("value" in descriptor)) continue;
+          child = descriptor.value;
+        } catch {
+          continue;
+        }
+        if ((typeof child === "object" || typeof child === "function") && child != null) {
+          queue.push({ value: child, depth: depth + 1 });
+        }
+      }
+    }
+    return null;
+  };
+  const promiseIsPending = async (promise) => {
+    if (!promise || typeof promise.then !== "function") return false;
+    let timeout = null;
+    const outcome = await Promise.race([
+      Promise.resolve(promise).then(() => "settled", () => "settled"),
+      new Promise((resolve) => { timeout = setTimeout(() => resolve("pending"), 60); }),
+    ]);
+    if (timeout) clearTimeout(timeout);
+    return outcome === "pending";
+  };
+  const withTimeout = async (promise, timeoutMs) => {
+    let timeout = null;
+    try {
+      return await Promise.race([
+        promise,
+        new Promise((_, reject) => {
+          timeout = setTimeout(() => reject(new Error("Dream Skin bounded recovery timed out")), timeoutMs);
+        }),
+      ]);
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
+  };
+  const isMissingRegistryError = (error) => error instanceof Error && (
+    error.code === "ENOENT" || error.message.includes("ENOENT") ||
+    error.message.includes("No such file or directory") ||
+    /\(os error [23]\)/.test(error.message)
+  );
+  const validatePastedTextRegistryResult = (attachmentStore, registryPath, result) => {
+    if (!result || typeof result.dataBase64 !== "string" ||
+      result.dataBase64.length < 2 || result.dataBase64.length > 2 * 1024 * 1024) return false;
+    let parsed;
+    try {
+      parsed = JSON.parse(attachmentStore.options.host.decodeText(result.dataBase64));
+    } catch {
+      return false;
+    }
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed) ||
+      !Array.isArray(parsed.attachmentPaths) || !Array.isArray(parsed.pendingRemovalPaths) ||
+      !parsed.textExcerptsByPath || typeof parsed.textExcerptsByPath !== "object" ||
+      Array.isArray(parsed.textExcerptsByPath)) return false;
+    const normalize = (value) => String(value).replaceAll("\\", "/").replace(/\/+$/, "");
+    const normalizedRegistry = normalize(registryPath);
+    if (!normalizedRegistry.endsWith("/pasted-text-attachments.json")) return false;
+    const root = normalizedRegistry.slice(0, -"/pasted-text-attachments.json".length);
+    const attachmentPattern = new RegExp(
+      `^${root.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/` +
+      "[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/pasted-text\\.txt$",
+      "i",
+    );
+    const attachmentPaths = parsed.attachmentPaths;
+    const pendingPaths = parsed.pendingRemovalPaths;
+    const excerpts = parsed.textExcerptsByPath;
+    if (!attachmentPaths.every((path) => typeof path === "string" && attachmentPattern.test(normalize(path))) ||
+      !pendingPaths.every((path) => typeof path === "string" && attachmentPaths.includes(path)) ||
+      !Object.entries(excerpts).every(([path, excerpt]) =>
+        attachmentPaths.includes(path) && typeof excerpt === "string")) return false;
+    return true;
+  };
+  async function recoverStalePastedTextRegistryRead() {
+    if (pastedTextRecoveryFinished || pastedTextRecoveryRunning || window[DISABLED_KEY]) return;
+    const bridge = window.electronBridge;
+    if (location.protocol !== "app:" || typeof bridge?.getDesktopUserAgent !== "function") {
+      finishPastedTextRecovery("ineligible");
+      return;
+    }
+    pastedTextRecoveryRunning = true;
+    pastedTextRecoveryAttempts += 1;
+    updatePastedTextRecoveryStatus("checking");
+    const desktopUserAgent = await withTimeout(
+      Promise.resolve(bridge.getDesktopUserAgent()),
+      2000,
+    );
+    if (!/^Codex Desktop\/26\.825(?:\.|\s|$)/.test(String(desktopUserAgent || ""))) {
+      finishPastedTextRecovery("ineligible");
+      return;
+    }
+    const manager = findLocalAppServerManager();
+    if (!manager) {
+      pastedTextRecoveryRunning = false;
+      if (pastedTextRecoveryAttempts >= 24) finishPastedTextRecovery("unsupported");
+      else {
+        updatePastedTextRecoveryStatus("waiting-for-composer");
+        schedulePastedTextRecovery(2500);
+      }
+      return;
+    }
+    const attachmentStore = manager.pastedTextAttachments;
+    const client = manager.requestClient;
+    if (!attachmentStore || !await promiseIsPending(attachmentStore.state)) {
+      finishPastedTextRecovery("not-needed");
+      return;
+    }
+    const nowMs = Date.now();
+    const stale = [...client.requestPromises.entries()].filter(([, request]) =>
+      request?.method === "fs/readFile" && request.source === "filesystem" &&
+      request.timeoutMs === 0 && Number.isFinite(request.startedAtMs) &&
+      request.startedAtMs - performance.timeOrigin >= 0 &&
+      request.startedAtMs - performance.timeOrigin < 2000 &&
+      nowMs - request.startedAtMs > 10000);
+    if (stale.length !== 1) {
+      finishPastedTextRecovery(stale.length === 0 ? "not-needed" : "ambiguous");
+      return;
+    }
+    const [staleRequestId] = stale[0];
+    let registryPath;
+    try {
+      registryPath = await withTimeout(attachmentStore.getRegistryPath(), 3000);
+    } catch {
+      finishPastedTextRecovery("failed");
+      return;
+    }
+    let retryResult;
+    try {
+      retryResult = await client.sendRequest("fs/readFile", { path: registryPath }, {
+        timeoutMs: 5000,
+        priority: "interactive",
+        source: "filesystem",
+      });
+    } catch (error) {
+      if (isMissingRegistryError(error) && client.requestPromises.has(staleRequestId)) {
+        client.onError(staleRequestId, error);
+        finishPastedTextRecovery("recovered-empty");
+      } else finishPastedTextRecovery("failed");
+      return;
+    }
+    if (!validatePastedTextRegistryResult(attachmentStore, registryPath, retryResult)) {
+      finishPastedTextRecovery("invalid-registry");
+      return;
+    }
+    if (!client.requestPromises.has(staleRequestId)) {
+      finishPastedTextRecovery("native-completed");
+      return;
+    }
+    client.onResult(staleRequestId, retryResult);
+    finishPastedTextRecovery("recovered");
+  }
+
   const cleanup = () => {
     const state = window[STATE_KEY];
     if (state?.installToken !== installToken) return false;
@@ -1055,6 +1302,7 @@
     if (state?.timer) clearInterval(state.timer);
     if (state?.scheduler?.timeout) clearTimeout(state.scheduler.timeout);
     if (analysisTimer) clearTimeout(analysisTimer);
+    if (pastedTextRecoveryTimer) clearTimeout(pastedTextRecoveryTimer);
     if (state?.mediaHandler && state?.mediaQuery) {
       try { state.mediaQuery.removeEventListener("change", state.mediaHandler); } catch {}
     }
@@ -1145,12 +1393,16 @@
     themeId: THEME.id || "custom",
     revision: PAYLOAD_REVISION,
     detectShellAppearance,
+    pastedTextRecovery: { status: "idle", attempts: 0 },
   };
   if (typeof document.addEventListener === "function") {
     document.addEventListener("click", pinnedSummaryClickHandler, true);
   }
   const firstEnsureStartedAt = now();
   ensure({ root: true, scope: true, parts: true });
+  if (typeof window.electronBridge?.getDesktopUserAgent === "function") {
+    schedulePastedTextRecovery(0);
+  }
   const initialScope = window[STATE_KEY].scope;
   metrics.firstEnsureMs = Number((now() - firstEnsureStartedAt).toFixed(3));
 

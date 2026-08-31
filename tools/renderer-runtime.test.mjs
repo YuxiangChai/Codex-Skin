@@ -368,7 +368,7 @@ function makeFixture({
       revokeObjectURL(value) { revoked.push(value); },
     },
     URLSearchParams,
-    performance: { now: () => 1 },
+    performance: { now: () => 1, timeOrigin: Date.now() },
     setTimeout(callback, delay) { const id = ++nextId; timers.set(id, { callback, delay }); return id; },
     clearTimeout(id) { timers.delete(id); },
     setInterval(callback, delay) { const id = ++nextId; intervals.set(id, { callback, delay }); return id; },
@@ -850,6 +850,121 @@ export async function runRendererRuntimeTest(assetRoot) {
   assert.equal(state.metrics.partPasses, 1);
   assert.equal(state.metrics.layoutReads, 0, "Runtime must not perform layout reads");
   assert.equal(home.rootClasses.writes.length, 0, "Runtime must not write classes");
+
+  const stalePaste = makeFixture({ nativeAppearance: "dark", generic: true });
+  stalePaste.context.performance.timeOrigin = Date.now() - 30000;
+  stalePaste.window.electronBridge = {
+    getDesktopUserAgent: () => Promise.resolve("Codex Desktop/26.825.51511 (Mac OS; arm64)"),
+  };
+  stalePaste.context.__registryBase64 = Buffer.from(JSON.stringify({
+    attachmentPaths: [],
+    pendingRemovalPaths: [],
+    textExcerptsByPath: {},
+  })).toString("base64");
+  stalePaste.selectorNodes.set(
+    '.ProseMirror[contenteditable="true"][role="textbox"]',
+    [stalePaste.partFixtures.input],
+  );
+  vm.runInNewContext(`(() => {
+    class FixtureRequestClient {
+      constructor() {
+        this.hostId = "local";
+        this.requestPromises = new Map();
+        this.inFlightRequests = new Set();
+        this.queuedRequests = [];
+        this.retryCount = 0;
+        this.completedIds = [];
+      }
+      getPendingRequestCount() { return this.requestPromises.size; }
+      onError(id, error) {
+        const request = this.requestPromises.get(id);
+        if (!request) return;
+        this.requestPromises.delete(id);
+        request.reject(error);
+      }
+      onResult(id, result) {
+        const request = this.requestPromises.get(id);
+        if (!request) return;
+        this.requestPromises.delete(id);
+        this.completedIds.push(id);
+        request.resolve(result);
+      }
+      async sendRequest(method, params, options) {
+        if (method !== "fs/readFile" || options?.timeoutMs !== 5000 ||
+          options?.source !== "filesystem") throw new Error("unexpected recovery request");
+        this.retryCount += 1;
+        return { dataBase64: __registryBase64 };
+      }
+    }
+    class FixtureManager {
+      constructor() {
+        this.hostId = "local";
+        this.requestClient = new FixtureRequestClient();
+        let resolveState;
+        const state = new Promise((resolve) => { resolveState = resolve; });
+        this.pastedTextAttachments = {
+          state,
+          options: { host: { decodeText: (base64) => atob(base64) } },
+          async getRegistryPath() {
+            return "/Users/fixture/.codex/attachments/pasted-text-attachments.json";
+          },
+        };
+        this.requestClient.requestPromises.set("startup-registry-read", {
+          method: "fs/readFile",
+          source: "filesystem",
+          timeoutMs: 0,
+          startedAtMs: performance.timeOrigin + 800,
+          resolve: resolveState,
+          reject: () => {},
+        });
+      }
+      createPastedTextAttachment() {}
+      cleanupPendingPastedTextAttachments() {}
+    }
+    const manager = new FixtureManager();
+    const editor = document.querySelector(
+      '.ProseMirror[contenteditable="true"][role="textbox"]'
+    );
+    editor.parentElement.__reactFiber$fixture = {
+      memoizedProps: null,
+      memoizedState: { manager },
+      dependencies: null,
+      return: null,
+    };
+    window.__fixturePasteManager = manager;
+  })()`, stalePaste.context);
+  vm.runInNewContext(stalePaste.payloadFor(), stalePaste.context);
+  stalePaste.flushTimers(0);
+  await new Promise((resolve) => setImmediate(resolve));
+  stalePaste.flushTimers(60);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(stalePaste.window.__fixturePasteManager.requestClient.retryCount, 1,
+    "A unique stale 26.825 startup registry read must receive one bounded read-only retry.");
+  assert.deepEqual(
+    [...stalePaste.window.__fixturePasteManager.requestClient.completedIds],
+    ["startup-registry-read"],
+    "Recovery must settle the original request through the official client result path.",
+  );
+  assert.equal(
+    stalePaste.window.__CODEX_DREAM_SKIN_STATE__.pastedTextRecovery.status,
+    "recovered",
+    "The native pasted-text attachment pipeline must be unblocked without replacing its card.",
+  );
+  assert.equal(stalePaste.partFixtures.input.name, "generic-input",
+    "Recovery must not replace or populate the composer editor.");
+
+  const healthyPaste = makeFixture({ nativeAppearance: "dark", generic: true });
+  healthyPaste.window.electronBridge = {
+    getDesktopUserAgent: () => Promise.resolve("Codex Desktop/26.825.51511 (Mac OS; arm64)"),
+  };
+  vm.runInNewContext(healthyPaste.payloadFor(), healthyPaste.context);
+  healthyPaste.flushTimers(0);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.notEqual(
+    healthyPaste.window.__CODEX_DREAM_SKIN_STATE__.pastedTextRecovery.status,
+    "recovered",
+    "A healthy or structurally unknown renderer must never receive a fabricated completion.",
+  );
   const messageColor = makeFixture({ nativeAppearance: "dark" });
   vm.runInNewContext(messageColor.payloadFor({
     colors: {
