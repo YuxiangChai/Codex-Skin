@@ -7,6 +7,8 @@
 - 合并上游 v1.5.15 / v1.5.16 以及后续修复，补齐 Codex 26.814-26.818 的 composer 根节点、Pet 透明窗口、Markdown 宽表格、用户气泡和新版动作按钮兼容，并加入 watcher 退避、App 包内版本源和选择器来源校验。
 - 保留 Iron Man 单主题、Chat / Work / Codex 三种首页状态、`Jarvis at your service`、主内容区居中构图、紧凑 composer、用户气泡与 pinned summary 策略，以及带校验、回滚、重启和主题恢复的 macOS 更新流程。
 - 适配 Codex 26.825.51511 Settings 新主表面：主内容恢复当前背景图和透明效果，侧边栏行为不变，限定选择器避免影响非 Settings 窗口。
+- 修复 ChatGPT 模式中 Chat / Work 切换时 composer 先在中部闪现、再跳到底部的问题；并适配 Codex 26.825 项目首页的合并 wrapper，恢复输入框在上、项目工具条在下的 Work 风格顺序。New Chat 输入框改为单一完整边框与四角圆角，Session 清除内层重复表面和第二圈弧线。
+- 用户消息升级为保留主题色的半透明玻璃表面；运行中追加的 steer 消息即使缺少外层语义锚点，也会与普通消息使用相同颜色、描边、模糊、圆角和阴影。
 - 本次只构建和验证 macOS DMG；Windows 仅同步共享运行时和可移植测试，不构建或发布 Setup.exe。
 
 ### 个人发行 1.5.14.1

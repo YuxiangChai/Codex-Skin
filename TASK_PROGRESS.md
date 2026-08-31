@@ -2,6 +2,80 @@
 
 Updated: 2026-08-31 (Asia/Shanghai)
 
+## ChatGPT Chat / Work Composer Transition Flash (2026-08-31)
+
+- [goal] Remove the transient frame where switching between Chat and Work
+  shows the home composer near the horizontal center before it snaps to the
+  intended bottom position.
+- [scope] Preserve the final Chat / Work / Codex home layout, native controls,
+  Iron Man visuals and shared renderer contract. Change only the initial home
+  composer positioning path, synchronize generated assets, and validate on
+  macOS; do not publish or build a Windows installer.
+- [baseline] Work begins from clean local merge commit `58790c6` on
+  `codex/merge-origin-v1.5.16`; the currently merged personal version is
+  `1.5.16.1` and no push, tag or public Release has been performed.
+- [root_cause] Live frame sampling reproduced the flash: a replacement
+  ChatGPT composer first appeared at `y=466.7` without `data-ds-part`, then the
+  debounced part pass annotated it roughly 80 ms later and the personal CSS
+  moved it to `y=881`. The bottom-row rule incorrectly depended on that
+  asynchronous public-part annotation even though the native
+  `_ComposerLayoutRoot_` selector was already present in the first frame.
+- [additional_bug] The merged Codex 26.825 project home now places its utility
+  rail and composer in the same wrapper, with the rail first. The older rule
+  moved the combined wrapper but could no longer put the rail below the
+  composer; the rail's native `_attached_` top radius then produced the
+  detached upper card and incorrect corner arc shown in the user screenshots.
+- [additional_bug] Codex 26.825 paints both `_ComposerLayoutRoot_` and its
+  direct `_ComposerLayoutBody_` child. The personal theme kept both paints in
+  Sessions, producing two concentric corner arcs. New Chat also removed the
+  outer border and relied on an elevation outline, leaving its top edge and
+  corner continuity visually incomplete.
+- [additional_bug] Normal committed user messages have a semantic user anchor,
+  but a live steer submitted during an active turn can expose only the exact
+  native `data-user-message-bubble` marker. The old bounded-part pass required
+  the missing anchor, so steer bubbles kept the host's neutral/transparent
+  surface instead of the theme-owned user-message color.
+- [implemented] Home-row positioning now matches the synchronous native
+  composer selector while visual surface styling still requires the single
+  public composer part. Standalone Codex project homes make the shared wrapper
+  a deterministic column, order the composer before the utility rail, and
+  retain only the rail's lower corner radii.
+- [implemented] The public ComposerLayoutRoot is now the only visual surface:
+  its direct Body is transparent, borderless, radius-free and shadow-free in
+  both Home and Session. New Chat uses one real 1 px outer border, one 25 px
+  radius and one drop shadow; the Iron Man preset no longer erases that border.
+- [implemented] Every explicit native user-message bubble is now a bounded
+  `message-user` surface, including anchorless live steer bubbles. Both normal
+  and steer messages share the existing theme color plus a translucent
+  highlight gradient, accent border, 18 px backdrop blur and one soft shadow.
+- [verified] Targeted renderer regression and generated-asset sync/check pass.
+  Live candidate revision `87054da570d7e92ceb50` verifies L1 home structure,
+  no overflow and the 640 px Codex composer. Screenshot evidence is
+  `/private/tmp/codex-project-home-fixed.png`.
+- [verified] Trusted real-renderer switching has no intermediate centered
+  frame: Chat -> Work first replacement frame is already at `y=787` before
+  public-part annotation; Work -> Chat first replacement frame is already at
+  `y=881`. The later annotation changes no geometry.
+- [verified] Live Codex 26.825 computed styles confirm New Chat Root is
+  `border: 1px solid`, `border-radius: 25px`, while its Body is transparent,
+  shadow-free and `border-radius: 0`. Session keeps one 22 px Root and likewise
+  clears the direct Body (`transparent`, `none`, `0px`), removing the second
+  arc. Screenshots are `/private/tmp/codex-composer-final.png` and
+  `/private/tmp/codex-session-final-2.png`.
+- [verified] Live normal and steer bubbles both resolve to
+  `background: rgba(100, 230, 255, 0.12)`, a 22% accent border, 18 px blur and
+  identical shadow/radius values. Visual evidence is
+  `/private/tmp/user-message-glass-final.png`.
+- [verified] Final suites pass: 92 macOS Node tests, 29 shared Windows Node
+  tests, 10 tools tests, 15 Swift/XCTest cases, and the complete macOS shell,
+  theme, package, signed-runtime, runtime-state and Doctor integrations.
+- [verified] Rebuilt the local universal macOS DMG after updating the reviewed
+  Iron Man preset CSS hash. `hdiutil verify` and the detached checksum pass for
+  `macos/release/CodexDreamSkin-v1.5.16.1.dmg`; SHA-256 is
+  `81ad33ef349d3ccd310dcba2ecd053fb8e80cabcbd9de9d7b09da6d519a3592c`.
+- [completed] Reviewed the scoped diff and created the local fix commit. No
+  Windows Setup.exe was built, and nothing was pushed, tagged or published.
+
 ## Origin v1.5.16 Integration With Personal macOS Features (2026-08-31)
 
 - [goal] Merge refreshed `origin/main` `e0341de` into the personal engine while

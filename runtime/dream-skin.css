@@ -904,24 +904,19 @@ html[data-dream-skin="active"] __DREAM_SELECTOR_COMPOSER_CHROME__ {
 
 html[data-dream-skin="active"] __DREAM_SELECTOR_COMPOSER_CHROME__::before { content: none !important; }
 
-/* Codex 26.803+ moves the Home surface paint onto its body child. Keep one
-   public visual surface: the renderer exposes the outer root as
-   data-ds-part="composer", while this internal native layer stays
-   transparent so base and Community Safe CSS paint the same node. */
-html[data-dream-skin="active"] __DREAM_SELECTOR_COMPOSER_CHROME__[data-composer-utility-bar-variant="home"]
+/* Codex 26.803+ paints the same surface on ComposerLayoutRoot and its Body.
+   The renderer exposes exactly one of them as the public composer; whenever
+   Root owns that part, clear its direct Body for both Home and Session. This
+   avoids the two concentric rounded outlines seen in current sessions while
+   keeping Body as the fallback public surface on older builds without Root. */
+html[data-dream-skin="active"][data-dream-shell][data-dream-art-wide][data-dream-art-scope][data-dream-task-mode]
+  __DREAM_SELECTOR_COMPOSER_CHROME__[data-ds-part="composer"]
   > [class*="_ComposerLayoutBody_"] {
   background: transparent !important;
+  background-image: none !important;
   border: 0 !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-}
-
-/* Keep the public ComposerLayoutRoot as the single thread surface too. The
-   canonical 26.814+ contract maps that Root, so clear only nested paint. */
-html[data-dream-skin="active"] [data-codex-composer-root][data-composer-placement="thread"]
-  __DREAM_SELECTOR_COMPOSER_CHROME__ > [class*="_ComposerLayoutBody_"] {
-  background: transparent !important;
-  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
 }
@@ -1676,14 +1671,34 @@ html[data-dream-skin="active"]
   --thread-content-max-width: 672px !important;
 }
 
-/* The standalone project-home DOM places the utility wrapper before the
-   composer. Work mode presents the same controls underneath it. Reorder the
-   immediate utility wrapper without moving or recreating native controls. */
+/* The current standalone project-home DOM keeps the utility rail and composer
+   inside one wrapper, with the rail first. Turn that wrapper into a column and
+   put the composer first so Codex matches Work instead of showing a detached
+   rounded toolbar above the input. The rail keeps only its lower corners;
+   otherwise its native `_attached_` top radius clips a second arc around the
+   project controls after the reorder. */
 html[data-dream-skin="active"]
   __DREAM_SELECTOR_HOME_ROUTE_CSS__:has(__DREAM_SELECTOR_GAME_SOURCE__)
   div:has(> div > __DREAM_SELECTOR_HOME_UTILITY__) {
   order: 2 !important;
   margin-top: calc(var(--spacing) * -2) !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+html[data-dream-skin="active"]
+  __DREAM_SELECTOR_HOME_ROUTE_CSS__:has(__DREAM_SELECTOR_GAME_SOURCE__)
+  div:has(> div > __DREAM_SELECTOR_HOME_UTILITY__)
+  > div:has(> __DREAM_SELECTOR_HOME_UTILITY__) {
+  order: 2 !important;
+  border-radius: 0 0 var(--radius-2xl) var(--radius-2xl) !important;
+}
+
+html[data-dream-skin="active"]
+  __DREAM_SELECTOR_HOME_ROUTE_CSS__:has(__DREAM_SELECTOR_GAME_SOURCE__)
+  div:has(> div > __DREAM_SELECTOR_HOME_UTILITY__)
+  > div:has(__DREAM_SELECTOR_COMPOSER_CHROME__) {
+  order: 1 !important;
 }
 
 /* Chat, Work and standalone Codex expose different native title nodes with
@@ -1739,12 +1754,14 @@ html[data-dream-skin="active"]
 }
 
 /* Codex 26.721+ keeps the native composer in the second row of the home
-   grid. 26.730 renamed the complete surface to ComposerLayoutBody, which the
-   shared selector contract includes without its build hash. Preserve the
-   native control and its utility bar, but anchor that row to the bottom after
-   the recommendation section is removed. */
+   grid. Match the synchronous native composer selector here instead of the
+   asynchronous data-ds-part bridge: Chat / Work replace this subtree before
+   the renderer's debounced part pass, and waiting for that annotation paints
+   one native centered frame before the row jumps to the bottom. This rule
+   moves only the parent row; visual composer rules below still require the
+   single public part so nested LayoutBody nodes are not painted twice. */
 html[data-dream-skin="active"] __DREAM_SELECTOR_HOME_ROUTE_CSS__
-  > div:first-child > div:has(__DREAM_SELECTOR_COMPOSER_CHROME__[data-ds-part="composer"]) {
+  > div:first-child > div:has(__DREAM_SELECTOR_COMPOSER_CHROME__) {
   margin-top: 0 !important;
   justify-content: flex-end !important;
 }
@@ -1757,9 +1774,9 @@ html[data-dream-skin="active"] body
   __DREAM_SELECTOR_COMPOSER_CHROME__[data-ds-part="composer"] {
   --tw-backdrop-blur: blur(var(--blur-lg));
   background-color: color-mix(in oklab, var(--color-token-input-background) 90%, transparent) !important;
-  border: 0 solid transparent !important;
+  border: 1px solid var(--ds-immersive-line) !important;
   border-radius: var(--radius-3xl) !important;
-  box-shadow: var(--elevation-prominent) !important;
+  box-shadow: 0 10px 28px rgb(var(--ds-bg-rgb) / .24) !important;
   backdrop-filter:
     var(--tw-backdrop-blur,)
     var(--tw-backdrop-brightness,)
@@ -1790,9 +1807,9 @@ html[data-dream-skin="active"][data-dream-art-wide="true"] body
   __DREAM_SELECTOR_COMPOSER_CHROME__[data-ds-part="composer"] {
   --tw-backdrop-blur: blur(var(--blur-lg));
   background-color: color-mix(in oklab, var(--color-token-input-background) 90%, transparent) !important;
-  border: 0 solid transparent !important;
+  border: 1px solid var(--ds-immersive-line) !important;
   border-radius: var(--radius-3xl) !important;
-  box-shadow: var(--elevation-prominent) !important;
+  box-shadow: 0 10px 28px rgb(var(--ds-bg-rgb) / .24) !important;
   backdrop-filter:
     var(--tw-backdrop-blur,)
     var(--tw-backdrop-brightness,)
@@ -1879,10 +1896,24 @@ html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sideb
   background-image: none !important;
 }
 
-/* User-authored messages keep the native geometry and controls, but use one
-   theme-owned translucent surface instead of the host's neutral gray. */
+/* User-authored messages keep native geometry and controls, but share one
+   theme-colored glass surface. This part covers both committed messages and
+   live steer bubbles, which current Codex can render without a semantic outer
+   user anchor while a turn is running. */
 html[data-dream-skin="active"] [data-ds-part="message-user"] {
   background-color: var(--ds-theme-color-message-user) !important;
+  background-image: linear-gradient(
+    135deg,
+    rgb(var(--ds-text-rgb) / .06),
+    transparent 52%,
+    rgb(var(--ds-accent-rgb) / .07)
+  ) !important;
+  border: 1px solid rgb(var(--ds-accent-rgb) / .22) !important;
+  box-shadow:
+    0 10px 28px rgb(var(--ds-bg-rgb) / .18),
+    inset 0 1px 0 rgb(var(--ds-text-rgb) / .09) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(1.16) !important;
+  backdrop-filter: blur(18px) saturate(1.16) !important;
 }
 
 @media (max-width: 1120px) {

@@ -894,7 +894,11 @@
     const messages = selectorNodes("message");
     const userMessages = new Set(selectorNodes("message-user"));
     const explicitUserBubbles = selectorNodes("message-user-bubble");
-    const userMessageSurfaces = new Set();
+    // A steer submitted while a turn is already running can briefly (and on
+    // 26.825, permanently) omit the outer semantic user anchor. The native
+    // bubble marker is already an exact bounded surface, so include every
+    // explicit bubble directly and use user anchors only for older fallbacks.
+    const userMessageSurfaces = new Set(explicitUserBubbles);
     for (const userMessage of userMessages) {
       const boundedBubbles = explicitUserBubbles.filter((bubble) =>
         bubble === userMessage || userMessage.contains?.(bubble));

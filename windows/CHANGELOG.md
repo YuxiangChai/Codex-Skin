@@ -5,6 +5,8 @@
 ### 个人集成 1.5.16.1（共享合同同步）
 
 - 同步 v1.5.16.1 的共享 renderer、Safe CSS、选择器合同和生成资产，保留 Iron Man 主题及 Chat / Work / Codex 首页布局契约。
+- 同步首页 composer 首帧底部定位、Codex 项目工具条顺序，以及 New Chat / Session 单一 composer 表面合同；本轮只完成共享 Node 回归，未做 Windows 实机验收。
+- 同步普通用户消息与运行中 steer 消息共用主题色玻璃表面的 renderer 合同；未构建 Windows 安装包。
 - 本次仅运行 Windows 可移植 Node / 静态回归，不构建、上传或发布 Windows Setup.exe。
 
 ### 个人发行 1.5.14.1

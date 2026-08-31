@@ -200,6 +200,11 @@ function makeFixture({
       new Map([["data-user-message-bubble", ""]]),
       ['[class*="max-w-"][class*="rounded-2xl"][class*="text-start"]'],
     );
+    partFixtures.steerMessageBubble = makeDomNode(
+      "steer-message-bubble",
+      partFixtures.thread,
+      new Map([["data-user-message-bubble", ""]]),
+    );
     partFixtures.assistantMessage = makeDomNode(
       "assistant-message",
       partFixtures.thread,
@@ -264,6 +269,7 @@ function makeFixture({
       register(messageSelector, partFixtures.assistantMessage);
       register(messageUserSelector, partFixtures.userMessage);
       register(messageUserBubbleSelector, partFixtures.userMessageBubble);
+      register(messageUserBubbleSelector, partFixtures.steerMessageBubble);
     }
     if (partFixtures.pinnedSummaryToggle) {
       register('button[aria-label="Toggle pinned summary"]', partFixtures.pinnedSummaryToggle);
@@ -593,18 +599,23 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     customPolicy,
-    new RegExp(`\\[role="main"\\]\\s*>\\s*div:first-child\\s*>\\s*div:has\\(${publicComposerPattern}\\)\\s*\\{[\\s\\S]{0,220}justify-content:\\s*flex-end\\s*!important;`),
-    "Personal builds must bottom-align the native home composer row.",
+    new RegExp(`\\[role="main"\\]\\s*>\\s*div:first-child\\s*>\\s*div:has\\(${composerPattern}\\)\\s*\\{[\\s\\S]{0,220}justify-content:\\s*flex-end\\s*!important;`),
+    "Personal builds must bottom-align the native home composer row from its synchronous native selector.",
+  );
+  assert.doesNotMatch(
+    customPolicy,
+    new RegExp(`\\[role="main"\\]\\s*>\\s*div:first-child\\s*>\\s*div:has\\(${publicComposerPattern}\\)`),
+    "Home-row positioning must not wait for the debounced public composer annotation.",
   );
   assert.match(
     customPolicy,
-    new RegExp(`\\[role="main"\\]:has\\(${homeUtilityPattern}\\)\\s+${publicComposerPattern}\\s*\\{[\\s\\S]{0,420}background-color:\\s*color-mix\\(in oklab,\\s*var\\(--color-token-input-background\\)\\s*90%,\\s*transparent\\)\\s*!important;[\\s\\S]{0,420}border-radius:\\s*var\\(--radius-3xl\\)\\s*!important;[\\s\\S]{0,420}box-shadow:\\s*var\\(--elevation-prominent\\)\\s*!important;`),
-    "Personal builds must restore the native home composer surface instead of repainting it as a theme panel.",
+    new RegExp(`\\[role="main"\\]:has\\(${homeUtilityPattern}\\)\\s+${publicComposerPattern}\\s*\\{[\\s\\S]{0,420}background-color:\\s*color-mix\\(in oklab,\\s*var\\(--color-token-input-background\\)\\s*90%,\\s*transparent\\)\\s*!important;[\\s\\S]{0,420}border:\\s*1px solid var\\(--ds-immersive-line\\)\\s*!important;[\\s\\S]{0,220}border-radius:\\s*var\\(--radius-3xl\\)\\s*!important;[\\s\\S]{0,220}box-shadow:\\s*0 10px 28px rgb\\(var\\(--ds-bg-rgb\\) / \\.24\\)\\s*!important;`),
+    "Personal builds must give the native home composer one complete border, radius and drop shadow.",
   );
   assert.match(
     customPolicy,
-    new RegExp(`data-dream-art-wide="true"[\\s\\S]{0,320}\\[role="main"\\]:has\\(\\[data-feature="game-source"\\]\\):has\\(${homeUtilityPattern}\\)\\s+${publicComposerPattern}\\s*\\{[\\s\\S]{0,420}border-radius:\\s*var\\(--radius-3xl\\)\\s*!important;[\\s\\S]{0,320}box-shadow:\\s*var\\(--elevation-prominent\\)\\s*!important;`),
-    "Wide standalone project homes must override the legacy split-card radius and inset outline.",
+    new RegExp(`data-dream-art-wide="true"[\\s\\S]{0,320}\\[role="main"\\]:has\\(\\[data-feature="game-source"\\]\\):has\\(${homeUtilityPattern}\\)\\s+${publicComposerPattern}\\s*\\{[\\s\\S]{0,420}border:\\s*1px solid var\\(--ds-immersive-line\\)\\s*!important;[\\s\\S]{0,220}border-radius:\\s*var\\(--radius-3xl\\)\\s*!important;[\\s\\S]{0,220}box-shadow:\\s*0 10px 28px rgb\\(var\\(--ds-bg-rgb\\) / \\.24\\)\\s*!important;`),
+    "Wide standalone project homes must keep one complete outer border instead of an inset duplicate.",
   );
   assert.match(
     customPolicy,
@@ -648,8 +659,18 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     customPolicy,
-    new RegExp(`\\[role="main"\\]:has\\(\\[data-feature="game-source"\\]\\)\\s+div:has\\(>\\s*div\\s*>\\s*${homeUtilityPattern}\\)\\s*\\{[\\s\\S]{0,160}order:\\s*2\\s*!important;[\\s\\S]{0,160}margin-top:\\s*calc\\(var\\(--spacing\\)\\s*\\*\\s*-2\\)\\s*!important;`),
-    "Project-home utility controls must sit directly below the composer like the Work home layout.",
+    new RegExp(`\\[role="main"\\]:has\\(\\[data-feature="game-source"\\]\\)\\s+div:has\\(>\\s*div\\s*>\\s*${homeUtilityPattern}\\)\\s*\\{[\\s\\S]{0,160}order:\\s*2\\s*!important;[\\s\\S]{0,160}margin-top:\\s*calc\\(var\\(--spacing\\)\\s*\\*\\s*-2\\)\\s*!important;[\\s\\S]{0,160}display:\\s*flex\\s*!important;[\\s\\S]{0,100}flex-direction:\\s*column\\s*!important;`),
+    "Project-home composer and utility controls must use one deterministic Work-style column.",
+  );
+  assert.match(
+    customPolicy,
+    new RegExp(`div:has\\(>\\s*div\\s*>\\s*${homeUtilityPattern}\\)[\\s\\S]{0,180}> div:has\\(>\\s*${homeUtilityPattern}\\)\\s*\\{[\\s\\S]{0,100}order:\\s*2\\s*!important;[\\s\\S]{0,180}border-radius:\\s*0 0 var\\(--radius-2xl\\) var\\(--radius-2xl\\)\\s*!important;`),
+    "The project utility rail must follow the composer and retain only its lower corners.",
+  );
+  assert.match(
+    customPolicy,
+    new RegExp(`div:has\\(>\\s*div\\s*>\\s*${homeUtilityPattern}\\)[\\s\\S]{0,260}> div:has\\(${composerPattern}\\)\\s*\\{[\\s\\S]{0,100}order:\\s*1\\s*!important;`),
+    "The standalone composer must precede its attached project utility rail.",
   );
   assert.match(
     customPolicy,
@@ -658,8 +679,8 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     customPolicy,
-    /\[data-ds-part="message-user"\]\s*\{[\s\S]{0,180}background-color:\s*var\(--ds-theme-color-message-user\)\s*!important;/,
-    "User-authored messages must use the theme-owned translucent surface token.",
+    /\[data-ds-part="message-user"\]\s*\{[\s\S]{0,180}background-color:\s*var\(--ds-theme-color-message-user\)\s*!important;[\s\S]{0,260}border:\s*1px solid rgb\(var\(--ds-accent-rgb\) \/ \.22\)\s*!important;[\s\S]{0,320}backdrop-filter:\s*blur\(18px\) saturate\(1\.16\)\s*!important;/,
+    "User-authored messages must use one theme-colored translucent glass surface.",
   );
   assert.match(
     customPolicy,
@@ -686,13 +707,13 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     css,
-    /data-composer-utility-bar-variant="home"\][\s\S]{0,180}> \[class\*="_ComposerLayoutBody_"\][\s\S]{0,220}background:\s*transparent\s*!important;[\s\S]{0,180}backdrop-filter:\s*none\s*!important;/,
-    "The Home-only native Composer body must stay transparent behind the public root.",
+    new RegExp(`${publicComposerPattern}[\\s\\S]{0,80}> \\[class\\*="_ComposerLayoutBody_"\\]\\s*\\{[\\s\\S]{0,180}background:\\s*transparent\\s*!important;[\\s\\S]{0,180}border:\\s*0\\s*!important;[\\s\\S]{0,140}border-radius:\\s*0\\s*!important;[\\s\\S]{0,180}box-shadow:\\s*none\\s*!important;[\\s\\S]{0,180}backdrop-filter:\\s*none\\s*!important;`),
+    "One public ComposerLayoutRoot must clear the nested Body surface in both Home and Session.",
   );
-  assert.match(
+  assert.doesNotMatch(
     css,
-    /data-composer-placement="thread"\][\s\S]{0,260}> \[class\*="_ComposerLayoutBody_"\][\s\S]{0,220}background:\s*transparent\s*!important;[\s\S]{0,180}backdrop-filter:\s*none\s*!important;/,
-    "The thread Composer body must stay transparent behind the public ComposerLayoutRoot.",
+    /data-codex-composer-root\][\s\S]{0,120}data-composer-placement="thread"/,
+    "Nested Composer cleanup must not depend on attributes absent from the current native root.",
   );
   assert.match(
     css,
@@ -1023,6 +1044,8 @@ export async function runRendererRuntimeTest(assetRoot) {
     "Codex 26.727-26.818 user message rows must remain transparent instead of receiving a wide panel.");
   assert.equal(modernMessages.partFixtures.userMessageBubble.getAttribute("data-ds-part"), "message-user",
     "Codex 26.727 explicit and 26.818 adaptive rounded bubbles must expose the dedicated user-message part.");
+  assert.equal(modernMessages.partFixtures.steerMessageBubble.getAttribute("data-ds-part"), "message-user",
+    "A live steer bubble must receive the same user-message part without waiting for an outer semantic anchor.");
   assert.equal(modernMessages.partFixtures.assistantMessage.getAttribute("data-ds-part"), "message",
     "Codex 26.727 assistant message containers must expose the public message part.");
 

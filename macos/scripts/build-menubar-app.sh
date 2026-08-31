@@ -129,7 +129,7 @@ done
 PUBLIC_PRESET="preset-iron-man"
 PUBLIC_PRESET_SHA256="59e09087072b7d66d988fe9c286bbff724118f8e1e73c9c25235d5eefa690eaf"
 PUBLIC_PRESET_THEME_SHA256="0bad4db7957c96d5a4782b71e4a3c676c5770e3c03b36db410a615514bc88314"
-PUBLIC_PRESET_CSS_SHA256="33f4033f221c34b44227f3754f52c7852bde0f342bff1c1bef048204114c5efc"
+PUBLIC_PRESET_CSS_SHA256="6fac6f6bcfbdf878f3c89d4ef77c8b1c45887df6f8811f65594900f2dbc5d3e9"
 [ -d "$ROOT/presets/$PUBLIC_PRESET" ] \
   || { printf 'Public release preset missing: %s\n' "$PUBLIC_PRESET" >&2; exit 1; }
 actual_public_preset_sha256="$(LC_ALL=C /usr/bin/shasum -a 256 \
