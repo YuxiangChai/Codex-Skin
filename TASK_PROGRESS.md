@@ -23,9 +23,13 @@ Updated: 2026-08-31 (Asia/Shanghai)
   present, deep codesign verification passes, and the packaged checker contains
   and successfully executes the public-Release fallback. Local SHA-256 is
   `bac2930ddfab36a4bd2eb0a546309f5433fc96aebcc504009d870e05c606f16b`.
-- [in_progress] Create the immutable versioned release commit, re-fetch and
-  fast-forward `personal/main`, then verify CI/Release, tag SHA and independently
-  downloaded public DMG/checksum assets.
+- [in_progress] Commits `09c6a14` and `2f5de47` were fast-forwarded to
+  `personal/main`. Release run `33387137700` passed its release guard but failed
+  before tag creation in the Ubuntu portable Node job because the new macOS
+  integration test directly invokes Apple-only system utilities. No tag or
+  assets were created. Keep a portable source-contract test on Ubuntu and run
+  the 11 executable checker fixtures only on the macOS runner, then retry and
+  verify CI/Release, tag SHA and independently downloaded public assets.
 
 ## Automatic Update Check GitHub 403 Recovery (2026-08-31)
 

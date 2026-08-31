@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,6 +8,23 @@ import test from "node:test";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const script = path.resolve(here, "../scripts/check-update-macos.sh");
+
+function macOSTest(name, fn) {
+  return test(name, {
+    skip: process.platform === "darwin"
+      ? false
+      : "executes the macOS checker with Apple system utilities",
+  }, fn);
+}
+
+test("the public release fallback stays pinned to verified personal assets", () => {
+  const source = readFileSync(script, "utf8");
+  assert.match(source, /REPOSITORY="YuxiangChai\/Codex-Skin"/);
+  assert.match(source, /CHECKSUM_URL="https:\/\/github\.com\/\$\{REPOSITORY\}\/releases\/download\/v\$\{LATEST_VERSION\}\/SHA256SUMS\.txt"/);
+  assert.match(source, /ASSET_URL_EXPECTED="https:\/\/github\.com\/\$\{REPOSITORY\}\/releases\/download\/v\$\{LATEST_VERSION\}\/\$\{ASSET_NAME\}"/);
+  assert.match(source, /\[ "\$CHECKSUM_LINE" = "\$ASSET_SHA256  \$ASSET_NAME" \]/);
+  assert.match(source, /\[ "\$ASSET_URL" = "\$ASSET_URL_EXPECTED" \]/);
+});
 
 function makeFallback({
   effectiveUrl = "https://github.com/YuxiangChai/Codex-Skin/releases/tag/v9.8.7",
@@ -37,7 +54,7 @@ function runFallback(directory) {
   });
 }
 
-test("the public release fallback preserves exact update metadata", () => {
+macOSTest("the public release fallback preserves exact update metadata", () => {
   const directory = makeFallback();
   try {
     const result = runFallback(directory);
@@ -85,7 +102,7 @@ for (const [name, fixture] of [
     headers: "HTTP/2 200\r\ncontent-length: 134217729\r\n",
   }],
 ]) {
-  test(`the public release fallback rejects ${name}`, () => {
+  macOSTest(`the public release fallback rejects ${name}`, () => {
     const directory = makeFallback(fixture);
     try {
       const result = runFallback(directory);
@@ -97,7 +114,7 @@ for (const [name, fixture] of [
   });
 }
 
-test("an API response with invalid metadata fails closed instead of consulting fallback", () => {
+macOSTest("an API response with invalid metadata fails closed instead of consulting fallback", () => {
   const directory = mkdtempSync(path.join(tmpdir(), "dreamskin-update-api-invalid-"));
   const response = path.join(directory, "release.json");
   writeFileSync(response, JSON.stringify({ tag_name: "v9.8.7", assets: [] }));
