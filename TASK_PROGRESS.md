@@ -27,8 +27,9 @@ Updated: 2026-08-31 (Asia/Shanghai)
 - [published] Created release commit
   `a3efc03999b4bd34c346a9c0ba21c1f1876a5acd` and fast-forwarded
   `personal/main`. CI run `33382478670` and Release run `33382478675` both
-  completed successfully. Tag `v1.5.16.2` and `personal/main` point at that
-  exact release commit.
+  completed successfully. Tag `v1.5.16.2` points at that exact immutable
+  release commit; `personal/main` subsequently advanced only through
+  documentation-only publication records with the version unchanged.
 - [verified] Public Release
   `https://github.com/YuxiangChai/Codex-Skin/releases/tag/v1.5.16.2` is the
   non-draft, non-prerelease Latest release. Its complete custom asset set is
