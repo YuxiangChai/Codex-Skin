@@ -2,6 +2,37 @@
 
 Updated: 2026-08-31 (Asia/Shanghai)
 
+## Long Plain-text Paste Compatibility (2026-08-31)
+
+- [goal] Restore reliable long plain-text paste into the visible composer while
+  preserving image, file, mixed-clipboard and short-text paste behavior.
+- [baseline] Continue from committed completion-flash fix `ce8da57` on the new
+  branch `codex/fix-long-text-paste`; public `v1.5.16.1` remains untouched.
+- [diagnosis] Dream Skin had no clipboard listeners. Live reproduction against
+  Codex 26.825 confirmed that a 6,027-character plain-text paste is consumed,
+  leaves the ProseMirror editor empty, and enters the asynchronous `Pasted
+  text.txt` attachment path. Official code changes behavior at 5,000
+  characters; attachment failure or a stalled host write has no text-field
+  fallback. Images use a separate native path and remain functional.
+- [implemented] Add a capture-phase compatibility bridge scoped to the active
+  `.ProseMirror` inside the registered composer. It handles only file-free
+  plain text from 5,000 through 250,000 characters, inserts through the
+  browser's normal ProseMirror input/undo path, and consumes the native paste
+  only after the editor accepts it. Short text, inactive/non-composer inputs,
+  images/files/mixed payloads and extreme text remain native.
+- [tested] Added renderer contracts for the 4,999/5,000 boundary, images/files,
+  the 250,000 upper bound, inactive editors, rejected browser insertion/native
+  fallback, metrics and listener cleanup.
+  Live CDP confirmed the bounded bridge changes a 6,027-character paste from
+  an empty editor plus pending attachment into editor text with no attachment.
+- [validated] Synchronized the canonical renderer into both platform assets;
+  macOS and Windows renderer tests, shared-asset sync, `git diff --check`, the
+  macOS suite (with signed-runtime and duplicate-Doctor probes skipped to avoid
+  changing the active app), and a separate live Doctor all pass. Doctor reports
+  Codex 26.825.51511, a valid official signature, no `app.asar` mutation, and a
+  valid 738,042-byte themed payload. The active renderer has the same bounded
+  compatibility behavior hot-installed for immediate manual confirmation.
+
 ## Agent Completion Top-left Flash (2026-08-31)
 
 - [goal] Reproduce and remove the very brief light/white flash near the main
