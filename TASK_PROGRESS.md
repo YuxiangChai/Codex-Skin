@@ -2,6 +2,33 @@
 
 Updated: 2026-08-31 (Asia/Shanghai)
 
+## Publish Personal macOS v1.5.16.2 (2026-08-31)
+
+- [authorized] The user explicitly requested a commit and a new public release
+  after the native long-text pasted-attachment recovery was verified.
+- [scope] Publish macOS-only `v1.5.16.2`, preserving the completion-flash fix
+  and native pasted-text card behavior. Synchronize required shared Windows
+  version/runtime sources but do not build or upload a Windows Setup.exe.
+- [baseline] Refreshed both remotes. `personal/main` remains at published
+  `v1.5.16.1`; refreshed `origin/main` is already an ancestor of the candidate.
+  Current `HEAD` is `beb541f`, four commits ahead of `personal/main`, and remote
+  tag `v1.5.16.2` is absent.
+- [ready] All six version sources and bound assertions equal `1.5.16.2`.
+  Shared assets are synchronized. Passed macOS portable Node (92), shared
+  Windows Node (29), tools (10), Swift/XCTest (15), the full protected macOS
+  suite, both payload checks, release-workflow checks and `git diff --check`.
+- [ready] Built and read-only mounted
+  `macos/release/CodexDreamSkin-v1.5.16.2.dmg`. `hdiutil verify` and deep
+  codesign verification pass; App and bundled engine versions are `1.5.16.2`,
+  the binary contains x86_64 + arm64, exactly one Iron Man preset is present,
+  and both the native pasted-text recovery and completion-flash fix are in the
+  packaged assets. Local SHA-256 is
+  `ac9ef213439f86718c299f0435acb6ddb2d2cfca61dda08e70190717f35d6c6f`.
+- [in_progress] Create the versioned release commit, fast-forward
+  `personal/main`, then verify CI/Release, the exact tag SHA and independently
+  downloaded public assets. The workflow will rebuild the formal DMG from the
+  immutable release commit; the local preflight DMG is not the public artifact.
+
 ## Native Long-text Pasted Attachment Recovery (2026-08-31)
 
 - [goal] Preserve Codex 26.825's native compact `Pasted text` attachment card

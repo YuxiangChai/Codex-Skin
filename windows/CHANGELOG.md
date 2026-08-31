@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### 个人同步 1.5.16.2
+
+- 同步 Codex 26.825 原生长文本附件初始化恢复与 Agent 完成时合成层闪烁修复的共享 renderer 合同。
+- 本次只做共享版本和可移植回归同步，不构建、上传或发布 Windows Setup.exe。
+
 ### 个人集成 1.5.16.1（共享合同同步）
 
 - 同步 v1.5.16.1 的共享 renderer、Safe CSS、选择器合同和生成资产，保留 Iron Man 主题及 Chat / Work / Codex 首页布局契约。
