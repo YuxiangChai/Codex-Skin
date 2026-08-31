@@ -24,10 +24,24 @@ Updated: 2026-08-31 (Asia/Shanghai)
   and both the native pasted-text recovery and completion-flash fix are in the
   packaged assets. Local SHA-256 is
   `ac9ef213439f86718c299f0435acb6ddb2d2cfca61dda08e70190717f35d6c6f`.
-- [in_progress] Create the versioned release commit, fast-forward
-  `personal/main`, then verify CI/Release, the exact tag SHA and independently
-  downloaded public assets. The workflow will rebuild the formal DMG from the
-  immutable release commit; the local preflight DMG is not the public artifact.
+- [published] Created release commit
+  `a3efc03999b4bd34c346a9c0ba21c1f1876a5acd` and fast-forwarded
+  `personal/main`. CI run `33382478670` and Release run `33382478675` both
+  completed successfully. Tag `v1.5.16.2` and `personal/main` point at that
+  exact release commit.
+- [verified] Public Release
+  `https://github.com/YuxiangChai/Codex-Skin/releases/tag/v1.5.16.2` is the
+  non-draft, non-prerelease Latest release. Its complete custom asset set is
+  `CodexDreamSkin-v1.5.16.2.dmg` (3,129,298 bytes) plus
+  `SHA256SUMS.txt` (95 bytes); no Windows Setup.exe exists.
+- [verified] Independently downloaded both public assets. The checksum file and
+  local `shasum` agree on
+  `00bfd510a58ccfb00fca95bf0698a05bd7d86036d63c5c779c6762b61ba99ad3`;
+  `hdiutil verify` passes. A read-only mount confirms App and engine version
+  `1.5.16.2`, x86_64 + arm64, one Iron Man preset, both requested fixes, and
+  the expected ad-hoc signature (`TeamIdentifier=not set`).
+- [completed] The macOS-only `v1.5.16.2` publication is complete. No public tag
+  or Release was replaced and no Windows installer was built or uploaded.
 
 ## Native Long-text Pasted Attachment Recovery (2026-08-31)
 
