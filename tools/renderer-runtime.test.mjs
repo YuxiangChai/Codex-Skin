@@ -5,11 +5,17 @@ import vm from "node:vm";
 
 function styleDeclaration() {
   const values = new Map();
+  const priorities = new Map();
   return {
-    values,
+    priorities, values,
     getPropertyValue(name) { return values.get(name) || ""; },
-    setProperty(name, value) { values.set(name, String(value)); },
-    removeProperty(name) { values.delete(name); },
+    getPropertyPriority(name) { return priorities.get(name) || ""; },
+    setProperty(name, value, priority = "") {
+      values.set(name, String(value));
+      if (priority) priorities.set(name, String(priority));
+      else priorities.delete(name);
+    },
+    removeProperty(name) { values.delete(name); priorities.delete(name); },
     [Symbol.iterator]() { return values.keys(); },
   };
 }
@@ -35,7 +41,8 @@ function makeFixture({
   modernHome = false,
   pinnedSummaryOpen = null,
   generic = false, genericComposer = true, genericHome = false, genericSearch = false,
-  modernMessages = false,
+  modernMessages = false, modernComposerLayout = false, modernComposerPair = false,
+  pathname = "/index.html", initialRoute = "",
 } = {}) {
   let settingsActive = settings;
   const attrs = new Map();
@@ -57,8 +64,10 @@ function makeFixture({
     const node = {
       name,
       parentElement,
+      style: styleDeclaration(),
       get attributes() { return attributesFor(values); },
       getAttribute(attribute) { return values.get(attribute) ?? null; },
+      hasAttribute(attribute) { return values.has(attribute); },
       setAttribute(attribute, value) { values.set(attribute, String(value)); },
       removeAttribute(attribute) { values.delete(attribute); },
       appendChild(child) { child.parentElement = node; return child; },
@@ -78,6 +87,11 @@ function makeFixture({
           current = current.parentElement;
         }
         return false;
+      },
+      querySelector(selector) {
+        return [...domNodes].find((candidate) =>
+          candidate !== node && node.contains(candidate) && candidate.matches?.(selector),
+        ) || null;
       },
     };
     domNodes.add(node);
@@ -109,15 +123,22 @@ function makeFixture({
     const sidebarSelector = 'aside, nav[aria-label]';
     const composerSelector = '[data-testid*="composer" i], [data-testid*="prompt" i], ' +
       '[class*="composer" i], [class*="prompt" i]';
+    const composerLayoutRootSelector = '[class*="_ComposerLayoutRoot_"]';
     const overlaySelector = '[role="dialog"], [aria-modal="true"]';
     partFixtures.shell = makeDomNode("generic-shell", body);
     partFixtures.sidebar = makeDomNode("generic-sidebar", partFixtures.shell, new Map(), [sidebarSelector]);
     partFixtures.main = makeDomNode("generic-main", partFixtures.shell, new Map(), [mainSelector]);
     if (genericComposer) {
       partFixtures.composer = makeDomNode(
-        "generic-composer", partFixtures.main, new Map(), [composerSelector],
+        "generic-composer", partFixtures.main, new Map(),
+        [modernComposerLayout ? composerLayoutRootSelector : composerSelector],
       );
-      partFixtures.input = makeDomNode("generic-input", partFixtures.composer, new Map(), [inputSelector]);
+      const inputParent = modernComposerLayout
+        ? (partFixtures.composerFooter = makeDomNode(
+          "generic-composer-footer", partFixtures.composer, new Map(), [composerSelector],
+        ))
+        : partFixtures.composer;
+      partFixtures.input = makeDomNode("generic-input", inputParent, new Map(), [inputSelector]);
     }
     partFixtures.unrelatedAside = makeDomNode(
       "generic-content-aside", partFixtures.main, new Map(), [sidebarSelector],
@@ -177,14 +198,27 @@ function makeFixture({
       "user-message-bubble",
       partFixtures.userMessage,
       new Map([["data-user-message-bubble", ""]]),
+      ['[class*="max-w-"][class*="rounded-2xl"][class*="text-start"]'],
     );
     partFixtures.assistantMessage = makeDomNode(
       "assistant-message",
       partFixtures.thread,
       new Map([["data-local-conversation-final-assistant", ""]]),
     );
-    partFixtures.composer = makeDomNode("composer", partFixtures.main);
-    partFixtures.composerToolbar = makeDomNode("composer-toolbar", partFixtures.composer);
+    const preferredComposerSelector =
+      '[class*="_ComposerLayoutRoot_"], ' +
+      '[data-composer-surface-variant][data-composer-radius-variant], ' +
+      '.composer-surface-chrome';
+    partFixtures.composer = makeDomNode(
+      "composer", partFixtures.main, new Map(),
+      modernComposerPair ? [preferredComposerSelector] : [],
+    );
+    partFixtures.composerBody = modernComposerPair
+      ? makeDomNode("composer-body", partFixtures.composer)
+      : null;
+    partFixtures.composerToolbar = makeDomNode(
+      "composer-toolbar", partFixtures.composerBody ?? partFixtures.composer,
+    );
     if (typeof pinnedSummaryOpen === "boolean") {
       partFixtures.pinnedSummaryWrapper = makeDomNode(
         "pinned-summary-wrapper",
@@ -235,11 +269,17 @@ function makeFixture({
       register('button[aria-label="Toggle pinned summary"]', partFixtures.pinnedSummaryToggle);
     }
     register(
-      ':is(.composer-surface-chrome, [class*="_ComposerLayoutBody_"])',
+      ':is(.composer-surface-chrome, [class*="_ComposerLayoutRoot_"], [data-composer-surface-variant][data-composer-radius-variant], [class*="_ComposerLayoutBody_"])',
       partFixtures.composer,
     );
+    if (partFixtures.composerBody) {
+      register(
+        ':is(.composer-surface-chrome, [class*="_ComposerLayoutRoot_"], [data-composer-surface-variant][data-composer-radius-variant], [class*="_ComposerLayoutBody_"])',
+        partFixtures.composerBody,
+      );
+    }
     register(
-      ':is(.composer-surface-chrome [class*="_footer_"], [class*="_ComposerLayoutFooter_"])',
+      ':is(.composer-surface-chrome [class*="_footer_"], [class*="_ComposerLayoutRoot_"] [class*="_ComposerLayoutFooter_"], [data-composer-surface-variant][data-composer-radius-variant] :is([data-composer-footer-responsive], [class*="_ComposerLayoutFooter_"], [class*="_footer_"]))',
       partFixtures.composerToolbar,
     );
   }
@@ -307,6 +347,11 @@ function makeFixture({
   const context = {
     window,
     document,
+    location: {
+      protocol: "app:",
+      pathname,
+      search: initialRoute ? `?initialRoute=${encodeURIComponent(initialRoute)}` : "",
+    },
     MutationObserver: MockMutationObserver,
     CSSStyleSheet: adopted ? MockSheet : undefined,
     Blob,
@@ -316,6 +361,7 @@ function makeFixture({
       createObjectURL() { nextBlob += 1; return `blob:fixture-${nextBlob}`; },
       revokeObjectURL(value) { revoked.push(value); },
     },
+    URLSearchParams,
     performance: { now: () => 1 },
     setTimeout(callback, delay) { const id = ++nextId; timers.set(id, { callback, delay }); return id; },
     clearTimeout(id) { timers.delete(id); },
@@ -323,10 +369,10 @@ function makeFixture({
     clearInterval(id) { intervals.delete(id); },
     console,
   };
-  const payloadFor = (theme = {}) => {
+  const payloadFor = (theme = {}, cssText = ".fixture { color: red; }") => {
     const template = fixture.template;
     return template
-      .replace("__DREAM_SKIN_CSS_JSON__", JSON.stringify(".fixture { color: red; }"))
+      .replace("__DREAM_SKIN_CSS_JSON__", JSON.stringify(cssText))
       .replace("__DREAM_SKIN_ART_JSON__", JSON.stringify("data:image/png;base64,AA=="))
       .replace("__DREAM_SKIN_THEME_JSON__", JSON.stringify({ id: "fixture", appearance: "auto", ...theme }))
       .replace("__DREAM_SKIN_VERSION_JSON__", JSON.stringify("test"))
@@ -409,6 +455,9 @@ export async function runRendererRuntimeTest(assetRoot) {
   const css = await fs.readFile(path.join(assetRoot, "dream-skin.css"), "utf8");
   const shellPattern = String.raw`main:is\(\.main-surface, \[data-app-shell-main-surface\], \[class\*="_MainContentSurface_"\]\)`;
   const headerPattern = String.raw`header:is\(\.app-header-tint, \[data-app-shell-header-edge-scroll\], \[class\*="_Header_"\]\)`;
+  const composerPattern = String.raw`:is\(\.composer-surface-chrome, \[class\*="_ComposerLayoutRoot_"\], \[data-composer-surface-variant\]\[data-composer-radius-variant\], \[class\*="_ComposerLayoutBody_"\]\)`;
+  const publicComposerPattern = `${composerPattern}\\[data-ds-part="composer"\\]`;
+  const homeUtilityPattern = String.raw`:is\(\[class\*="_homeUtilityBar_"\], \[class\*="_ComposerHomeUtilityBar_"\]\)`;
   fixture.template = template;
 
   assert.match(template, /adoptedStyleSheets/);
@@ -432,6 +481,38 @@ export async function runRendererRuntimeTest(assetRoot) {
   // and the measured fossil selector must be absent from the canonical CSS.
   assert.doesNotMatch(css, /(?:^|[.#\s])(?:codex-dream-skin|dream-skin-home|dream-home|dream-task)(?:[\s.#:{>]|$)|home-suggestion-list-item/);
   assert.match(css, /html\[data-dream-skin="active"\]/);
+  const sidebar = "(?:__DREAM_SELECTOR_LEFT_PANEL__|aside\\.app-shell-left-panel)";
+  const noInlineColor = "svg:not\\(\\[style\\^=[\"']color:[\"']\\]\\):not\\(\\[style\\*=[\"'];color:[\"']\\]\\):not\\(\\[style\\*=[\"']; color:[\"']\\]\\)";
+  assert.match(
+    css,
+    new RegExp(`${sidebar} ${noInlineColor}\\s*\\{\\s*color:\\s*rgb\\(var\\(--ds-muted-rgb\\) / \\.96\\) !important;`),
+    "Sidebar base icon tint must exempt only an inline color declaration.",
+  );
+  assert.match(
+    css,
+    new RegExp(`${sidebar} button:hover ${noInlineColor},\\s*[\\s\\S]{0,160}${sidebar} a:hover ${noInlineColor}\\s*\\{\\s*color:\\s*var\\(--ds-accent\\) !important;`),
+    "Sidebar hover tint must exempt only an inline color declaration.",
+  );
+  assert.match(
+    css,
+    new RegExp(`${sidebar} \\[aria-current=\\\"page\\\"\\] ${noInlineColor}\\s*\\{\\s*color:\\s*var\\(--ds-accent\\) !important;`),
+    "Sidebar current-page tint must exempt only an inline color declaration.",
+  );
+  assert.doesNotMatch(
+    css,
+    /(?:__DREAM_SELECTOR_LEFT_PANEL__|aside\.app-shell-left-panel) svg\s*\{\s*color:\s*rgb\(var\(--ds-muted-rgb\) \/ \.96\) !important;/,
+    "Sidebar base tint must not override every SVG.",
+  );
+  assert.doesNotMatch(
+    css,
+    /(?:__DREAM_SELECTOR_LEFT_PANEL__|aside\.app-shell-left-panel) button:hover svg\s*,\s*[\s\S]{0,160}(?:__DREAM_SELECTOR_LEFT_PANEL__|aside\.app-shell-left-panel) a:hover svg\s*\{\s*color:\s*var\(--ds-accent\) !important;/,
+    "Sidebar hover tint must not override every SVG.",
+  );
+  assert.doesNotMatch(
+    css,
+    /(?:__DREAM_SELECTOR_LEFT_PANEL__|aside\.app-shell-left-panel) \[aria-current="page"\] svg\s*\{\s*color:\s*var\(--ds-accent\) !important;/,
+    "Sidebar current-page tint must not override every SVG.",
+  );
   // Home gating must stay single-level: CSS forbids :has() inside :has(),
   // and Chromium drops any rule that nests it (the v1.3.1 regression).  The
   // canonical CSS therefore gates on the :has()-free home-route-css alias.
@@ -495,9 +576,6 @@ export async function runRendererRuntimeTest(assetRoot) {
     new RegExp(`data-dream-art-sidebar="shared"[\\s\\S]{0,1300}${shellPattern}:not\\(:has\\(\\[role="main"\\]\\)\\)\\s*\\{[\\s\\S]{0,180}background:\\s*transparent\\s*!important;[\\s\\S]{0,120}box-shadow:\\s*none\\s*!important;`),
     "Shared canvases must clear the legacy task-only main-surface gradient.",
   );
-  assert.match(css, /content:\s*var\(--dream-skin-name[\s\S]{0,180}var\(--dream-skin-brand-subtitle/);
-  assert.match(css, /content:\s*var\(--dream-skin-status/);
-  assert.match(css, /content:\s*var\(--dream-skin-quote/);
   const customPolicyMarker = "/* Personal custom engine policy. */";
   const customPolicyOffset = css.indexOf(customPolicyMarker);
   assert.notEqual(customPolicyOffset, -1,
@@ -515,37 +593,37 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     customPolicy,
-    /\[role="main"\]\s*>\s*div:first-child\s*>\s*div:has\(:is\(\.composer-surface-chrome,\s*\[class\*="_ComposerLayoutBody_"\]\)\)\s*\{[\s\S]{0,220}justify-content:\s*flex-end\s*!important;/,
+    new RegExp(`\\[role="main"\\]\\s*>\\s*div:first-child\\s*>\\s*div:has\\(${publicComposerPattern}\\)\\s*\\{[\\s\\S]{0,220}justify-content:\\s*flex-end\\s*!important;`),
     "Personal builds must bottom-align the native home composer row.",
   );
   assert.match(
     customPolicy,
-    /\[role="main"\]:has\(\[class\*="_homeUtilityBar_"\]\)\s+:is\(\.composer-surface-chrome,\s*\[class\*="_ComposerLayoutBody_"\]\)\s*\{[\s\S]{0,420}background-color:\s*color-mix\(in oklab,\s*var\(--color-token-input-background\)\s*90%,\s*transparent\)\s*!important;[\s\S]{0,420}border-radius:\s*var\(--radius-3xl\)\s*!important;[\s\S]{0,420}box-shadow:\s*var\(--elevation-prominent\)\s*!important;/,
+    new RegExp(`\\[role="main"\\]:has\\(${homeUtilityPattern}\\)\\s+${publicComposerPattern}\\s*\\{[\\s\\S]{0,420}background-color:\\s*color-mix\\(in oklab,\\s*var\\(--color-token-input-background\\)\\s*90%,\\s*transparent\\)\\s*!important;[\\s\\S]{0,420}border-radius:\\s*var\\(--radius-3xl\\)\\s*!important;[\\s\\S]{0,420}box-shadow:\\s*var\\(--elevation-prominent\\)\\s*!important;`),
     "Personal builds must restore the native home composer surface instead of repainting it as a theme panel.",
   );
   assert.match(
     customPolicy,
-    /data-dream-art-wide="true"[\s\S]{0,320}\[role="main"\]:has\(\[data-feature="game-source"\]\):has\(\[class\*="_homeUtilityBar_"\]\)\s+:is\(\.composer-surface-chrome,\s*\[class\*="_ComposerLayoutBody_"\]\)\s*\{[\s\S]{0,420}border-radius:\s*var\(--radius-3xl\)\s*!important;[\s\S]{0,320}box-shadow:\s*var\(--elevation-prominent\)\s*!important;/,
+    new RegExp(`data-dream-art-wide="true"[\\s\\S]{0,320}\\[role="main"\\]:has\\(\\[data-feature="game-source"\\]\\):has\\(${homeUtilityPattern}\\)\\s+${publicComposerPattern}\\s*\\{[\\s\\S]{0,420}border-radius:\\s*var\\(--radius-3xl\\)\\s*!important;[\\s\\S]{0,320}box-shadow:\\s*var\\(--elevation-prominent\\)\\s*!important;`),
     "Wide standalone project homes must override the legacy split-card radius and inset outline.",
   );
   assert.match(
     customPolicy,
-    /data-dream-shell="dark"[\s\S]{0,280}\[role="main"\]:has\(\[class\*="_homeUtilityBar_"\]\)\s+:is\(\.composer-surface-chrome,\s*\[class\*="_ComposerLayoutBody_"\]\)\s*\{[\s\S]{0,220}background-color:\s*var\(--color-token-input-background\)\s*!important;/,
+    new RegExp(`data-dream-shell="dark"[\\s\\S]{0,280}\\[role="main"\\]:has\\(${homeUtilityPattern}\\)\\s+${publicComposerPattern}\\s*\\{[\\s\\S]{0,220}background-color:\\s*var\\(--color-token-input-background\\)\\s*!important;`),
     "The restored home composer must retain Codex's native dark appearance token.",
   );
   assert.match(
     customPolicy,
-    /\[role="main"\]\s+\[class\*="_homeUtilityBar_"\]\s*\{[\s\S]{0,520}top:\s*auto\s*!important;[\s\S]{0,220}width:\s*auto\s*!important;[\s\S]{0,220}margin-inline:\s*var\(--home-composer-inline-inset\)\s*!important;[\s\S]{0,220}margin-block:\s*0\s*!important;[\s\S]{0,220}padding-inline:\s*calc\(var\(--spacing\)\s*\*\s*1\.5\)\s*!important;[\s\S]{0,220}padding-block:\s*calc\(var\(--spacing\)\s*\*\s*1\.5\)\s*!important;[\s\S]{0,220}border-radius:\s*0\s+0\s+var\(--radius-2xl\)\s+var\(--radius-2xl\)\s*!important;[\s\S]{0,220}box-shadow:\s*none\s*!important;/,
+    new RegExp(`\\[role="main"\\]\\s+${homeUtilityPattern}\\s*\\{[\\s\\S]{0,520}top:\\s*auto\\s*!important;[\\s\\S]{0,220}width:\\s*auto\\s*!important;[\\s\\S]{0,220}margin-inline:\\s*var\\(--home-composer-inline-inset\\)\\s*!important;[\\s\\S]{0,220}margin-block:\\s*0\\s*!important;[\\s\\S]{0,220}padding-inline:\\s*calc\\(var\\(--spacing\\)\\s*\\*\\s*1\\.5\\)\\s*!important;[\\s\\S]{0,220}padding-block:\\s*calc\\(var\\(--spacing\\)\\s*\\*\\s*1\\.5\\)\\s*!important;[\\s\\S]{0,220}border-radius:\\s*0\\s+0\\s+var\\(--radius-2xl\\)\\s+var\\(--radius-2xl\\)\\s*!important;[\\s\\S]{0,220}box-shadow:\\s*none\\s*!important;`),
     "Personal builds must restore the native inset utility bar while keeping the outer composer width unchanged.",
   );
   assert.match(
     customPolicy,
-    /\[role="main"\]:has\(\[data-feature="game-source"\]\):has\(\[class\*="_homeUtilityBar_"\]\)\s+\[class\*="_homeUtilityBar_"\]\s*\{[\s\S]{0,520}padding-block:\s*calc\(var\(--spacing\)\s*\*\s*1\.5\)\s*!important;[\s\S]{0,320}background-color:\s*color-mix\(in oklab,\s*var\(--color-token-side-bar-background\)\s*88%,\s*transparent\)\s*!important;[\s\S]{0,320}backdrop-filter:\s*blur\(var\(--blur-lg\)\)\s*!important;/,
+    new RegExp(`\\[role="main"\\]:has\\(\\[data-feature="game-source"\\]\\):has\\(${homeUtilityPattern}\\)\\s+${homeUtilityPattern}\\s*\\{[\\s\\S]{0,520}padding-block:\\s*calc\\(var\\(--spacing\\)\\s*\\*\\s*1\\.5\\)\\s*!important;[\\s\\S]{0,320}background-color:\\s*color-mix\\(in oklab,\\s*var\\(--color-token-side-bar-background\\)\\s*88%,\\s*transparent\\)\\s*!important;[\\s\\S]{0,320}backdrop-filter:\\s*blur\\(var\\(--blur-lg\\)\\)\\s*!important;`),
     "Standalone utility controls must use the compact translucent Work-style strip.",
   );
   assert.match(
     customPolicy,
-    /\[role="main"\]:has\(\[data-feature="game-source"\]\):has\(\[class\*="_homeUtilityBar_"\]\)\s+\[class\*="_homeUtilityBar_"\]::before\s*\{\s*content:\s*none\s*!important;\s*\}/,
+    new RegExp(`\\[role="main"\\]:has\\(\\[data-feature="game-source"\\]\\):has\\(${homeUtilityPattern}\\)\\s+${homeUtilityPattern}::before\\s*\\{\\s*content:\\s*none\\s*!important;\\s*\\}`),
     "Standalone project homes must not add a second Select project label above the native controls.",
   );
   assert.match(
@@ -570,7 +648,7 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     customPolicy,
-    /\[role="main"\]:has\(\[data-feature="game-source"\]\)\s+div:has\(>\s*div\s*>\s*\[class\*="_homeUtilityBar_"\]\)\s*\{[\s\S]{0,160}order:\s*2\s*!important;[\s\S]{0,160}margin-top:\s*calc\(var\(--spacing\)\s*\*\s*-2\)\s*!important;/,
+    new RegExp(`\\[role="main"\\]:has\\(\\[data-feature="game-source"\\]\\)\\s+div:has\\(>\\s*div\\s*>\\s*${homeUtilityPattern}\\)\\s*\\{[\\s\\S]{0,160}order:\\s*2\\s*!important;[\\s\\S]{0,160}margin-top:\\s*calc\\(var\\(--spacing\\)\\s*\\*\\s*-2\\)\\s*!important;`),
     "Project-home utility controls must sit directly below the composer like the Work home layout.",
   );
   assert.match(
@@ -588,13 +666,78 @@ export async function runRendererRuntimeTest(assetRoot) {
     /pointer-events:\s*none\s*!important;/,
     "The decorative title layer must never block native home controls.",
   );
+  assert.doesNotMatch(
+    css,
+    /content:\s*var\(--dream-skin-(?:brand-subtitle|status|quote)/,
+    "Core CSS must not inject fixed branding or status labels over native content.",
+  );
+  assert.match(
+    css,
+    /:is\(\[class~="group\/application-menu-top-bar"\], \[class\*="_ApplicationMenuTopBar_"\]\)[\s\S]{0,140}background:\s*rgb\(var\(--ds-panel-rgb\) \/ \.38\)/,
+    "The current Windows application menu bar must use the themed acrylic surface.",
+  );
   assert.match(css, /--ds-task-full-veil/);
   assert.match(css, /data-dream-task-mode="full"/);
   assert.match(css, /background-image:\s*var\(--ds-task-full-veil\),\s*var\(--dream-skin-art\)/);
   assert.match(
     css,
-    /:is\(\.composer-surface-chrome,\s*\[class\*="_ComposerLayoutBody_"\]\)\s*\{[^}]*background:\s*rgb\(var\(--ds-panel-rgb\) \/ \.94\)/,
-    "The exact composer shell must retain the personal 94% panel surface",
+    /(?:__DREAM_SELECTOR_COMPOSER_CHROME__|:is\(\.composer-surface-chrome,[^)]*\)|\.composer-surface-chrome)\s*\{[^}]*background:\s*rgb\(var\(--ds-panel-rgb\) \/ \.94\)/,
+    "The merged composer shell must retain the personal 94% panel surface used for accent contrast",
+  );
+  assert.match(
+    css,
+    /data-composer-utility-bar-variant="home"\][\s\S]{0,180}> \[class\*="_ComposerLayoutBody_"\][\s\S]{0,220}background:\s*transparent\s*!important;[\s\S]{0,180}backdrop-filter:\s*none\s*!important;/,
+    "The Home-only native Composer body must stay transparent behind the public root.",
+  );
+  assert.match(
+    css,
+    /data-composer-placement="thread"\][\s\S]{0,260}> \[class\*="_ComposerLayoutBody_"\][\s\S]{0,220}background:\s*transparent\s*!important;[\s\S]{0,180}backdrop-filter:\s*none\s*!important;/,
+    "The thread Composer body must stay transparent behind the public ComposerLayoutRoot.",
+  );
+  assert.match(
+    css,
+    /(?:__DREAM_SELECTOR_HOME_UTILITY__|:is\(\[class\*="_homeUtilityBar_"\], \[class\*="_ComposerHomeUtilityBar_"\]\))[\s\S]{0,100}position:\s*relative;[\s\S]{0,60}z-index:\s*3;/,
+    "The Home project utility must remain above the composer surface.",
+  );
+  assert.match(
+    css,
+    /\[class~="h-full"\]\[class~="bg-gradient-to-t"\]\[class~="from-surface"\]\[class~="via-surface"\]/,
+    "The current 148px sticky composer fade must be removed by its full utility signature.",
+  );
+  assert.match(
+    css,
+    /\[class~="h-7"\]\[class~="bg-gradient-to-t"\]\[class~="from-surface"\]\[class~="to-transparent"\]/,
+    "The current 28px composer-top fade must be removed by its full utility signature.",
+  );
+  assert.match(
+    css,
+    /\[data-markdown-table="true"\][\s\S]{0,220}margin-inline:\s*0\s*!important/,
+    "Markdown wide tables must remain aligned with the themed message body.",
+  );
+  assert.match(
+    css,
+    /\[data-response-annotation-conversation\]\[data-response-annotation-target\][\s\S]{0,900}backdrop-filter:\s*blur\(20px\)/,
+    "Streaming reasoning needs a readable single themed surface.",
+  );
+  assert.match(
+    css,
+    /\[data-local-conversation-final-assistant\][\s\S]{0,160}\[data-response-annotation-conversation\]\[data-response-annotation-target\][\s\S]{0,260}background:\s*transparent\s*!important/,
+    "Final assistant messages must not retain a nested reasoning surface.",
+  );
+  assert.match(
+    css,
+    /\[data-local-conversation-item-target-ids\][\s\S]{0,900}backdrop-filter:\s*blur\(18px\)/,
+    "Expanded command details need a readable themed surface.",
+  );
+  assert.match(
+    css,
+    /button\[class~="bg-primary-solid"\][\s\S]{0,520}color:\s*var\(--ds-on-accent\)\s*!important/,
+    "Current composer actions must retain computed accent foreground contrast.",
+  );
+  assert.match(
+    css,
+    /(?:__DREAM_SELECTOR_SHELL_MAIN__|main:is\(\.main-surface, \[data-app-shell-main-surface\], \[class\*="_MainContentSurface_"\]\))[\s\S]{0,180}\[data-vscode-context\]\[tabindex="0"\]:focus-visible[\s\S]{0,120}outline:\s*none\s*!important;/,
+    "The non-interactive Codex route wrapper must not draw a window-sized focus outline.",
   );
   assert.match(
     css,
@@ -731,6 +874,12 @@ export async function runRendererRuntimeTest(assetRoot) {
     assert.equal(home.partFixtures[fixtureKey].getAttribute("data-ds-part"), part,
       `${part} must be exposed through the public Safe CSS bridge`);
   }
+  const nestedComposer = makeFixture({ nativeAppearance: "dark", modernComposerPair: true });
+  vm.runInNewContext(nestedComposer.payloadFor(), nestedComposer.context);
+  assert.equal(nestedComposer.partFixtures.composer.getAttribute("data-ds-part"), "composer",
+    "Codex 26.814+ must expose ComposerLayoutRoot as the single public composer surface.");
+  assert.equal(nestedComposer.partFixtures.composerBody.getAttribute("data-ds-part"), null,
+    "A nested ComposerLayoutBody must stay private when its outer Root is present.");
   home.setSettingsMode(true);
   partObserver.callback([{ type: "childList" }]);
   home.flushTimers(80);
@@ -761,6 +910,57 @@ export async function runRendererRuntimeTest(assetRoot) {
   assert.equal(routeTransition.window.__CODEX_DREAM_SKIN_STATE__.scope.baseState, "home",
     "SPA DOM replacement must refresh route scope even when the app:// URL does not navigate.");
   const routePassesBeforeMessages = state.metrics.routePasses;
+
+  const composerBridgeCss = `@layer dreamskin-community {
+    [data-ds-part="composer"] {
+      --ds-community-composer-border-color: rgba(255, 255, 255, 0.28) !important;
+      --ds-community-composer-border-width: 1px !important;
+      --ds-community-composer-border-style: solid !important;
+    }
+  }`;
+  const bridgedComposer = makeFixture({ nativeAppearance: "dark" });
+  bridgedComposer.partFixtures.composer.style.setProperty("border-color", "red");
+  bridgedComposer.partFixtures.composer.style.setProperty("border-width", "2px", "important");
+  bridgedComposer.partFixtures.composer.style.setProperty("border-style", "dashed");
+  vm.runInNewContext(bridgedComposer.payloadFor({}, composerBridgeCss), bridgedComposer.context);
+  for (const property of ["border-color", "border-width", "border-style"]) {
+    assert.equal(
+      bridgedComposer.partFixtures.composer.style.getPropertyValue(property),
+      `var(--ds-community-composer-${property})`,
+      `${property} must be bridged to the validated community cascade`,
+    );
+    assert.equal(bridgedComposer.partFixtures.composer.style.getPropertyPriority(property), "important");
+  }
+  assert.equal(bridgedComposer.window.__CODEX_DREAM_SKIN_STATE__.cleanup(), true);
+  assert.equal(bridgedComposer.partFixtures.composer.style.getPropertyValue("border-color"), "red");
+  assert.equal(bridgedComposer.partFixtures.composer.style.getPropertyPriority("border-width"), "important");
+
+  const petOverlay = makeFixture({ nativeAppearance: "dark", initialRoute: "/avatar-overlay" });
+  vm.runInNewContext(petOverlay.payloadFor(), petOverlay.context);
+  assert.equal(petOverlay.window.__CODEX_DREAM_SKIN_STATE__, undefined,
+    "The avatar overlay must reject Dream Skin before installing renderer state.");
+  assert.equal(petOverlay.window.__CODEX_DREAM_SKIN_DISABLED__, true);
+  assert.equal(petOverlay.document.adoptedStyleSheets.length, 0);
+  assert.equal(petOverlay.attrs.get("data-dream-skin"), undefined);
+
+  const petComposition = makeFixture({
+    nativeAppearance: "dark", pathname: "/avatar-overlay-composition-surface.html",
+  });
+  vm.runInNewContext(petComposition.payloadFor(), petComposition.context);
+  assert.equal(petComposition.window.__CODEX_DREAM_SKIN_STATE__, undefined,
+    "Pet composition surfaces must remain transparent and unthemed.");
+  assert.equal(petComposition.document.adoptedStyleSheets.length, 0);
+
+  const navigatedPet = makeFixture({ nativeAppearance: "dark" });
+  vm.runInNewContext(navigatedPet.payloadFor(), navigatedPet.context);
+  navigatedPet.context.location.pathname = "/avatar-overlay-composition-surface.html";
+  vm.runInNewContext(navigatedPet.payloadFor(), navigatedPet.context);
+  assert.equal(navigatedPet.window.__CODEX_DREAM_SKIN_STATE__, undefined,
+    "Reapplying on a Pet route must clean an older renderer injection.");
+  assert.equal(navigatedPet.document.adoptedStyleSheets.length, 0);
+  assert.equal(navigatedPet.attrs.get("data-dream-skin"), undefined);
+  assert.equal(navigatedPet.revoked.length, 1,
+    "Pet cleanup must revoke the previous wallpaper blob URL.");
   const dynamicMessage = home.addDynamicMessage();
   partObserver.callback([{ type: "childList" }]);
   home.flushTimers(80);
@@ -820,9 +1020,9 @@ export async function runRendererRuntimeTest(assetRoot) {
   assert.equal(modernMessages.partFixtures.message.getAttribute("data-ds-part"), "message",
     "The legacy message role attribute must remain supported.");
   assert.equal(modernMessages.partFixtures.userMessage.getAttribute("data-ds-part"), null,
-    "Codex 26.727 user message rows must remain transparent instead of receiving a wide panel.");
+    "Codex 26.727-26.818 user message rows must remain transparent instead of receiving a wide panel.");
   assert.equal(modernMessages.partFixtures.userMessageBubble.getAttribute("data-ds-part"), "message-user",
-    "Codex 26.727 native rounded user bubbles must expose the dedicated user-message part.");
+    "Codex 26.727 explicit and 26.818 adaptive rounded bubbles must expose the dedicated user-message part.");
   assert.equal(modernMessages.partFixtures.assistantMessage.getAttribute("data-ds-part"), "message",
     "Codex 26.727 assistant message containers must expose the public message part.");
 
@@ -837,6 +1037,15 @@ export async function runRendererRuntimeTest(assetRoot) {
     "An aside inside the main content must not be exposed as the app sidebar.");
   assert.equal(generic.partFixtures.dialogInput.getAttribute("data-ds-part"), null,
     "Dialog inputs must not be mistaken for the app composer.");
+
+  const modernComposer = makeFixture({
+    nativeAppearance: "dark", generic: true, modernComposerLayout: true,
+  });
+  vm.runInNewContext(modernComposer.payloadFor(), modernComposer.context);
+  assert.equal(modernComposer.partFixtures.composer.getAttribute("data-ds-part"), "composer",
+    "The ComposerLayoutRoot wrapper must receive the public composer part.");
+  assert.equal(modernComposer.partFixtures.composerFooter.getAttribute("data-ds-part"), null,
+    "The broad composer fallback must not stop at ComposerLayoutFooter.");
 
   const genericSearch = makeFixture({
     nativeAppearance: "dark", generic: true, genericComposer: false, genericSearch: true,
@@ -876,6 +1085,13 @@ export async function runRendererRuntimeTest(assetRoot) {
   assert.equal(full.rootStyle.values.get("--dream-skin-sidebar-offset"), "0px");
   assert.equal(full.attrs.get("data-dream-task-mode"), "full");
   assert.equal(full.attrs.get("data-dream-art-task-mode"), "full");
+
+  const landscape = makeFixture({ nativeAppearance: "dark" });
+  vm.runInNewContext(landscape.payloadFor({
+    artMetadata: { wide: false, aspect: "wide", focusX: 0.5, focusY: 0.5, taskMode: "ambient" },
+  }), landscape.context);
+  assert.equal(landscape.attrs.get("data-dream-art-wide"), "true",
+    "Landscape artwork classified as wide must use the immersive layout without requiring 16:9.");
 
   const explicitColors = {
     background: "#abc",

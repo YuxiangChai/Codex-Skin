@@ -21,10 +21,48 @@ Updated: 2026-08-31 (Asia/Shanghai)
   26.814-26.818 compatibility plus unreleased watcher backoff, update-version
   source, selector provenance, Windows overflow and managed-CDP-profile fixes,
   and documentation.
-- [in_progress] Preserve the current Settings repair in its own commit, audit
-  upstream/personal overlap, merge on a dedicated integration branch, resolve
-  conflicts as a feature union, then run targeted personal-feature checks and
-  the complete applicable macOS regression suite.
+- [branch] Created `codex/merge-origin-v1.5.16` from `df48f18` and protected the
+  completed Settings repair in commit `f5ce691` before starting the merge.
+- [merged] `git merge --no-ff --no-commit origin/main` is resolved as a feature
+  union. Accepted upstream Codex 26.818 composer / Pet / Markdown / message
+  compatibility, Safe CSS composer-border bridge, watcher backoff, bundled-App
+  update-version source and selector provenance. Preserved personal Chat / Work
+  / Codex home policy, Jarvis title, main-centered shared artwork and sidebar
+  geometry, bounded Settings transparency, pinned-summary policy, user-bubble
+  tint, Iron Man-only package and guided macOS updater / rollback / restart /
+  theme restoration.
+- [release_scope] Kept the personal macOS-only Release workflow and did not add
+  the upstream Windows Setup.exe CI/release job. Shared runtime and generated
+  Windows assets remain synchronized and covered by portable Node tests.
+- [version] Selected personal integration version `1.5.16.1`, rather than the
+  already-existing upstream tag `v1.5.16`, and synchronized the six platform
+  version sources plus bound assertions. No tag, push or Release is authorized
+  or performed in this task.
+- [verified] Generated-asset sync/check, selector provenance, selector Doctor
+  unit tests, macOS and Windows renderer tests, both payload-integrity suites,
+  watcher backoff, bundled update-version source, Safe CSS and composer-fade
+  tests pass. The personal tests explicitly cover three home modes, shared
+  artwork geometry, Settings 26.727 + 26.825 bounded transparency, adaptive
+  user bubbles, Pet exclusion and composer border restoration.
+- [verified] Final portable suites pass: 92 macOS Node tests, 29 Windows shared
+  / Node tests and 10 tools tests. The complete macOS suite passes with 15
+  Swift/XCTest cases plus shell, renderer, Safe CSS, theme staging/import,
+  manifest, ZIP, HTTP and updater safety checks. The final elevated packaging
+  run also passes signed-runtime switching, runtime-state integration and
+  Doctor checks.
+- [verified] The final v1.5.16.1 candidate hot-applies to the current visible
+  thread with active `custom-iron-man`, L1 structure, no horizontal overflow,
+  no missing L1 anchors and revision `2002d9f05b3571e6b655`. Static/runtime
+  fixtures cover Chat / Work / Codex home, Settings and Pet-specific states;
+  direct live navigation through every route remains a post-install smoke test.
+- [artifact] Built and mounted the local universal macOS DMG at
+  `macos/release/CodexDreamSkin-v1.5.16.1.dmg`. It contains arm64 + x86_64,
+  exactly the Iron Man three-file public preset, matching App/engine versions
+  and required runtime scripts. Independent SHA-256 and `hdiutil verify` pass;
+  digest is `dcccae4a7c5f2d399bb97fe87a9689387d230e6a6299b2d523a39867b8920cc9`.
+- [complete] Final staged-diff, version, generated-asset and ancestry checks
+  are complete; this integration is recorded in the local merge commit. No
+  push, tag or public Release was performed.
 
 ## Codex 26.825 Settings Main Background Repair (2026-08-31)
 
