@@ -42,7 +42,6 @@ function makeFixture({
   pinnedSummaryOpen = null,
   generic = false, genericComposer = true, genericHome = false, genericSearch = false,
   modernMessages = false, modernComposerLayout = false, modernComposerPair = false,
-  composerEditor = false,
   pathname = "/index.html", initialRoute = "",
 } = {}) {
   let settingsActive = settings;
@@ -56,7 +55,6 @@ function makeFixture({
   const timers = new Map();
   const intervals = new Map();
   const listeners = new Map();
-  const execCommands = [];
   const revoked = [];
   let nextId = 0;
   let nextBlob = 0;
@@ -73,11 +71,7 @@ function makeFixture({
       setAttribute(attribute, value) { values.set(attribute, String(value)); },
       removeAttribute(attribute) { values.delete(attribute); },
       appendChild(child) { child.parentElement = node; return child; },
-      matches(selector) {
-        const part = /^\[data-ds-part="([^"]+)"\]$/.exec(selector);
-        if (part) return values.get("data-ds-part") === part[1];
-        return selectorMatches.has(selector);
-      },
+      matches(selector) { return selectorMatches.has(selector); },
       closest(selector) {
         let current = node;
         while (current) {
@@ -144,14 +138,7 @@ function makeFixture({
           "generic-composer-footer", partFixtures.composer, new Map(), [composerSelector],
         ))
         : partFixtures.composer;
-      partFixtures.input = makeDomNode(
-        "generic-input",
-        inputParent,
-        composerEditor ? new Map([["contenteditable", "true"]]) : new Map(),
-        composerEditor
-          ? [inputSelector, '.ProseMirror[contenteditable="true"]']
-          : [inputSelector],
-      );
+      partFixtures.input = makeDomNode("generic-input", inputParent, new Map(), [inputSelector]);
     }
     partFixtures.unrelatedAside = makeDomNode(
       "generic-content-aside", partFixtures.main, new Map(), [sidebarSelector],
@@ -316,7 +303,6 @@ function makeFixture({
     documentElement: root,
     head: root,
     body,
-    activeElement: null,
     adoptedStyleSheets: adopted ? [] : undefined,
     createElement(tag) { return tag === "style" ? makeStyleNode() : { tagName: tag }; },
     getElementById(id) { return nodes.get(id) || null; },
@@ -339,13 +325,7 @@ function makeFixture({
     removeEventListener(type, callback) {
       if (listeners.get(`document:${type}`) === callback) listeners.delete(`document:${type}`);
     },
-    execCommand(command, showUi, value) {
-      execCommands.push({ command, showUi, value });
-      return true;
-    },
   };
-  for (const node of domNodes) node.focus = () => { document.activeElement = node; };
-  if (composerEditor && partFixtures.input) document.activeElement = partFixtures.input;
   const navigation = {
     addEventListener(type, callback) { listeners.set(`navigation:${type}`, callback); },
     removeEventListener(type) { listeners.delete(`navigation:${type}`); },
@@ -436,7 +416,7 @@ function makeFixture({
     return replacement;
   };
   return {
-    addDynamicMessage, attrs, context, document, domNodes, execCommands, flushTimers, intervals, listeners,
+    addDynamicMessage, attrs, context, document, domNodes, flushTimers, intervals, listeners,
     nodes, observers, partFixtures, payloadFor, revoked, root, rootClasses, rootStyle,
     replaceThreadSurface, selectorNodes, setSettingsMode, timers, window,
   };
@@ -1085,74 +1065,6 @@ export async function runRendererRuntimeTest(assetRoot) {
     "An aside inside the main content must not be exposed as the app sidebar.");
   assert.equal(generic.partFixtures.dialogInput.getAttribute("data-ds-part"), null,
     "Dialog inputs must not be mistaken for the app composer.");
-
-  const longPaste = makeFixture({
-    nativeAppearance: "dark", generic: true, modernComposerLayout: true, composerEditor: true,
-  });
-  vm.runInNewContext(longPaste.payloadFor(), longPaste.context);
-  const longPasteHandler = longPaste.listeners.get("document:paste");
-  assert.equal(typeof longPasteHandler, "function",
-    "The renderer must install the bounded Codex 26.825 long-text paste bridge.");
-  const pasteEvent = ({ text, files = [], items = [] }) => {
-    const calls = { prevented: 0, stopped: 0 };
-    return {
-      calls,
-      target: longPaste.partFixtures.input,
-      clipboardData: {
-        files,
-        items,
-        getData(type) { return type === "text/plain" ? text : ""; },
-      },
-      preventDefault() { calls.prevented += 1; },
-      stopImmediatePropagation() { calls.stopped += 1; },
-    };
-  };
-  const shortPaste = pasteEvent({ text: "x".repeat(4999) });
-  longPasteHandler(shortPaste);
-  assert.deepEqual(shortPaste.calls, { prevented: 0, stopped: 0 });
-  assert.equal(longPaste.execCommands.length, 0,
-    "Short text must stay on the native ProseMirror paste path.");
-
-  const bridgedPaste = pasteEvent({ text: "x".repeat(5000) });
-  longPasteHandler(bridgedPaste);
-  assert.deepEqual(bridgedPaste.calls, { prevented: 1, stopped: 1 });
-  assert.deepEqual(longPaste.execCommands.at(-1), {
-    command: "insertText", showUi: false, value: "x".repeat(5000),
-  });
-  assert.equal(longPaste.window.__CODEX_DREAM_SKIN_STATE__.metrics.longTextPasteInserts, 1);
-
-  const imagePaste = pasteEvent({
-    text: "x".repeat(6000), files: [{ type: "image/png" }],
-    items: [{ kind: "file", type: "image/png" }],
-  });
-  longPasteHandler(imagePaste);
-  assert.deepEqual(imagePaste.calls, { prevented: 0, stopped: 0 });
-  assert.equal(longPaste.execCommands.length, 1,
-    "Image, file and mixed clipboard payloads must remain fully native.");
-
-  const extremePaste = pasteEvent({ text: "x".repeat(250001) });
-  longPasteHandler(extremePaste);
-  assert.deepEqual(extremePaste.calls, { prevented: 0, stopped: 0 });
-  assert.equal(longPaste.execCommands.length, 1,
-    "Extremely large text must keep the native attachment path instead of freezing the editor.");
-
-  longPaste.document.execCommand = (command, showUi, value) => {
-    longPaste.execCommands.push({ command, showUi, value });
-    return false;
-  };
-  const rejectedPaste = pasteEvent({ text: "x".repeat(6000) });
-  longPasteHandler(rejectedPaste);
-  assert.deepEqual(rejectedPaste.calls, { prevented: 0, stopped: 0 },
-    "A browser that rejects insertText must retain the native paste fallback.");
-  assert.equal(longPaste.window.__CODEX_DREAM_SKIN_STATE__.metrics.longTextPasteInserts, 1);
-
-  longPaste.document.activeElement = longPaste.partFixtures.dialogInput;
-  const inactivePaste = pasteEvent({ text: "x".repeat(6000) });
-  longPasteHandler(inactivePaste);
-  assert.deepEqual(inactivePaste.calls, { prevented: 0, stopped: 0 });
-  assert.equal(longPaste.window.__CODEX_DREAM_SKIN_STATE__.cleanup(), true);
-  assert.equal(longPaste.listeners.has("document:paste"), false,
-    "Renderer cleanup must remove the paste bridge before reinjection.");
 
   const modernComposer = makeFixture({
     nativeAppearance: "dark", generic: true, modernComposerLayout: true,

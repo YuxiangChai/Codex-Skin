@@ -16,13 +16,6 @@
     property,
     variable: `--ds-community-composer-${property}`,
   })).filter(({ variable }) => cssText.includes(`${variable}:`));
-  // Codex 26.825 consumes text pastes at this boundary and asynchronously
-  // converts them to a local Pasted text.txt attachment. If that write stalls
-  // or fails, the editor never receives the original text. Keep a bounded
-  // plain-text path in the native ProseMirror editor while leaving short,
-  // image, file, mixed and extremely large clipboard payloads untouched.
-  const LONG_TEXT_PASTE_MIN = 5000;
-  const LONG_TEXT_PASTE_MAX = 250000;
   const ROOT_ATTRS = [
     "data-dream-skin", SHELL_ATTR,
     "data-dream-art-wide", "data-dream-art-safe", "data-dream-task-mode",
@@ -119,7 +112,6 @@
     navigationEvents: 0,
     pinnedSummaryAutoCloses: 0,
     pinnedSummaryUserOpens: 0,
-    longTextPasteInserts: 0,
     safetyPasses: 0,
     analysisRuns: 0,
     analysisCacheHits: artAnalysis ? 1 : 0,
@@ -860,28 +852,6 @@
     pinnedSummaryUserAllowed = opening;
     if (opening) metrics.pinnedSummaryUserOpens += 1;
   };
-  const longTextPasteHandler = (event) => {
-    const target = event?.target;
-    const editor = target?.closest?.('.ProseMirror[contenteditable="true"]') ?? null;
-    if (!editor || document.activeElement !== editor ||
-      !editor.closest?.(`[${PART_ATTR}="composer"]`)) return;
-    const clipboard = event.clipboardData;
-    if (!clipboard || clipboard.files?.length ||
-      Array.from(clipboard.items || []).some((item) => item?.kind === "file")) return;
-    const text = clipboard.getData?.("text/plain") ?? "";
-    if (text.length < LONG_TEXT_PASTE_MIN || text.length > LONG_TEXT_PASTE_MAX) return;
-
-    // execCommand is deliberately used inside the trusted paste gesture: the
-    // browser routes it through ProseMirror's normal beforeinput/input path,
-    // preserving its document model, selection and undo history. Only consume
-    // the native paste after ProseMirror confirms that it accepted the text.
-    let inserted = false;
-    try { inserted = document.execCommand?.("insertText", false, text) === true; } catch {}
-    if (!inserted) return;
-    event.preventDefault?.();
-    event.stopImmediatePropagation?.();
-    metrics.longTextPasteInserts += 1;
-  };
   const restoreComposerBorders = (node) => {
     const saved = composerBorderRestores.get(node);
     if (!saved) return;
@@ -1078,7 +1048,6 @@
     if (pinnedSummaryCloseTimer) clearTimeout(pinnedSummaryCloseTimer);
     if (typeof document.removeEventListener === "function") {
       document.removeEventListener("click", pinnedSummaryClickHandler, true);
-      document.removeEventListener("paste", longTextPasteHandler, true);
     }
     if (bodyReadyHandler && typeof document.removeEventListener === "function") {
       document.removeEventListener("DOMContentLoaded", bodyReadyHandler);
@@ -1179,7 +1148,6 @@
   };
   if (typeof document.addEventListener === "function") {
     document.addEventListener("click", pinnedSummaryClickHandler, true);
-    document.addEventListener("paste", longTextPasteHandler, true);
   }
   const firstEnsureStartedAt = now();
   ensure({ root: true, scope: true, parts: true });
