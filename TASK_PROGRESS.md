@@ -2,6 +2,28 @@
 
 Updated: 2026-08-31 (Asia/Shanghai)
 
+## Publish Personal macOS v1.5.16.1 (2026-08-31)
+
+- [authorized] The user explicitly requested publication after reviewing the
+  live composer, Settings and message-surface fixes.
+- [scope] Publish the personal repository's macOS-only `v1.5.16.1` release.
+  Preserve the existing release workflow and all personal features; do not
+  build or upload a Windows Setup.exe.
+- [baseline] `personal/main` is `df48f18` at version `1.5.14.1`. The release
+  candidate is local commit `3d5708b` on `codex/merge-origin-v1.5.16`, eleven
+  commits ahead and with both `personal/main` and refreshed `origin/main` as
+  ancestors. Remote tag `v1.5.16.1` is absent.
+- [ready] All six version sources equal `1.5.16.1`; generated assets are in
+  sync; macOS Node (92), shared Windows Node (29), tools (10), Swift/XCTest
+  (15), full macOS integrations, local DMG mount verification and detached
+  SHA-256 verification pass.
+- [ready] Final local DMG SHA-256 is
+  `81ad33ef349d3ccd310dcba2ecd053fb8e80cabcbd9de9d7b09da6d519a3592c`.
+- [in_progress] Commit this release checkpoint, push the exact candidate to
+  `personal/main`, then wait for the repository's macOS-only Release workflow
+  and independently verify the public tag, Release state, DMG and checksum
+  assets before reporting publication complete.
+
 ## ChatGPT Chat / Work Composer Transition Flash (2026-08-31)
 
 - [goal] Remove the transient frame where switching between Chat and Work
