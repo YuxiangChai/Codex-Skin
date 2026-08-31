@@ -19,10 +19,22 @@ Updated: 2026-08-31 (Asia/Shanghai)
   SHA-256 verification pass.
 - [ready] Final local DMG SHA-256 is
   `81ad33ef349d3ccd310dcba2ecd053fb8e80cabcbd9de9d7b09da6d519a3592c`.
-- [in_progress] Commit this release checkpoint, push the exact candidate to
-  `personal/main`, then wait for the repository's macOS-only Release workflow
-  and independently verify the public tag, Release state, DMG and checksum
-  assets before reporting publication complete.
+- [published] Fast-forwarded `personal/main` to release commit `9ab8978` and
+  completed Release workflow run `33372218577`: guard, portable regressions,
+  tag creation, macOS DMG build and public Release publication all succeeded.
+  Tag `v1.5.16.1` points at the exact release commit.
+- [verified] The public Release is non-draft, non-prerelease and marked Latest:
+  `https://github.com/YuxiangChai/Codex-Skin/releases/tag/v1.5.16.1`.
+  Its only custom assets are `CodexDreamSkin-v1.5.16.1.dmg` (2.98 MB) and
+  `SHA256SUMS.txt` (95 bytes); no Windows Setup.exe was built or uploaded.
+- [verified] Independently downloaded the public assets. The checksum file,
+  GitHub asset digest and local `shasum` all agree on
+  `06d25b84a8c4288767cdda8f0cf755547213f43bc9882539dcc3c36d2b68359f`,
+  and `hdiutil verify` passes. A read-only mount confirms app/engine version
+  `1.5.16.1`, x86_64 + arm64, one Iron Man preset and the final composer/steer
+  runtime markers. The published package is explicitly ad-hoc signed.
+- [completed] Publication is complete. No tag or public Release was replaced,
+  and no Windows installer was created.
 
 ## ChatGPT Chat / Work Composer Transition Flash (2026-08-31)
 
