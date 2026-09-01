@@ -574,6 +574,11 @@ export async function runRendererRuntimeTest(assetRoot) {
   );
   assert.match(
     css,
+    /html:root\[data-dream-skin="active"\]\[data-dream-art-scope="main"\]\[data-dream-art-sidebar="shared"\]\[data-dream-art-safe-area\]\[data-dream-art-task-mode\]:has\(\[data-settings-panel-slug="general-settings"\]\) body\s*\{[\s\S]{0,380}background-image:\s*linear-gradient\(\s*rgb\(0 0 0 \/ var\(--ds-theme-image-dim\)\),\s*rgb\(0 0 0 \/ var\(--ds-theme-image-dim\)\)\),\s*var\(--dream-skin-art\)\s*!important;[\s\S]{0,320}background-position:\s*center,\s*calc\(var\(--ds-focus-x\)\s*\+\s*var\(--dream-skin-sidebar-offset\)\)\s*var\(--ds-focus-y\)\s*!important;[\s\S]{0,420}background-size:\s*100%\s+100%,\s*max\(\s*calc\(100%\s*\+\s*var\(--dream-skin-sidebar-width\)\),\s*var\(--dream-skin-art-cover-width\)\)\s*auto\s*!important;/,
+    "Settings must reassert the same dim, main-centered focal offset and canvas scale as chat.",
+  );
+  assert.match(
+    css,
     new RegExp(`data-dream-art-sidebar="shared"[\\s\\S]{0,520}${shellPattern}:not\\(:has\\(\\[role="main"\\]\\)\\)::before\\s*\\{[\\s\\S]{0,120}content:\\s*none\\s*!important;`),
     "Shared canvases must not apply a second route-specific dim layer over only the main surface.",
   );

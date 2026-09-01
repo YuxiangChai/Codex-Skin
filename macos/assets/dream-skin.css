@@ -1573,6 +1573,33 @@ html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sideb
   box-shadow: none !important;
 }
 
+/* The generic wide-task body rule above carries route-specific :has() / :not()
+   specificity. Settings keeps no shell main of its own, but current Chromium
+   can still leave that task rule as the winning body declaration during the
+   native shell replacement. Reassert the exact shared canvas from the stable
+   Settings navigation anchor. :root plus the already-published art metadata
+   gives this bounded rule enough specificity without duplicating selectors,
+   reading layout, or waiting for the debounced route attribute. */
+html:root[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"][data-dream-art-safe-area][data-dream-art-task-mode]:has([data-settings-panel-slug="general-settings"]) body {
+  background-image:
+    linear-gradient(
+      rgb(0 0 0 / var(--ds-theme-image-dim)),
+      rgb(0 0 0 / var(--ds-theme-image-dim))),
+    var(--dream-skin-art) !important;
+  background-position:
+    center,
+    calc(var(--ds-focus-x) + var(--dream-skin-sidebar-offset))
+    var(--ds-focus-y) !important;
+  background-size:
+    100% 100%,
+    max(
+      calc(100% + var(--dream-skin-sidebar-width)),
+      var(--dream-skin-art-cover-width))
+    auto !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+}
+
 html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"][data-dream-art-wide="true"]:has(
   main:is(.main-surface, [data-app-shell-main-surface], [class*="_MainContentSurface_"]) [role="main"]) body,
 html[data-dream-skin="active"][data-dream-art-scope="main"][data-dream-art-sidebar="shared"]:is(
