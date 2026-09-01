@@ -1,6 +1,61 @@
 # Task Progress
 
-Updated: 2026-08-31 (Asia/Shanghai)
+Updated: 2026-09-01 (Asia/Shanghai)
+
+## Publish Personal macOS v1.5.16.4 (2026-09-01)
+
+- [goal] Publish the verified Settings shared-background parity fix as the next
+  personal macOS patch release while keeping all existing personal features.
+- [baseline] After a fresh remote fetch, `personal/main` equals the task base,
+  `origin/main` is already an ancestor, the latest personal tag is
+  `v1.5.16.3`, and no upstream merge is required.
+- [scope] Bump all six release-version sources and bound assertions to
+  `1.5.16.4`, commit and push to `personal/main`, then verify the public macOS
+  DMG and `SHA256SUMS.txt`. Do not build or publish Windows Setup.exe.
+- [verified] Six version sources and bound assertions are `1.5.16.4`; runtime
+  assets and payloads are synchronized; 143 portable Node tests and the full
+  macOS suite (including shell checks and 15 Swift tests) pass.
+- [artifact] Local `CodexDreamSkin-v1.5.16.4.dmg` builds successfully, passes
+  `hdiutil verify`, mounts read-only with App version `1.5.16.4`, and contains a
+  universal arm64/x86_64 executable. Local SHA-256 is
+  `5393c22e48ecc87ecc98f53d80d374c38efff8c448415b2babf47e52d9b22243`;
+  CI will produce and publish its own tag-bound artifact.
+- [in_progress] Commit, push and public Release verification.
+
+## Settings Shared Background Parity (2026-09-01)
+
+- [goal] Keep Settings on the exact same theme-owned exposure, scale and main-
+  content-centered focal point as Chat/Work/Codex while leaving the Settings
+  sidebar layout and controls unchanged.
+- [scope] Fix the canonical shared renderer CSS, synchronize generated macOS
+  and Windows assets, add regressions and hot-apply for live verification. Do
+  not change the official App bundle, selected theme, version, tag or Release.
+- [live_baseline] On the 1512x949 current renderer, Chat computes the expected
+  two-layer body canvas: dim `0.5`, position `50% 50%, calc(50% + 120px) 42%`
+  and expanded cover width. Settings retains the same theme variables and a
+  real 240px verified sidebar, but computes only the raw image at `50% 42%`
+  with `cover`; its main surface and all ancestors are otherwise transparent.
+- [root_cause] The generic wide ambient-task body rule has greater selector
+  specificity than the base shared-canvas rule. During the Settings shell
+  replacement it therefore wins the cascade and drops both the theme dim layer
+  and the 120px main-content focal offset even though their root variables are
+  still correct.
+- [implemented] Reasserted the complete shared body canvas from the stable,
+  bounded Settings navigation anchor with sufficient specificity and no layout
+  reads or debounced route dependency. The canonical runtime source and both
+  platform assets now keep one exposure and focal contract.
+- [live_verified] A source hot-apply on the same 1512x949 renderer makes
+  Settings compute the same two background layers as Chat: dim `0.5`, position
+  `50% 50%, calc(50% + 120px) 42%`, and size
+  `100% 100%, max(100% + 240px, 1625.86px)`. The 240px Settings sidebar and
+  1272px main surface remain transparent and keep their native layout.
+- [tests] Runtime synchronization/check, macOS and Windows payload checks,
+  focused renderer tests, all 143 Node tests, shell syntax/static checks and 15
+  SwiftPM tests pass. The combined macOS runner reached SwiftPM but its nested
+  sandbox was blocked by the managed host; the same Swift tests pass outside
+  that nested sandbox. `git diff --check` passes.
+- [release] The initial fix was not released until the user's follow-up request;
+  publication is now tracked in the v1.5.16.4 section above.
 
 ## Publish Personal macOS v1.5.16.3 (2026-08-31)
 

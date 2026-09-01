@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 个人同步 1.5.16.4
+
+- 同步 Settings 与聊天页一致的主题暗度、主内容区焦点和共享画布缩放合同；本次不构建、上传或发布 Windows Setup.exe。
+
 ### 个人同步 1.5.16.3
 
 - 随 macOS GitHub API 403 自动更新修复同步版本常量和绑定断言；fallback 与自动安装改动仅用于 macOS，本次不构建、上传或发布 Windows Setup.exe。

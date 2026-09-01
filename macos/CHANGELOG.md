@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### 个人发行 1.5.16.4
+
+- 修复 Settings 背景被宽屏任务兜底样式覆盖的问题：背景现在与 Chat / Work / Codex 共用同一主题暗度、缩放和焦点，并按 Settings 右侧主内容区而不是整个窗口居中。
+- 保留 Settings 原生侧栏布局与透明主表面；本次继续只构建和发布 macOS DMG，Windows 仅同步共享运行时与版本合同。
+
 ### 个人发行 1.5.16.3
 
 - 自动更新检查在 GitHub 匿名 Releases API 返回 403、429、服务端错误或网络失败时，改用同一固定个人仓库的公开 Latest 跳转、版本化 DMG 地址与 `SHA256SUMS.txt`；仍严格校验仓库、版本、文件名、最终响应大小和 SHA-256，API 返回成功但元数据异常时继续 fail closed。
