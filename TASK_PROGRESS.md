@@ -20,7 +20,18 @@ Updated: 2026-09-01 (Asia/Shanghai)
   universal arm64/x86_64 executable. Local SHA-256 is
   `5393c22e48ecc87ecc98f53d80d374c38efff8c448415b2babf47e52d9b22243`;
   CI will produce and publish its own tag-bound artifact.
-- [in_progress] Commit, push and public Release verification.
+- [commits] `cf83fa4` (`fix(renderer): align settings shared background`) and
+  `b21347f` (`chore: prepare personal v1.5.16.4 release`) were pushed to
+  `personal/main` without force.
+- [released] GitHub Release workflow run `33483115471` completed successfully.
+  Public tag `v1.5.16.4` and `personal/main` both resolved to release commit
+  `b21347f16e24e98de04191ab40eeeb044bdb15bc` at publication time; Latest
+  redirects to the public v1.5.16.4 Release.
+- [public_assets] The Release contains only
+  `CodexDreamSkin-v1.5.16.4.dmg` (3,130,963 bytes) and `SHA256SUMS.txt` (95
+  bytes). A fresh public download passed the published checksum and
+  `hdiutil verify`; public DMG SHA-256 is
+  `ac4becdf4abc5076968e324f3c237dc63ca93273a24a2fdfcc92e824198e028a`.
 
 ## Settings Shared Background Parity (2026-09-01)
 
